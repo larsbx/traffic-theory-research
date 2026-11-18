@@ -1,0 +1,89 @@
+{
+  "schema": "train.formal.coverage.v1",
+  "rule": "train",
+  "lean_version": "4.34.1",
+  "quint_version": "0.33.1",
+  "allowed_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "required_theorems": [
+    "BML.Train.canMove_iff_queue_or_fullRing",
+    "BML.Train.canMove_iff_propagation",
+    "BML.Train.stopped_car_iff_blocker",
+    "BML.Train.transport_bijection",
+    "BML.Train.other_species_unchanged",
+    "BML.Train.noMoves_iff_stuck",
+    "BML.Train.stuck_iff_classic_no_fullRing",
+    "BML.Train.step_eq_of_stuck",
+    "BML.Train.stuck_persists",
+    "BML.Train.torus_stuck_iff",
+    "BML.Train.singleton_full_ring_counterexample",
+    "BML.Train.Counting.filter_length_eq_of_bijection",
+    "BML.Train.speciesCount_halfStep",
+    "BML.Train.speciesCount_step",
+    "BML.Train.speciesCount_iterate",
+    "BML.Train.population_halfStep",
+    "BML.Train.population_step",
+    "BML.Train.population_iterate",
+    "BML.Train.moveCount_eq_zero_iff",
+    "BML.Train.totalMoveCount_eq_zero_iff_stuck",
+    "BML.Train.jam_iff_positive_zero_moves",
+    "BML.Train.full_species_moveCount",
+    "BML.Train.fixed_occupancy_with_movement",
+    "BML.Train.population_le_area",
+    "BML.Train.population_ge_rows_columns",
+    "BML.Train.stuckConfig_population",
+    "BML.Train.stuckConfig_jam",
+    "BML.Train.jam_rows_columns",
+    "BML.Train.jam_population_lower",
+    "BML.Train.jam_population_iff",
+    "BML.Train.no_jam_singleton",
+    "BML.Train.jam_population_iff_positive",
+    "BML.Train.noMoves_population_iff",
+    "BML.Train.stuckCheck_eq_true_iff"
+  ],
+  "finite_comparison": {
+    "max_cells": 6,
+    "rectangles": 14,
+    "boards": 3720,
+    "columns": ["width", "height", "input_code", "east_code", "north_code", "full_code", "east_moves", "north_moves", "cycle_north_moves", "stuck"],
+    "larger_targeted_boards": 74,
+    "larger_targeted_dimensions": [[7, 1], [1, 7], [8, 2], [2, 8], [3, 3], [4, 3], [3, 4], [4, 4]]
+  },
+  "construction": {
+    "min_side": 2,
+    "max_side": 8,
+    "lean_python_boards": 784,
+    "quint_max_area": 16,
+    "quint_boards": 96
+  },
+  "quint": {
+    "backend": "typescript",
+    "seed": 20261118,
+    "test_suites": {
+      "train_tests.qnt": [
+        "emptyStuckTest", "eastQueueMovesTogetherTest", "northQueueMovesTogetherTest",
+        "eastOppositeBlockerTest", "northOppositeBlockerTest", "eastWrapQueueTest",
+        "northWrapQueueTest", "eastFullRingMovesTest", "northFullRingMovesTest",
+        "oneCellEastRotatesTest", "oneCellNorthRotatesTest", "thinTorusOwnDirectionRingsTest",
+        "quietPhaseIsNotStuckTest", "fixedOccupancyIsNotStuckTest", "phaseOrderMattersTest",
+        "mixedStuckBoardTest", "longQueuePropagationTest", "separatePhaseMovementCountsTest",
+        "allRectanglesThroughSixCellsTest"
+      ],
+      "train_model.qnt": [
+        "ringMovementAdvancesClockTest", "emptyStepTogglesPhaseTest",
+        "stuckStepTogglesPhaseTest", "bothPhasesConserveSpeciesTest",
+        "quietActivePhaseTogglesTest"
+      ]
+    },
+    "required_mutations": [
+      "classic-replacement", "omitted-full-ring", "truncated-queue-propagation",
+      "north-before-east", "illegal-digits-with-identical-encoding"
+    ]
+  },
+  "not_claimed": [
+    "Unbounded refinement of the Python/Quint source programs to Lean",
+    "Apalache model-checking or a Quint theorem over arbitrary grid dimensions",
+    "Austin-Benjamini eventual speed-one theorem or probabilistic transition theorems",
+    "A TRAIN Wang-tile characterization without the homogeneous-ring exclusions",
+    "Quasicrystal diffraction or analytic trigonometric limit theorems"
+  ]
+}

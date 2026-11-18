@@ -100,6 +100,6 @@
     "Probabilistic high-density gridlock or percolation",
     "Pure point diffraction or spatial dynamical spectrum",
     "Quint Apalache verification or exhaustive unbounded temporal verification",
-    "TRAIN-rule semantics, G0 equivalence, or Lean/Quint correspondence; both formal suites cover CLASSIC old-state-vacancy movement only"
+    "TRAIN-rule results are tracked separately in formal/train-coverage.json; this Traffic inventory and its finite correspondence domain cover CLASSIC old-state-vacancy movement only"
   ]
 }

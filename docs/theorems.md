@@ -43,12 +43,15 @@ simple blocker cycle and linking its closure and distinct-car count to the
 arithmetic results remain obligations; no general bridge between the two Lean
 libraries is being assumed.
 
-Both Lean libraries and both Quint models use **CLASSIC** old-state vacancy
-semantics. They do not formalize the TRAIN rule introduced in §5b. Under TRAIN,
-a full single-species ring rotates while its occupancy pattern is unchanged;
-therefore an occupancy fixed point need not be motionless, and G0's fixed-point
-criterion cannot be transferred to TRAIN. Theorem T and the additional 3×4
-non-monotonicity witness retain their stated prose/Python evidence boundaries.
+The `BML` and `Traffic` suites use **CLASSIC** old-state vacancy semantics.
+The separate [`BML.Train` Lean and `Train.qnt` Quint layer](../formal/TRAIN.md)
+implements TRAIN queue and full-ring movement. Its Lean proofs now include the
+complete Theorem T in §5b, numeric conservation, and the distinction between
+fixed occupancy and zero movement. A full single-species TRAIN ring rotates
+while its occupancy is unchanged, so G0's fixed-point criterion cannot be
+transferred to that rule. The additional 3×4 non-monotonicity witness remains
+Python-only; the complete CLASSIC G1/G2/R/F arguments retain their stated
+prose/bounded-evidence boundaries.
 
 ## 0. The open problem, stated precisely
 
@@ -269,13 +272,28 @@ formula appears earlier remains unestablished by the present source check.
 ## 5b. The train rule: Austin–Benjamini Prop 6 on rectangles
 
 Under the **train rule** (`bml.model.TRAIN`), a maximal line of same-species cars moves together
-if the cell ahead of its head is empty, so a full ring rotates. This is Austin–Benjamini's written
-rule: "the blue car – and any more blue cars in a line to the left of it – cannot move".
+if the cell ahead of its head is empty; a full single-species ring rotates as well.
+This is the queue movement rule written by [Austin–Benjamini][AB]. The east
+half-step is followed by the north half-step, with simultaneous movement within
+each phase. An unchanged occupancy pattern need not mean zero movers.
 
-**Theorem T.** Under the train rule on W×H with W, H ≥ 2, a stuck configuration of n cars exists
-⟺ W + H ≤ n ≤ WH.
+**Theorem T.** Under the train rule on W×H with W,H≥2, a nonempty stuck
+configuration of n cars exists ⟺ W+H≤n≤WH. If a dimension is one, no nonempty
+stuck configuration exists. Consequently the same equivalence holds for all
+positive W,H: the numerical interval is empty in the singleton case.
 
-*Proof of ≥* (their argument, verbatim for rectangles). Suppose s is stuck and n ≥ 1.
+**Formal status.** This entire equivalence, including the construction at every
+allowed n and the singleton boundary, is kernel-checked in
+[`Train/Threshold.lean`](../formal/lean/Train/Threshold.lean).
+`BML.Train.noMoves_population_iff` states it directly using zero movement in
+the two successive half-steps. `jam_population_iff_positive` uses the equivalent
+nonempty `Jam` predicate. These statements use the actual executable TRAIN
+kernel and its occupied-coordinate population, not an assumed static
+certificate or a bounded enumeration. The [TRAIN register](../formal/TRAIN.md)
+gives the proof inventory and separately scoped cross-language evidence.
+
+*Proof of ≥* (Austin–Benjamini's square argument extended to rectangles).
+Suppose s is stuck and n≥1.
 
 1. A column with N cars but no E car would release its N cars: either a line ends at a hole, or the
    column is full and rotates. So every column with a car contains an E car.
@@ -284,20 +302,51 @@ rule: "the blue car – and any more blue cars in a line to the left of it – c
    then no cars at all by step 1, contradicting n ≥ 1.
 3. So every column has an E car, and symmetrically every row has an N car: n ≥ W + H.
 
-*Construction.* Take the closed staircase of winding (1,1): from path cell i, step east iff
-i·W mod (W+H) < W. This gives exactly W east steps, spread so that each row gets ⌈W/H⌉ < W of them.
-Mark a cell E if the path leaves it eastwards, N otherwise.
-- Every E line ends at an N car, and every N line at an E car.
-- No row is a full E ring and no column a full N ring.
+*Construction, every n in the interval.* Put k=n−(W+H). Start at (0,0) and
+follow the closed staircase with word E^(W−1) N^(H−1) E N. It winds once in each
+direction and has W+H distinct occupied cells. Each car faces its successor:
+E cars occupy y=0,x<W−1 and the top-right corner (W−1,H−1); N cars occupy the
+right column below that corner and (0,H−1).
 
-So it is stuck with W + H cars. Then add blocked cars one at a time
-(`extremal.train_stuck_with`). The construction is checked for every n and all 2 ≤ W, H ≤ 8; the
-⟺ is checked exhaustively for WH ≤ 12. ∎
+For every other interior coordinate x<W−1,1≤y≤H−1, define
 
-**Same question, two rules.** The least frozen car count is min(W, H) under this kernel (G1) and
+\[
+j=x(H-1)+(H-1-y).
+\]
+
+Place an N car exactly when j≤k. The j=0 car already belongs to the core;
+indices 1,…,k add exactly k cars. Their north targets are occupied, since the
+ordering fills each column downwards from its top, and the top car points
+around to the bottom-row E car. The fixed E cars still have occupied targets.
+Every row contains an N and every column an E, so no homogeneous ring can
+rotate. Thus the configuration is TRAIN-stuck with
+W+(H−1)+(k+1)=W+H+k=n cars. The capacity condition is precisely
+k<(W−1)(H−1), equivalent to n≤WH under n≥W+H.
+
+This is the coordinate formula used by Lean `stuckConfig` and Python
+`extremal.train_stuck_with`. Lean proves the exact count through an explicit
+duplicate-free listing and proves zero movement through the queue/ring kernel.
+For singleton dimensions, the necessary W+H lower bound exceeds capacity WH,
+which proves impossibility. ∎
+
+**Finite implementation checks.** The Python tests check all allowed
+constructor populations for 2≤W,H≤8 and the existence equivalence exhaustively
+through WH≤12. The separate TRAIN Quint checker compares all 3,720 boards on
+the 14 ordered rectangles with WH≤6, 74 larger targeted cases, and 96 constructor
+boards; its 24 named tests and mutation controls have their own bounded scope.
+The Lean/Python acceptance domain includes all 784 constructor boards for
+2≤W,H≤8. Consult source-bound run receipts for completed acceptance at a given
+revision. These finite comparisons support the implementations; the all-size
+mathematical theorem comes from Lean's proof.
+
+**Same question, two rules.** The least frozen car count is min(W, H) under CLASSIC (G1) and
 W + H under the train rule (T). On N×N these are N and Austin–Benjamini's 2N.
+The 21 Wang tile types in the tiling note encode occupied directed targets,
+which suffice for CLASSIC freezing. A TRAIN jam additionally excludes full E
+rows and full N columns. There is no claimed TRAIN Wang encoding or formal
+proof here of Austin–Benjamini's eventual-speed-one result below N/2.
 
-## 6. Extremal existence diagram (every finite torus)
+## 6. CLASSIC extremal existence diagram (every finite torus)
 
 | car count n | gridlock possible | gridlock forced | free flow possible |
 |---|---|---|---|
@@ -384,8 +433,9 @@ all possible global jams.
 
 ## 9. Next targets
 
-1. **Continue the Lean proof layer.** G0 and the concrete recurrent witnesses now have
-   kernel-checked coverage. Complete extraction of a simple blocker cycle and its torus
+1. **Continue the CLASSIC Lean proof layer.** G0 and the concrete recurrent witnesses have
+   kernel-checked coverage; the separate TRAIN threshold T is fully proved. Complete
+   extraction of a simple CLASSIC blocker cycle and its torus
    winding, the all-count constructions of G1/G2, the coset identity G = ker φ, and the
    rigidity/optimization implications of R/F. See the precise [coverage register](../formal/README.md).
 2. **Control formation of blocking loops under μ_p.** Section 8 gives the initial counting

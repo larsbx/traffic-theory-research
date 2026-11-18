@@ -6,17 +6,19 @@ Lean proofs apply to the domains in their theorem statements. Quint checks and
 the executable correspondence table apply to explicitly bounded finite grids.
 
 This is the detailed register for the **Traffic suite**. Start at the
-[shared formal coverage register](README.md) for both suites. The separate
+[shared formal coverage register](README.md) for all suites. The separate
 `BML` library preserves the finite-torus transport and strong non-monotonicity
 proofs, arithmetic components of G1/F, and its Python/Quint replay evidence.
 No general theorem identifying the `BML` and `Traffic` definitions is claimed.
 
-Both formal suites use **CLASSIC** old-state-vacancy movement. The Python
-**TRAIN** rule is separate and has no Lean/Quint coverage here. Under TRAIN,
-full single-species rings rotate without changing occupancy; consequently the
-CLASSIC fixed-point/blocking equivalence and its Wang interpretation do not
-transfer to TRAIN. All finite comparisons, frozen-state tests, and staircase
-results on this page are scoped to CLASSIC.
+The `BML` and `Traffic` suites use **CLASSIC** old-state-vacancy movement.
+The separate [TRAIN layer](TRAIN.md) now proves queue/ring semantics and the
+complete rectangular zero-movement jam threshold. Full single-species TRAIN
+rings rotate without changing occupancy. The 21 Wang types on this page
+encode occupied directed targets; they do not exclude those rotating rings
+and therefore do not by themselves characterize TRAIN jams. All finite
+comparisons, frozen-state tests, and staircase results on this page are scoped
+to CLASSIC; no TRAIN Wang encoding is claimed.
 
 ## Reproduce the acceptance gate
 
