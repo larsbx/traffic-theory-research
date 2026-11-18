@@ -36,6 +36,14 @@ connections to tiling and dynamical-systems theory.
   [TRAIN rectangular jam theorem](formal/TRAIN.md), actual Quint evaluation,
   bounded correspondence, and the remaining proof obligations.
 
+## Game
+
+- [Gridlock City](app/README.md): a retro arcade game on real OpenStreetMap streets,
+  driven by the BML rule generalised to lane graphs. It reduces exactly to `bml.model.step`
+  on the torus, which is tested against 80 Python orbits. Frozen "ghost" cars are β-cycle
+  certificates, the map form of Lemma G0, and jam cores need at least girth-many cars, as in
+  G1. It includes a BML lab with live theorem readouts.
+
 ## Code
 
 - `bml/model.py` — pure, vectorised dynamics (classical and Austin–Benjamini train rule).

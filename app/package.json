@@ -1,0 +1,14 @@
+{
+  "name": "gridlock-city",
+  "private": true,
+  "type": "module",
+  "description": "Retro pixel traffic game on real OpenStreetMap streets, driven by the repository's BML dynamics.",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "bake": "node scripts/bake.mjs",
+    "build": "node scripts/build.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.24.0"
+  }
+}
