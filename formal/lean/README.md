@@ -23,6 +23,7 @@ lake build
 lake env lean Audit.lean
 lake env lean G2Audit.lean
 lake env lean CosetAudit.lean
+lake env lean FreeFlowAudit.lean
 .lake/build/bin/bml_replay 3 3
 ```
 
@@ -45,6 +46,7 @@ It does not embed Python-produced expected transitions.
 | `BML/Kernel.lean` | Moving sources empty and destinations fill; other species remain in place; a half-step is fixed iff its cars are blocked; a full east-then-north step is fixed iff both local blocking conditions hold; equivalence with no movement in either phase; frozen-state persistence, including after a transient; full occupancy freezes; the empty state is fixed but is not a jam. |
 | `BML/Transport.lean` | Explicit bijection between each species' cars before and after its phase: survival, injectivity, and surjectivity. Nonemptiness is preserved by a full step and every iterate. Numerical CLASSIC conservation is derived in `BML/Counting.lean` and `BML/Lanes.lean`; the TRAIN library retains its own separate conservation proofs. |
 | `BML/Capture.lean` | Successor-closed occupied cores persist. A supplied occupied closed walk yields a core (distinct sites are not required by this Lean declaration). Full-round tagged transport is bijective. Explicit core obstacles on every row and column give a kernel-derived cyclic-distance rank, a bound `M = n_E*(W-1) + n_N*(H-1)` on every finite prefix of tagged moves, and a nonempty jam by full round M. |
+| `BML/Formation.lean` | Exact local initial predicate for an E site and adjacent N site after one round, conditional on the next N target being E after the east phase; simultaneous formation from initial predicates and a supplied successor geometry; construction of the formed occupied core. All are deterministic actual-kernel results. The transfer probability and torus winding/cover instantiation remain separate prose arguments. |
 | `BML/Torus.lean` | Positive finite cyclic coordinates with proved inverse shifts; the general kernel is instantiated on `Fin WIDTH × Fin HEIGHT`; executable base-three encoding, decoding, and counts. |
 | `BML/Counting.lean` | The position enumeration is complete and has no duplicates. Filtered species lists agree with the executable `speciesCount` sums; the occupied-list length is their sum. Transport induces a list permutation, proving numerical species conservation under every half-step, and total-count conservation under every full-step iterate. |
 | `BML/Enumeration.lean` | Explicit row-major and reverse row/column bijections, with quotient/remainder inverses. A configuration occupying exactly a prefix of n ranks has actual car count n. |
@@ -57,6 +59,11 @@ It does not embed Python-produced expected transitions.
 | `BML/Congruence.lean` | Bézout coefficients derived from gcd induction; the compatible signed congruence criterion; the representative-pair `coset_iff` statement with its necessary coordinate bound. |
 | `BML/Cosets.lean` | Signed translations form an action on actual finite cyclic coordinates. Natural-time iteration agrees with `diagonalStep=(cyclicNext,cyclicPrev)`. Arbitrary-point reachability is exactly equality of `phaseClass`; the origin orbit is its zero class, and an east translation selects the next class. |
 | `BML/CosetTimes.lean` | Signed times reduce modulo lcm(WIDTH,HEIGHT); the actual diagonal step returns exactly at multiples of that lcm. Both ordinary and east-translated coset relations have witnesses below lcm and positive witnesses at most lcm. |
+| `BML/Rigid.lean` | `AllMove` evaluates north movement after the east phase. A fully moving half-step and full round translate the active species exactly; any moving prefix gives both inverse-coordinate and forward-coordinate occupancy equivalences. These statements hold for arbitrary invertible directions. |
+| `BML/Encounters.lean` | Connects B2's diagonal orbits to east/north forward encounters. Equal phase classes meet at a positive time at most the lcm; the next phase class supplies an east-target/north-position encounter before the lcm. Also phase-class shift identities and lcm returns for each direction. |
+| `BML/FreeFlowConditions.lean` | Defines `StaticFree` by the two same-species adjacency exclusions and the forbidden equal/next phase classes for each east/north pair. |
+| `BML/FreeFlowNecessity.lean` | Full movement in the first lcm rounds implies every static condition, using rigid prefixes and bounded encounter witnesses. |
+| `BML/FreeFlow.lean` | Static conditions imply actual full movement and are invariant under the traffic step. Lemma R gives the static/perpetual equivalence, strict and inclusive finite-window criteria, and a blocked-round witness when a condition fails. Static-free configurations return after the lcm; eventual full movement is equivalent to eventual entry into the static-free set. |
 | `BML/Lanes.lean` | An east-only mixed row or north-only mixed column preserves a car and a hole under each actual full step; cyclic reachability supplies a mover at every iterate, supporting G2. The absent species phase is the identity. Numerical species, east-row, and north-column counts are conserved through both phases and iterates. Full E-rows and full N-columns persist and reflect backward, cannot coexist, and have no hidden movement. Specified north-free columns, cyclic strips, and row-count bounds are invariant through every iterate. |
 | `BML/NonGridlock.lean` | Total executable `nonGridlockWith` has exactly n cars and never jams for every n<WIDTH*HEIGHT. Its column-major east prefix has a mixed first or last row when WIDTH≥2; width-one boards use a north prefix. The zero population remains empty and is not Jam. This completes G2. |
 | `BML/GridlockThresholds.lean` | Actual car count equals area iff every cell is occupied. On every positive torus and for every feasible n≤WIDTH*HEIGHT, every n-car configuration eventually jams iff n=WIDTH*HEIGHT. |
@@ -139,8 +146,9 @@ multiples of the lcm, hence fixes the least positive period.
 This completes blueprint B2, with the witness windows used by B3. The
 auxiliary `diagonalStep` acts on positions; it is not `torusStep` acting on
 configurations. No free-motion hypothesis is assumed in B2, and its conclusion
-alone does not characterize a traffic orbit as free. The rigid-motion bridge,
-the two implications of R, and the packing/constructions in F remain open.
+alone does not characterize a traffic orbit as free. B3 supplies the rigid-motion
+bridge and both implications of R below. The packing and constructions in F
+remain open formal obligations.
 
 `coset_export --max-side 12` emits width, height, gcd, lcm, source x/y,
 diagonal-successor x/y, source class, east-translated x/y, and translated class.
@@ -152,6 +160,74 @@ ordered pairs. Twelve rejection controls cover incomplete/duplicate data,
 malformed rows, coordinate range, step signs, modulus, period, phase class,
 east translation, and its class. This finite gate supplements the universal
 proof; a source-bound receipt records whether a run passed.
+
+### B3: the actual free-flow characterization
+
+For `E = eastDirection w h hw`, `N = northDirection w h hh`, and
+`f = torusStep w h hw hh`, `AllMove E N s` requires every east car to move
+in s and every north car to move in `halfStep E .east s`. The north condition
+therefore reads the actual intermediate state. `StaticFree w h hw hh s`
+forbids adjacent east cars along an east edge, adjacent north cars along a
+north edge, and an east/north pair whose phase classes are equal or differ by
+one in the east-to-north order.
+
+`lemmaR` proves
+
+```text
+StaticFree s ↔ ∀ t, AllMove E N (f^t s).
+```
+
+`staticFree_allMove` proves eligibility in both actual phases, and
+`staticFree_step` preserves the static conditions. Induction then gives
+`staticFree_iterate` and perpetual movement. Conversely,
+`staticFree_of_allMove_before_lcm` combines the rigid-prefix occupancy
+equivalences with B2's encounters: a forbidden next-class pair blocks an east
+target at some t<lcm, while an equal-class pair would put both species in one
+cell at a positive time at most lcm. Thus the first lcm fully moving rounds
+already force the static conditions.
+
+`lemmaR_finite_lt` states that perpetual movement is equivalent to full
+movement for every `0 ≤ t < lcm(w,h)`; `lemmaR_finite` gives the inclusive
+`t ≤ lcm(w,h)` version. `lemmaR_window` relates the strict window directly to
+`StaticFree`, and `not_staticFree_iff_blocked_before_lcm` gives a finite
+witness of failure. `freeFlow_returns_lcm` and `freeFlow_periodic` prove
+return after the lcm and repetition with that period at every later time.
+Unlike the diagonal position action's exact period in B2, a configuration
+may have a smaller least period; the empty state is one example.
+
+These theorems cover every positive rectangle, including singleton axes and
+the empty board. They characterize movement from time zero.
+`eventually_allMove_iff_reaches_staticFree` separately identifies eventual
+permanent full movement with eventual entry into the static-free set. It
+does not prove that every orbit enters that set or supply a uniform entry-time
+bound. The packing upper bound and maximizing constructions of F are still
+separate formal obligations.
+
+`freeflow_export --max-cells 9` enumerates every initial configuration on
+every ordered positive rectangle with WH≤9. Each row contains actual Lean
+decisions of `StaticFree` and `AllMove`, plus both phase traces over
+L=lcm(W,H) rounds. Its headerless TSV fields are:
+
+```text
+width,height,input_code,lcm,static_free,all_move_window,first_blocked,state_codes,east_codes,east_moves,north_moves,all_move_flags
+```
+
+The five final fields are comma-separated natural-number lists.
+`state_codes` contains L+1 full states from t=0 through t=L. The remaining
+four contain L entries for the intermediate east-phase states, each phase's
+move counts, and full-round `AllMove` flags. `first_blocked` is the earliest
+blocked round, or the sentinel L if all t<L rounds move fully. State codes
+use the same row-major base-three encoding as `bml_replay`.
+
+`scripts/check_freeflow.py --max-cells 9 --report .artifacts/freeflow.json
+--rows .artifacts/freeflow.tsv` checks all 93,387 initial states on 23
+rectangles and 622,362 full transitions. It compares actual intermediate
+and final states and movement counts with NumPy, and compares perpetual
+movement with a separate scalar orbit-following oracle. That oracle observes
+blockage from time zero, including before any eventually free cycle. The
+checker also verifies rigid moving prefixes, lcm closure for static-free
+states, exact coverage, and corrupted-output rejection controls. These are declared finite
+acceptance checks; a source-bound receipt records successful runs.
 
 The strong witness's `originalTrace` is an identity-following recurrence using
 `transport`, rather than a statement that some unlabeled car moves. The tracked
@@ -191,10 +267,10 @@ must separately require that the length not exceed the width.
 
 `Audit.lean` traverses the imported CLASSIC `BML` declarations, the G1 exporter,
 and its global entry point, checking their transitive axiom dependencies.
-`G2Audit.lean` and `CosetAudit.lean` separately check their exporters and global
-entry points; the G2 and B2 mathematical theorems are required by the main BML
-audit. Each audit
-requires the named mathematical results to be theorem declarations and rejects
+`G2Audit.lean`, `CosetAudit.lean`, and `FreeFlowAudit.lean` separately check
+their exporters and global entry points; the G2, B2, and B3 mathematical
+theorems are required by the main BML audit. Each audit requires the named
+mathematical results to be theorem declarations and rejects
 any axiom outside Lean's usual `propext`, `Quot.sound`, and `Classical.choice`.
 Thus incomplete proofs and native decision-result axioms fail the audit.
 Concrete witness proofs use kernel-reduced `decide`, and the infinite-time
@@ -255,8 +331,6 @@ with the actual Quint interpreter and Python TRAIN implementation.
 This package does **not** prove the full list G0–F. The missing general
 mathematics remains:
 
-- Use the proved coset identity and bounded witness times to establish rigid
-  traffic evolution and both directions of Lemma R.
 - Connect Lemma R to the cyclic class packing upper bound and all densest
   constructions in F.
 - Formalize eventual periodicity/classifier correctness and unrestricted

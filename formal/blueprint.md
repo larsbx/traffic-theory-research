@@ -1,6 +1,6 @@
 # Blueprint: proof status and open formal obligations
 
-This hand-off document records the completed B0/B1/B2/B5/B6 proofs and the remaining
+This hand-off document records the completed B0/B1/B2/B3/B5/B6 proofs and the remaining
 obligations of [the coverage register](README.md), with proofs decomposed into
 lemmas small enough to formalise one at a time.
 
@@ -8,15 +8,17 @@ lemmas small enough to formalise one at a time.
   bottom-up. Lean signatures target the `BML` kernel in this package (`Kernel`,
   `Torus`, `Transport`, `Counting`, `Enumeration`). `carCount` is the actual
   occupied-position count, proved equal to the executable species-count sum.
-- Signatures in the open B3–B4 sections are **specifications, not compiled code**.
-  Adjust those names freely, but keep the statements. B0/B1/B2 and B5/B6 identify
+- Signatures in the open B4 and B7 sections are **specifications, not compiled code**.
+  Adjust those names freely, but keep the statements. B0/B1/B2/B3 and B5/B6 identify
   compiled declarations.
 - G1's exact-count construction is complete in `AllCounts.lean` and
   `Gridlock.lean`. B0 is complete in `Ring.lean`; B1 uses `Lanes.lean`,
   `NonGridlock.lean`, and the prefix-rank counting theorem in `Enumeration.lean`.
   `GridlockThresholds.lean` proves the forced-gridlock boundary among feasible
   populations. B2 is complete in `Congruence.lean`, `Cosets.lean`, and
-  `CosetTimes.lean`. B5 and B6 are complete in the separate TRAIN library linked below.
+  `CosetTimes.lean`. B3 is complete in `Rigid.lean`, `Encounters.lean`,
+  `FreeFlowConditions.lean`, `FreeFlowNecessity.lean`, and `FreeFlow.lean`.
+  B5 and B6 are complete in the separate TRAIN library linked below.
 
 Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 `f = torusStep w h hw hh = step E N`, and `f^t = iterate f t`.
@@ -26,10 +28,11 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B0 | Ring arithmetic helpers | kernel-checked in `Ring.lean`, including bounded reachability | `Torus` |
 | B1 | G2: no forced gridlock below full occupancy | kernel-checked exact-count construction and all-time non-jamming; forced boundary proved for n≤WH | B0, `Kernel`, `Enumeration`, `Lanes` |
 | B2 | Coset identity ⟨(1,−1)⟩ = ker φ | kernel-checked signed action, arbitrary-point fibers, east-translated coset, bounded/positive witnesses, and exact lcm period | B0, `Congruence`, actual cyclic coordinates |
-| B3 | Lemma R: static ⟺ perpetual free flow | complete proof below | B0, B2, Kernel |
-| B4 | Theorem F: densest free flow | complete proof below; DP-checked to g = 6 | B3 |
+| B3 | Lemma R: static ⟺ perpetual free flow | kernel-checked for the actual phases, with strict/inclusive lcm windows, bounded failure witnesses, and lcm return | B0, B2, Kernel |
+| B4 | Theorem F: densest free flow | complete prose proof below; DP-checked to g = 6 | B3 |
 | B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
 | B6 | TRAIN eventual speed one on sparse N×N squares | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `Train/Diagonals`, `Train/FreeFlow`, actual diagonal transport/release |
+| B7 | CLASSIC eventual speed one for 2m<gcd(W,H) | prose proof and finite checks; at most m(g−2) blocked rounds; not compiled in Lean | B0, Transport, car count |
 
 ---
 
@@ -245,8 +248,8 @@ theorem diagonalShift_exists_iff (w h : Nat) (hw : 0 < w) (hh : 0 < h)
 the stronger `iterate_diagonalStep_eq_self_iff`: a natural time returns to its
 start exactly when L divides it. Thus the least positive return time is L.
 These are statements about positions, with no configuration or free-flow
-assumption. They supply B3's class-zero and class-one encounter geometry and
-its required time windows; B3's traffic-dynamics implications remain open.
+assumption. They supply the class-zero and class-one encounter geometry and
+time windows used by the compiled traffic-dynamics proof in B3.
 
 **Finite implementation gate.** `CosetExport.lean` emits the actual diagonal
 successor, phase class, and east translate at every coordinate. The checker
@@ -255,73 +258,133 @@ independent modular oracle, and checks both ordered-pair relations. Its default
 domain W,H≤12 contains 144 rectangles, 6,084 positions, 283,526 orbit visits,
 and 422,500 ordered pairs per relation, with 12 required rejection controls.
 These totals describe finite coordinate checks; successful acceptance is
-recorded in a source-bound receipt and does not establish B3 or B4.
+recorded in a source-bound receipt. B3 has its own traffic proof and finite
+acceptance gate; the packing proof in B4 remains a separate obligation.
 
 ---
 
 ## B3. Lemma R: free-flow rigidity
 
-Let φ(p) = (p.1 + p.2) mod g.
+**Status: completed for the actual CLASSIC kernel.**
+
+Let g = gcd(w,h), L = lcm(w,h), and φ(p) = `phaseClass w h p`.
+[`FreeFlowConditions.lean`](lean/BML/FreeFlowConditions.lean) states the
+phase exclusions directly on canonical residues, including g=1:
 
 ```lean
-def StaticFree (s : Config (Position w h)) : Prop :=
-  (∀ p, s p = .east → s (E.next p) ≠ .east) ∧
-  (∀ p, s p = .north → s (N.next p) ≠ .north) ∧
+def StaticFree (w h : Nat) (hw : 0 < w) (hh : 0 < h)
+    (s : Config (Position w h)) : Prop :=
+  (∀ p, s p = .east → s ((eastDirection w h hw).next p) ≠ .east) ∧
+  (∀ p, s p = .north → s ((northDirection w h hh).next p) ≠ .north) ∧
   (∀ e q, s e = .east → s q = .north →
-     (φ q + g - φ e) % g ≠ 0 ∧ (φ q + g - φ e) % g ≠ 1 % g)
-
-/-- Every car moves in its own phase. -/
-def AllMove (s : Config (Position w h)) : Prop :=
-  (∀ p, s p = .east → CanMove E .east s p) ∧
-  (∀ p, halfStep E .east s p = .north → CanMove N .north (halfStep E .east s) p)
-
-theorem lemmaR (s : Config (Position w h)) :
-    StaticFree s ↔ ∀ t, AllMove (iterate f t s)
-
-theorem lemmaR_finite (s : Config (Position w h)) :
-    (∀ t, AllMove (iterate f t s)) ↔ (∀ t ≤ Nat.lcm w h, AllMove (iterate f t s))
+    phaseClass w h q ≠ phaseClass w h e ∧
+    phaseClass w h q ≠ (phaseClass w h e + 1) % Nat.gcd w h)
 ```
 
-**Lemma B3.1 (rigid half-step).** If every sp-car can move (`∀ p, s p = sp.cell → CanMove d sp s p`),
-then `halfStep d sp s p = sp.cell ↔ s (d.prev p) = sp.cell`, and the other species is unchanged.
-- (→) Unfold `halfStep` at p. If `s p = sp.cell`, the car at p moves, so the result is `.empty`;
-  this branch never yields `sp.cell`. Otherwise the result is `sp.cell` exactly in the
-  incoming branch, which has `s (d.prev p) = sp.cell`.
-- (←) The car at `d.prev p` moves into `d.next (d.prev p) = p`: use
-  `moving_destination_filled` and `d.next_prev`.
-- Other species: `other_species_unchanged`.
+[`Rigid.lean`](lean/BML/Rigid.lean) uses the actual intermediate board for
+north eligibility. This definition and its rigid-motion lemmas are generic
+over invertible directions:
 
-**Lemma B3.2 (rigid orbit).** If `∀ u < t, AllMove (f^u s)`, then
-- `f^t s p = .east ↔ s (iterate E.prev t p) = .east`, and
-- `f^t s p = .north ↔ s (iterate N.prev t p) = .north`.
+```lean
+def AllMove (east north : Direction α) (s : Config α) : Prop :=
+  (∀ p, s p = .east → CanMove east .east s p) ∧
+  (∀ p, halfStep east .east s p = .north →
+    CanMove north .north (halfStep east .east s) p)
+```
 
-Proof: induction on t, using B3.1 for each phase. The north phase sees east cars already
-shifted, which B3.1 for the east phase supplies.
+Using the E, N, and f conventions above, the compiled public theorems in
+[`FreeFlow.lean`](lean/BML/FreeFlow.lean) have these statements:
 
-**(⇒) StaticFree → AllMove at every t.** Use strong induction on t. By the induction hypothesis
-and B3.2, the time-t configuration is the shift of s. Translate each blocking possibility back
-to time 0:
-1. An east car's target holds an east car: the cars are at e + (t, 0) and e + (t+1, 0), so s
-   has east cars at e and e + (1, 0). This contradicts the first conjunct.
-2. An east car's target holds a north car q + (0, t) = e + (t+1, 0): then (q − e) = (t+1, −t) lies in
-   (1, 0) + ⟨(1, −1)⟩, so φ q − φ e ≡ 1 (B2.2). Contradiction.
-3. A north car's target holds a north car: as in 1, with the second conjunct.
-4. A north car's target holds an east car that has just moved, q + (0, t+1) = e + (t+1, 0):
-   then (q − e) ∈ ⟨(1, −1)⟩, so φ q − φ e ≡ 0 (B2, ←). Contradiction.
+```lean
+theorem lemmaR (w h : Nat) (hw : 0 < w) (hh : 0 < h)
+    (s : Config (Position w h)) :
+    StaticFree w h hw hh s ↔ ∀ t, AllMove E N (iterate f t s)
 
-Each case needs only the easy direction (←) of B2 and B2.2.
+theorem lemmaR_finite_lt (w h : Nat) (hw : 0 < w) (hh : 0 < h)
+    (s : Config (Position w h)) :
+    (∀ t, AllMove E N (iterate f t s)) ↔
+      (∀ t, t < Nat.lcm w h → AllMove E N (iterate f t s))
 
-**(⇐) AllMove at every t → StaticFree.**
-- Conjuncts 1 and 2 fail at t = 0. For 2, the east phase leaves north cars in place, by
-  `other_species_unchanged`.
-- Conjunct 3: suppose φ q − φ e ≡ 1. By B2.2 (→) and B2.3, take t ∈ [0, lcm) with
-  q + (0, t) = e + (t+1, 0). At time t, by B3.2, the east car e + (t, 0) has its target occupied
-  by the north car q + (0, t), so `AllMove` fails at t.
-- If φ q − φ e ≡ 0, take t ∈ [1, lcm] with q + (0, t) = e + (t, 0). At time t − 1, the north car
-  q + (0, t−1) targets q + (0, t) = e + (t, 0). The east car has just entered that cell in the
-  east phase (B3.1), so `AllMove` fails at t − 1.
+theorem lemmaR_finite (w h : Nat) (hw : 0 < w) (hh : 0 < h)
+    (s : Config (Position w h)) :
+    (∀ t, AllMove E N (iterate f t s)) ↔
+      (∀ t, t ≤ Nat.lcm w h → AllMove E N (iterate f t s))
+```
 
-**`lemmaR_finite`.** The (⇐) proof only uses times t ≤ lcm(w, h).
+**B3.1: rigid half-step and orbit.** `halfStep_rigid` proves that if every
+sp-car can move, then
+`halfStep d sp s p = sp.cell ↔ s (d.prev p) = sp.cell`.
+The forward implication splits the outgoing and incoming cases of the
+actual half-step; the reverse implication uses `moving_destination_filled`.
+`other_species_unchanged` handles the inactive species. This gives
+`allMove_step_east_iff` and `allMove_step_north_iff` for the full round.
+
+Induction proves `allMove_iterate_east_iff` and
+`allMove_iterate_north_iff`: if all rounds u<t moved fully, occupancy at p
+at time t is precisely initial occupancy at `iterate E.prev t p` or
+`iterate N.prev t p`. The corresponding `allMove_iterate_east_at` and
+`allMove_iterate_north_at` state the same equivalences at forward-translated
+positions. No assumption of future movement is used.
+
+**B3.2: sufficiency and invariance.** `staticFree_allMove` first establishes
+east eligibility. A same-species east blocker violates adjacency; a north
+blocker lies in the forbidden next phase class. After the east phase,
+north cars remain at their initial cells. A north blocker violates adjacency;
+an east blocker at a north target has a rigid predecessor in the forbidden
+equal phase class. Thus north eligibility is checked on the actual
+intermediate configuration.
+
+`staticFree_step` then preserves all three static conditions. The one-round
+rigid equivalences pull same-species adjacency back to s. Both species'
+phase classes increase by one modulo g, whose cyclic successor is injective,
+so the two phase exclusions persist. Ordinary induction gives
+`staticFree_iterate` and `staticFree_perpetual_allMove`.
+
+**B3.3: necessity from the first L rounds.**
+[`FreeFlowNecessity.lean`](lean/BML/FreeFlowNecessity.lean) proves
+`staticFree_of_allMove_before_lcm` from `∀ t<L, AllMove E N (f^t s)`.
+
+- A same-species adjacency contradicts movement at t=0. For north cars,
+  `other_species_unchanged` carries the adjacency through the east phase.
+- A forbidden next-class east/north pair has an encounter at some t<L,
+  by `next_phase_encounter_lt_iff` in
+  [`Encounters.lean`](lean/BML/Encounters.lean). The rigid prefix places the
+  north car in the east car's target at time t, contradicting east movement.
+- An equal-class pair has a meeting time 1≤t≤L, by
+  `same_phase_encounter_pos_iff`. Every round u<t is in the assumed window,
+  so rigid prefix motion would put an east and a north car in the same cell
+  at full time t. A configuration assigns one cell value, giving a
+  contradiction. No movement at time L is needed.
+
+This proves the reverse direction of R and the sharper half-open window
+`lemmaR_finite_lt`. The inclusive `lemmaR_finite` follows immediately.
+`lemmaR_window` relates the static predicate directly to the strict window;
+`not_staticFree_iff_blocked_before_lcm` gives an equivalent blocked-round
+witness at some t<L whenever a static condition fails.
+
+**B3.4: return and eventual entry.** `iterate_east_lcm` and
+`iterate_north_lcm` return each coordinate to its start. The rigid orbit
+therefore gives `freeFlow_returns_lcm`, namely `f^L s = s` for static-free s,
+and `freeFlow_periodic` gives `f^(t+L) s = f^t s` at every time. This is a
+period of the configuration, not necessarily its least positive period.
+
+`eventually_allMove_iff_reaches_staticFree` proves that eventual permanent
+full movement is equivalent to reaching a static-free configuration. It
+does not assert that every orbit reaches one or bound the entry time.
+All B3 statements cover empty boards and every positive rectangle, including
+singleton dimensions. They use the CLASSIC phases; no TRAIN speed-one
+transfer or packing theorem follows without its separate argument.
+
+**Finite implementation gate.** `FreeFlowExport.lean` evaluates the actual
+`StaticFree` and `AllMove` propositions and exports both phase traces over
+the first L rounds. `scripts/check_freeflow.py` declares the exhaustive
+WH≤9 domain: 93,387 initial states on 23 ordered positive rectangles and
+622,362 full transitions. It compares the phase states and movement counts
+with NumPy, and compares perpetual movement from time zero with independent
+scalar orbit following. Rigid prefixes, lcm closure of static-free states,
+complete coverage, and corrupted-output rejection controls are checked
+separately. These finite checks supplement the general proof; source-bound
+receipts identify the successful runs.
 
 ---
 
@@ -498,12 +561,81 @@ individual eventual times give simultaneous eventual stability. No eventual
 periodicity or bounded test result is assumed.
 
 This proves the result for squares only and supplies no effective stabilization-time bound.
-The CLASSIC transfer remains open. Separate finite acceptance covers all
+The CLASSIC transfer has the separate prose proof in B7 below; its Lean
+formalization remains open. Separate finite acceptance covers all
 1,305 sparse square states through N=5 and checks full actual movement on
 every terminal-cycle edge. Eight targeted orbit certificates add 53 transition
 rows; ten new Quint tests and six controls check the clock, counts, recurrence,
 enumeration, and square scope. See [TRAIN.md](TRAIN.md) for exact domains,
 commands, and source-bound acceptance status.
+
+---
+
+## B7. CLASSIC low-density speed one
+
+**Status: prose proof and finite checks; not formalized in Lean.**
+
+Austin–Benjamini prove this for their queue ("train") rule on N×N. Their argument transfers to
+the CLASSIC kernel, and to every W×H with g = gcd(w, h) in place of N. The transfer, and the
+explicit bound below, are our derivation.
+
+```lean
+/-- Time-corrected class occupancy: some car at time t lies in class (z + t) mod g. -/
+def Occ (s) (t z : Nat) : Prop := ∃ p, f^t s p ≠ .empty ∧ φ p = (z + t) % g
+
+theorem low_density_speed_one (s) (hm : 2 * carCount w h s < Nat.gcd w h) :
+    ∃ T, ∀ t ≥ T, AllMove (f^t s)
+
+/-- Explicit form: at most m·(g − 2) steps contain a blocked car. -/
+theorem low_density_block_bound (s) (hm : 2 * carCount w h s < Nat.gcd w h) (T : Nat) :
+    ((List.range T).filter fun t => ¬ AllMove (f^t s)).length ≤ carCount w h s * (g - 2)
+```
+
+If g ≤ 2, the hypothesis forces m = 0 and the statement is trivial. Assume g ≥ 3. Write
+"Y-value z at time t" for the class (z + t) mod g. A car that moves keeps its Y-value; a blocked
+car's Y-value drops by 1.
+
+**B7.0 (one step advances the class by 1).** φ (E.next p) = φ p + 1 and φ (N.next p) = φ p + 1
+(mod g). The wrap-around x = w−1 → 0 is harmless because g ∣ w (B0); likewise g ∣ h.
+
+**B7.1 (release).** `Occ s t z ∧ ¬ Occ s t (z+1) → Occ s (t+1) z`.
+- If class D = z + t holds an east car, its target lies in class D + 1, which is empty. So it
+  moves, and lands in class D + 1, which is Y-value z at time t + 1.
+- If D holds no east car, after the east phase class D + 1 is still empty: east cars enter it only
+  from D, and there are none. So the north cars of D move (`CanMove` on the intermediate state).
+
+**B7.2 (survival).** `Occ s t (z+1) → Occ s (t+1) z ∨ Occ s (t+1) (z+1)`. Each car survives a
+step, moving at most one cell east or north (`transport_preserves_car` for each phase, with B7.0).
+
+**B7.3 (empty pairs persist backwards).**
+`¬ Occ s (t+1) z ∧ ¬ Occ s (t+1) (z+1) → ¬ Occ s t z ∧ ¬ Occ s t (z+1)`.
+- If `Occ s t (z+1)`, then B7.2 contradicts the hypothesis.
+- If `Occ s t z` and not `Occ s t (z+1)`, then B7.1 contradicts it.
+
+By induction on T − t: an empty pair at time T has been empty at every t ≤ T.
+
+**B7.4 (an empty pair always exists).** If 2·carCount < g, then for every t there is z with
+`¬ Occ s t z ∧ ¬ Occ s t (z+1)`.
+- At most carCount Y-values are occupied (the car count is conserved, by PR #7's conservation).
+- Double counting: Σ_z ([Occ z] + [Occ (z+1)]) = 2·#occupied ≤ 2m < g. So some z has both
+  indicators 0. This is the same trick as B4.2.
+
+**B7.5 (each car is blocked at most g − 2 times).** Fix T, and let z be the empty pair at time T
+from B7.4. By B7.3, Y-values z and z+1 are empty at every t ≤ T.
+- Follow one car with `transport`. Its Y-value never equals z or z+1 before T.
+- It changes only by −1 steps.
+- Starting at Y₀ ∉ {z, z+1}, it would reach z after (Y₀ − z) mod g ≤ g − 1 blocks. So it is
+  blocked at most (Y₀ − z) mod g − 1 ≤ g − 2 times in [0, T).
+
+**Assembly.**
+- A step contains a blocked car iff `¬ AllMove`.
+- Summing B7.5 over the m cars bounds those steps in [0, T) by m·(g − 2), for every T. This gives
+  `low_density_block_bound`.
+- Hence only finitely many steps contain a blocked car, which gives `low_density_speed_one`.
+
+**Evidence.** `tests/test_blueprint.py`:
+- B7.1 and B7.2 checked on every state of 2×2, 3×3, 2×4, 4×2, 2×6;
+- the per-car block bound checked on random runs over N×N and N×2N with 2m < g.
 
 ---
 

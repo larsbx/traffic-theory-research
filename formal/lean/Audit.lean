@@ -40,6 +40,17 @@ elab "audit_bml" : command => do
     ``BML.iterate_diagonalStep_lcm, ``BML.diagonalStep_reaches_lt_iff,
     ``BML.diagonalStep_reaches_iff, ``BML.diagonalStep_reaches_pos_iff,
     ``BML.east_diagonalStep_reaches_lt_iff, ``BML.east_diagonalStep_reaches_pos_iff,
+    ``BML.halfStep_rigid, ``BML.allMove_step_east_iff, ``BML.allMove_step_north_iff,
+    ``BML.allMove_iterate_east_iff, ``BML.allMove_iterate_north_iff,
+    ``BML.allMove_iterate_east_at, ``BML.allMove_iterate_north_at,
+    ``BML.diagonal_encounter_iff, ``BML.east_diagonal_encounter_iff,
+    ``BML.same_phase_encounter_pos_iff, ``BML.next_phase_encounter_lt_iff,
+    ``BML.staticFree_allMove, ``BML.staticFree_step, ``BML.staticFree_iterate,
+    ``BML.staticFree_of_allMove_before_lcm, ``BML.lemmaR,
+    ``BML.lemmaR_finite_lt, ``BML.lemmaR_finite, ``BML.lemmaR_window,
+    ``BML.not_staticFree_iff_blocked_before_lcm,
+    ``BML.freeFlow_returns_lcm, ``BML.freeFlow_periodic,
+    ``BML.eventually_allMove_iff_reaches_staticFree,
     ``BML.torus_fixed_iff_blocked, ``BML.winding_length_lower_bound,
     ``BML.freeClasses_attains_two_thirds_iff,
     ``BML.Witness.after_never_jams, ``BML.Witness.original_traced_car_moves_forever,
@@ -54,7 +65,8 @@ elab "audit_bml" : command => do
     ``BML.hasFullMonochromaticLane_iterate_iff,
     ``BML.fullEastRow_excludes_fullNorthColumn,
     ``BML.northFreeColumn_iterate_iff, ``BML.northFreeStrip_iterate_iff,
-    ``BML.eastRowsBelow_iterate_iff]
+    ``BML.eastRowsBelow_iterate_iff,
+    ``BML.staircase_pair_preimage_iff, ``BML.staircase_formed]
   for name in required do
     match env.find? name with
     | none => throwError "BML audit missing required theorem {name}"

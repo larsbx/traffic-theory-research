@@ -129,7 +129,10 @@ The empty configuration is included and has zero moves out of zero cars.
 This is eventual **full movement**, stronger than the absence of a jam. It
 does not supply an effective upper bound on T, a positive random-density
 transition, or a statement for every rectangular torus. The actual-kernel
-bridge is specific to TRAIN; the proposed CLASSIC transfer remains unproved.
+bridge is specific to TRAIN. The CLASSIC rectangular counterpart under
+`2 * carCount < gcd(W,H)` has a prose proof and finite checks in
+[blueprint B7](blueprint.md#b7-classic-low-density-speed-one); its Lean
+formalization remains open.
 
 ### Adjacent empty pairs and a permanent cut
 
@@ -361,6 +364,12 @@ The CLASSIC `Audit.lean` and `TrafficAudit.lean` remain independent audits.
 
 ## Sources and remaining boundaries
 
+The [open questions and proof roadmap](../docs/research/2026-11-18-open-questions-and-proof-roadmap.md)
+records the periodic N-car family with velocity N/(N+1), a proposed equality
+extension, the rectangular gcd adapter, and the distinction between blocking
+counts and elapsed settling time. These additions are prose arguments and
+finite evidence, not new merged TRAIN theorems.
+
 Austin and Benjamini's written movement rule and Proposition 6 give the square
 threshold 2N. The W+H statement here extends their lower-bound argument to
 rectangles and supplies a fully checked construction at every allowed count.
@@ -380,11 +389,16 @@ every n-car configuration eventually jams exactly when n=WH, assuming n≤WH.
 That forced boundary does not transfer to TRAIN: a fully east-filled TRAIN
 board has rotating rings. CLASSIC G2 establishes never reaching a nonempty
 jam for its sub-full constructions, without asserting eventual speed one.
-The remaining CLASSIC R/F obligations are listed in
-[the shared register](README.md). The CLASSIC B2 coset identity is proved for
+The remaining CLASSIC obligations include packing for F and formalizing
+the low-density argument in [blueprint B7](blueprint.md#b7-classic-low-density-speed-one);
+see [the shared register](README.md). The CLASSIC B2 coset identity is proved for
 the auxiliary `(1,-1)` action on actual cyclic coordinates, including signed
-and bounded forward witnesses. It does not by itself prove the CLASSIC
-rigid-orbit/free-flow characterization or transfer the TRAIN speed-one theorem.
+and bounded forward witnesses. CLASSIC Lemma R now connects those witnesses
+to rigid occupancy under the actual phases and proves the static/perpetual
+free-flow equivalence, finite lcm-window criteria, and return after the lcm.
+It characterizes full movement from time zero; its eventual-entry corollary
+does not guarantee that every state becomes free. These CLASSIC results do
+not transfer the TRAIN sparse-square speed-one theorem.
 Real projection,
 Fibonacci frequency limits, and diffraction likewise remain outside the
 TRAIN proof layer.

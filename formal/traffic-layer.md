@@ -14,7 +14,9 @@ It also proves that eventual CLASSIC gridlock is forced exactly at full
 occupancy among feasible populations n≤WH. The B2 coset identity identifies
 its actual cyclic `(1,-1)` coordinate orbits with phase-class fibers, with
 signed and bounded forward witnesses. That auxiliary action is not the
-traffic update. Strong non-monotonicity, F
+traffic update. Lemma R separately connects the geometry to the actual
+CLASSIC phases, proving the static/perpetual free-flow equivalence, finite
+lcm-window criteria, and return after the lcm. Strong non-monotonicity, F
 arithmetic components, and separate Python/Quint replay evidence complete
 the BML register.
 No general theorem identifying the `BML` and `Traffic` definitions is claimed.
@@ -158,19 +160,23 @@ The following remain outside this layer:
   trigonometric identities, and diffraction or spatial spectral theorems.
 - A species-conservation theorem in the `Traffic` library and an unbounded
   Lean–Quint refinement. The separate `BML` library proves transport bijections,
-  numerical `speciesCount` conservation, and nonemptiness preservation; no
+  numerical species and lane-count conservation, and nonemptiness preservation; no
   general equivalence between the two libraries is assumed.
 - A dependency-cycle bridge for the `Traffic` modular-closure predicate. The
   separate `BML` library proves finite closed-carrier cycle extraction and
   derives winding from its actual blocker walk.
-- Complete Lean proofs of Lemma R and Theorem F in
+- Complete Lean packing and maximizing constructions for Theorem F in
   [the extremal research note](../docs/theorems.md). `Traffic` supplies G0 and
   winding under modular closure; `BML` proves complete G1/G2 with exact-count
   constructions. Its persistent mixed-lane argument excludes a nonempty jam
   at every iterate of each G2 construction; it does not assert free flow.
   Its B2 coset identity supplies geometric encounter classes and bounded time
-  witnesses on actual cyclic coordinates. Connecting those to rigid traffic
-  orbits and proving the general R/F results remain open.
+  witnesses on actual cyclic coordinates. Its completed Lemma R connects
+  those to the actual CLASSIC phases and characterizes perpetual free flow
+  from time zero, with a finite moving-window criterion and lcm return.
+  The eventual-entry corollary does not assert convergence of every orbit.
+  These results belong to `BML`; no general equivalence with `Traffic` is
+  assumed, and F's packing argument remains open.
 - Reproduction of the published large-grid intermediate-state experiments.
 
 Published claims in the research note retain their literature attribution.

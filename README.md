@@ -5,6 +5,11 @@ connections to tiling and dynamical-systems theory.
 
 ## Research notes
 
+- [Open questions and proof roadmap](docs/research/2026-11-18-open-questions-and-proof-roadmap.md)
+  (2026-11-18): the post-TRAIN review, including an explicit periodic N-car
+  family, the equality/gcd/time-bound extensions, CLASSIC rigidity and packing,
+  probability and Fibonacci/spectral gaps, and current merged versus open-PR
+  proof status. Prose arguments and finite checks are labeled separately from Lean.
 - [BML gridlock, tilings, quasicrystals, and trigonometry](docs/research/2026-11-18-bml-tilings-quasicrystals-trigonometry.md)
   (2026-11-18): the rigorous high-density theorem, an exact encoding of frozen
   configurations by 21 Wang tiles, a Fibonacci blocking staircase and its
@@ -38,6 +43,12 @@ connections to tiling and dynamical-systems theory.
   the underlying CLASSIC count invariants; exact finite Python probabilities
   and obstruction checks remain distinct from these asymptotic proofs. A
   fixed positive critical density is still unproved.
+- [Fixed-density mixed-cycle formation](docs/research/2026-11-18-fixed-density-formation.md)
+  (2026-11-18): initial-law exponential bounds on early capture formation and
+  an exact one-round winding-cycle probability. A transfer calculation and a
+  complete 4x4 one-step census quantify the failure of evolved independence.
+  Lean checks the deterministic preimage and formed core; positivity of a
+  critical density remains open.
 - [Formal coverage and validation](formal/README.md): the CLASSIC finite-torus
   `BML` proofs, identity-preserving transport and non-monotonicity witness, together
   with the complementary `Traffic` tiling/staircase proofs, the complete
@@ -91,8 +102,11 @@ fixed-point result does not transfer.
   and a hole at every iterate. Among feasible populations, all configurations
   eventually jam iff `n = W*H`. The coset theorem identifies the actual cyclic
   `(1,-1)` coordinate orbits with `x+y mod gcd(W,H)`, including signed and bounded
-  forward witnesses. This is the geometry needed for Lemma R; its connection
-  to perpetual free flow remains a separate proof. The suite also proves
+  forward witnesses. Lemma R connects this geometry to the actual traffic
+  phases: the static adjacency and phase-class conditions hold exactly when
+  every car moves in every round starting at time zero. Checking the first
+  `lcm(W,H)` rounds suffices, and each such configuration returns after that
+  many rounds, possibly with a smaller least period. The suite also proves
   permanent cores and route-cover capture bounds, arithmetic components of F,
   and the strong 4×2 non-monotonicity witness. Finite replays compare Lean with
   NumPy on 93,387
@@ -137,8 +151,12 @@ their constructions at every admissible exact count. CLASSIC G2 establishes
 perpetual avoidance of total gridlock, which does not require eventual free
 flow. The TRAIN square speed-one result below N/2 cars also has a complete
 Lean proof. The coset identity B2 is formalized on the actual torus coordinates;
-the general free-flow equivalence R and packing theorem F remain prose proofs with bounded
-computational support, including the independent max-plus DP checks.
+the general free-flow equivalence R is proved for the actual CLASSIC kernel,
+including a finite moving-window criterion and return after `lcm(W,H)` rounds.
+It characterizes perpetual free flow from the current state; it does not assert
+that every state eventually reaches free flow. The packing and maximizing
+constructions in F remain prose proofs with bounded computational support,
+including the independent max-plus DP checks.
 The formal register states the exact
 replay domains and distinguishes regenerated data from inherited tables.
 

@@ -32,7 +32,7 @@ terminal cycle. This equivalence concerns **existence**, not every initial confi
 **Verification boundary.** The prose proofs below are distinct from the Lean theorems and
 bounded computational checks. [The formal coverage register](../formal/README.md) identifies
 the statements currently checked by Lean, the actual Quint replay bounds, and the remaining
-R/F obligations. A bounded table does not prove a universal statement.
+packing obligations for F. A bounded table does not prove a universal statement.
 
 The `BML` library supplies the finite-torus kernel, numerical species-count
 conservation, the complete G1 and G2 exact-count theorems, F arithmetic
@@ -51,10 +51,13 @@ exactly at `n = WH` among feasible populations. The
 fixed-point/blocking equivalence, Wang recoding, and staircase constructions.
 Its finite-walk winding theorem assumes modular closure; the separate `BML`
 proof does not require an unproved bridge between the two Lean libraries.
-The geometric coset identity used by R is also formalized on the actual cyclic
-coordinates, with signed and bounded forward witnesses. The remaining R/F
-arguments about configurations and traffic evolution are outside the current
-Lean coverage.
+The geometric coset identity used by R is formalized on the actual cyclic
+coordinates, with signed and bounded forward witnesses. Lemma R now connects
+those witnesses to the actual traffic kernel: the static conditions are
+equivalent to every car moving in every round from time zero. It also proves
+a finite moving-window criterion and return after `lcm(W,H)` rounds. The
+packing and maximizing constructions in F remain outside the current Lean
+coverage.
 
 The `BML` and `Traffic` suites use **CLASSIC** old-state vacancy semantics.
 The separate [`BML.Train` Lean and `Train.qnt` Quint layer](../formal/TRAIN.md)
@@ -63,8 +66,8 @@ complete Theorem T in §5b, numeric conservation, and the distinction between
 fixed occupancy and zero movement. A full single-species TRAIN ring rotates
 while its occupancy is unchanged, so G0's fixed-point criterion cannot be
 transferred to that rule. The additional 3×4 non-monotonicity witness remains
-Python-only; the general CLASSIC R/F arguments retain their stated
-prose/bounded-evidence boundaries.
+Python-only; the CLASSIC packing theorem F retains its stated
+prose/bounded-evidence boundary.
 The sparse-square TRAIN speed-one result in §5c is also fully kernel-checked,
 including the actual diagonal dynamics and numerical movement conclusion.
 
@@ -299,7 +302,7 @@ half-step. ∎
 (Checked exhaustively on all tori with ≤ 9 cells and on random states up to 8×8; see
 `tests/test_extremal.py`.)
 
-**Lean boundary: the coset identity is proved; Lemma R remains open.** For
+**Lean coverage: the coset identity and Lemma R are proved.** For
 positive W,H, let `D = BML.diagonalStep W H`, which applies the actual
 `cyclicNext` to x and `cyclicPrev` to y, and let `L = lcm(W,H)`.
 `BML.diagonalShift_exists_iff` proves, for arbitrary torus points p,q,
@@ -332,8 +335,43 @@ Starting at the actual east neighbor of p instead gives the class
 `(φ(p)+1) mod g`, including g=1. These statements supply the two geometric
 encounter classes and the nonnegative/positive time windows used in the prose
 proof. D is an auxiliary action on positions, not `torusStep` on traffic
-configurations. The rigid-orbit bridge, both directions of Lemma R, and the
-packing/construction implications of F still require Lean proofs.
+configurations. [`Rigid.lean`](../formal/lean/BML/Rigid.lean) supplies the
+bridge: when every car moves in each preceding actual round, east occupancy
+and north occupancy are precisely their respective coordinate translates.
+North movement is evaluated after the east half-step.
+
+[`FreeFlow.lean`](../formal/lean/BML/FreeFlow.lean) proves both directions
+of Lemma R for every positive W,H, including singleton axes and the empty
+state. Its `StaticFree` predicate is exactly conditions 1–3 above, with the
+cross-species exclusions stated as φ(q)≠φ(e) and φ(q)≠(φ(e)+1) mod g.
+For sufficiency, the static conditions imply movement in both phases and are
+preserved by the actual full step. Induction gives movement forever. For
+necessity, the bounded coset encounters rule out each forbidden pair under
+the rigid-prefix theorem; the same-species conditions follow already at t=0.
+
+The proof gives the finite criterion
+
+\[
+\operatorname{StaticFree}(s)
+\quad\Longleftrightarrow\quad
+\forall\,0\le t<L:\ \operatorname{AllMove}(f^t(s))
+\quad\Longleftrightarrow\quad
+\forall\,t\ge0:\ \operatorname{AllMove}(f^t(s)).
+\]
+
+`lemmaR_finite_lt` uses the first L rounds; `lemmaR_finite` also provides
+the inclusive window t≤L. If a static condition fails, some round t<L has
+a blocked car. If the conditions hold, `freeFlow_returns_lcm` proves
+`f^L(s)=s`, and `freeFlow_periodic` proves repetition after L at every time.
+The least configuration period may be smaller than L. This differs from
+the auxiliary diagonal action on a single position, whose least period is L.
+
+Perpetual free flow here starts at time zero. The separate theorem
+`eventually_allMove_iff_reaches_staticFree` identifies eventual permanent
+full movement with eventual entry into the static-free set. It supplies no
+claim that every configuration reaches that set and no uniform entry-time
+bound. The class packing and maximizing constructions of F remain to be
+formalized.
 
 The separate coset gate exports successors, phase classes, and east translates
 for all 6,084 positions on the 144 ordered rectangles with W,H≤12. Its declared
@@ -341,7 +379,18 @@ scope reconstructs a complete cycle from each position, totaling 283,526 orbit
 visits, and checks each of the same-class and east-translated relations on
 422,500 ordered pairs. These are finite coordinate checks, with 12 rejection
 controls; source-bound receipts record successful runs. They do not enumerate
-traffic configurations or prove Lemma R.
+traffic configurations. Lemma R has its own kernel proof and separate finite
+traffic acceptance checks.
+
+The R gate, `scripts/check_freeflow.py`, compares actual Lean decisions of
+`StaticFree` and `AllMove` and both phase traces on every initial state of
+every ordered positive rectangle with WH≤9: 93,387 states on 23 rectangles,
+covering 622,362 full transitions in their lcm windows. It uses NumPy phase
+comparisons and an independent scalar orbit oracle that rejects blockage
+from time zero. It also checks rigid moving prefixes, lcm closure of
+static-free states, coverage, and corrupted-output controls. This is its
+declared finite domain; source-bound receipts record which checks passed
+at a given revision.
 
 **Theorem F.** Let n_free(W,H) be the largest car count that admits free flow, and V(g) = ⌊(g + ⌊g/3⌋)/2⌋. Then
 
@@ -677,12 +726,20 @@ commute.
 
 ## 9. Next targets
 
+The [dated open questions and proof roadmap](research/2026-11-18-open-questions-and-proof-roadmap.md)
+records the state after the TRAIN and lane-invariant merges, including PR #7's
+G1/G2 and coset work, PR #12's CLASSIC sparse-flow blueprint, and the remaining
+probability, projection, and verification questions. Its references include
+the full [HBK] v2 study and distinguish its free-state characterization from an
+iid attraction theorem. The coverage below describes this branch's compiled results.
+
 1. **Continue the CLASSIC Lean proof layer.** G0, numerical conservation, complete G1/G2,
    the feasible-population forced-gridlock boundary, the geometric coset identity B2,
-   and the concrete recurrent witnesses have kernel-checked coverage. The separate TRAIN
-   threshold T and sparse-square speed-one theorem are fully proved. Next connect the
-   coset witnesses to rigid traffic orbits and prove both directions of R and the
-   packing/construction implications of F. See the precise [coverage register](../formal/README.md).
+   the actual-kernel free-flow characterization R, and the concrete recurrent witnesses
+   have kernel-checked coverage. R includes a finite lcm-window criterion and lcm return.
+   The separate TRAIN threshold T and sparse-square speed-one theorem are fully proved.
+   Next formalize the class packing and maximizing constructions of F using R.
+   See the precise [coverage register](../formal/README.md).
 2. **Control formation of blocking loops under μ_p.** Section 8 gives the initial counting
    bound and explains the missing dynamical estimate. Do not treat a finite-time simulation
    or an iid count at time zero as an eventual-probability bound.

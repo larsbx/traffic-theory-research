@@ -92,7 +92,7 @@
   },
   "not_claimed": [
     "Unbounded Lean-Quint refinement or a general equivalence theorem between the BML and Traffic libraries",
-    "Full Lean proofs of Lemma R and Theorem F; BML separately proves G1/G2, the feasible-population forced-gridlock boundary, and the B2 coset identity with bounded witnesses for actual cyclic coordinates; the rigid traffic-orbit bridge remains open",
+    "The full packing and maximizing constructions of Theorem F; BML separately proves G1/G2, the feasible-population forced-gridlock boundary, B2's coset identity, and Lemma R for the actual CLASSIC phases, including finite lcm-window criteria and lcm return",
     "General species-conservation theorem in Traffic; BML separately proves numerical species and lane-count conservation from its transport bijections",
     "Existence of a bi-infinite Fibonacci hull element and its frequency limits",
     "Real orthogonal projection, trigonometric identities, or density limits",
