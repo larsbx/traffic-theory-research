@@ -12,6 +12,9 @@ into a cell that the latter vacates during the same half-step. This is Model I i
 n_E and n_N. Notation: n = n_E + n_N. Extrema below range over **all species allocations**;
 they do not impose equal numbers of E and N cars.
 
+Throughout the CLASSIC discussion below, these are `bml.model.CLASSIC`
+updates. Section 5b explicitly changes the rule to `bml.model.TRAIN`.
+
 Every orbit is eventually periodic, and its terminal cycle is one of three kinds:
 
 | kind | definition |
@@ -40,6 +43,13 @@ simple blocker cycle and linking its closure and distinct-car count to the
 arithmetic results remain obligations; no general bridge between the two Lean
 libraries is being assumed.
 
+Both Lean libraries and both Quint models use **CLASSIC** old-state vacancy
+semantics. They do not formalize the TRAIN rule introduced in §5b. Under TRAIN,
+a full single-species ring rotates while its occupancy pattern is unchanged;
+therefore an occupancy fixed point need not be motionless, and G0's fixed-point
+criterion cannot be transferred to TRAIN. Theorem T and the additional 3×4
+non-monotonicity witness retain their stated prose/Python evidence boundaries.
+
 ## 0. The open problem, stated precisely
 
 Let μ_p be the i.i.d. measure where a cell is E w.p. p/2, N w.p. p/2 and empty otherwise.
@@ -56,7 +66,8 @@ require care when proposing a single sharp threshold. Primary-source checks give
 | result | statement |
 |---|---|
 | [Angel–Holroyd–Martin][AHM], *Electron. Comm. Probab.* 10 (2005), Theorems 1–2 | On ℤ², for p sufficiently close to 1, every car moves only finitely often a.s. The finite-torus theorem also gives eventual gridlock with probability tending to 1 as both dimensions grow and their ratio converges in (0,∞). |
-| [Austin–Benjamini][AB], arXiv:math/0607759v3 (2006), Proposition 1 | States eventual speed one below N/2 cars. **Model correspondence is unresolved:** its written queue-movement rule and Proposition 6's minimum frozen count 2N do not match this unrestricted synchronous kernel, where a full E row is frozen at N cars. We do not import its statements as verified theorems of this kernel. |
+| [Austin–Benjamini][AB], arXiv:math/0607759v3 (2006), Propositions 1, 6, 8 | Prop 1: eventual speed one below N/2 cars. Prop 6: a stuck configuration of m cars exists ⟺ m ≥ 2N. **Different update rule (resolved in §5b):** their written rule moves a maximal queue of same-species cars together whenever its head is unblocked, so a full ring rotates (the *train rule*, `bml.model.TRAIN`). That explains 2N against this kernel's N. Prop 6 is re-proved and extended to rectangles under the train rule in §5b. Prop 1's argument appears to transfer to this kernel (§2); it is not imported as verified. |
+| [Hertzberg Rabinovich–Biham–Katzav][HBK], arXiv:2601.01180 (2026) | Square lattices: free-flowing periodic states are the zero set of a distance D = D∥ + D⊥ (same-type and cross-type parts). Likely equivalent to Lemma R; only the abstract was checked. |
 | [D'Souza][DS], *Phys. Rev. E* 71 (2005), 066112 | Numerical stable intermediate phases and dependence on lattice aspect ratio. |
 | [Yashina–Tatashev][YT], arXiv:2311.17120 (2023), Theorem 1 | For deterministic fixed directions and both species present, perpetual free motion requires gcd(W,H) ≥ 3; this overlaps a consequence of Lemma R. |
 
@@ -110,6 +121,17 @@ positive asymptotic velocity. The empty state is FREE by convention. G1 is the e
 threshold for gridlock *existence* and holds for every aspect ratio. It does not establish
 eventual free flow for all configurations below that threshold. ∎
 
+*Austin–Benjamini Prop 1 under this kernel (our derivation, not a verified import).*
+- Their proof tracks empty arcs of time-corrected NW–SE diagonals. It uses only two facts:
+  cars advance at most one diagonal per step, and a diagonal with an empty diagonal above it
+  always releases at least one car.
+- The second fact also holds here. Its E cars move first into the empty diagonal, unobstructed;
+  if it has none, every N car moves.
+- So m < N/2 should force eventual speed one under this kernel too, which is stronger than the
+  corollary above on square tori.
+- Random tests up to 14×14 under both rules agree (`tests/test_train_rule.py`). This is not yet
+  in the formal register.
+
 ## 3. Theorem G2 (no forced gridlock below full density)
 
 **Claim.** If WH ≥ 2 and 0 ≤ n < WH, some n-car configuration never gridlocks.
@@ -148,6 +170,30 @@ independent labeled-car replay, which detects recurrence of identities as well a
 and compared against the NumPy dynamics. The Lean layer also checks the concrete orbit
 and its indefinite two-cycle; the coverage register states the identity boundary precisely.
 No claim of minimality or novelty is made.
+
+**Census of genuine witnesses** (`bml.nonmonotone`, identity-tracking replay over every
+gridlocking x and every single-car addition y). A pair counts as *genuine* if some original
+car of x moves infinitely often in y:
+
+| H×W | 2×2, 2×3, 3×2, 3×3 | 2×4 | 2×5 | 3×4 | 4×3 |
+|---|---|---|---|---|---|
+| genuine un-jamming pairs | **0** | 24 | 460 | 17 952 | 18 108 |
+
+On every torus with ≤ 6 cells (apart from 1×n, which never un-jams), un-jamming is only ever the
+added car itself; the 4×2 witness above lives on the smallest torus where a genuine pair occurs.
+
+On 3×4, one added E car keeps **all seven** original cars moving forever. Without it they all
+freeze. Rows below are printed north to south, `>` = E and `^` = N:
+
+```
+x (freezes completely)      y = x + E car at (x,y)=(0,0)
+^^>.                        ^^>.
+>>.^                        >>.^
+...>                        >..>
+```
+
+This is pinned in `tests/test_nonmonotone.py` by NumPy identity replay only; it is not in
+`data/formal-witnesses.json` or Lean.
 
 Consequence: "gridlock" is not an increasing event under adding cars. So no monotone coupling in
 p gives the threshold for free, and a sharp-threshold argument (e.g. Friedgut–Kalai) cannot be
@@ -220,6 +266,37 @@ The g = 1 branch remains separate.
 also appears in [Yashina–Tatashev, Theorem 1][YT]. Whether the complete rectangular floor
 formula appears earlier remains unestablished by the present source check.
 
+## 5b. The train rule: Austin–Benjamini Prop 6 on rectangles
+
+Under the **train rule** (`bml.model.TRAIN`), a maximal line of same-species cars moves together
+if the cell ahead of its head is empty, so a full ring rotates. This is Austin–Benjamini's written
+rule: "the blue car – and any more blue cars in a line to the left of it – cannot move".
+
+**Theorem T.** Under the train rule on W×H with W, H ≥ 2, a stuck configuration of n cars exists
+⟺ W + H ≤ n ≤ WH.
+
+*Proof of ≥* (their argument, verbatim for rectangles). Suppose s is stuck and n ≥ 1.
+
+1. A column with N cars but no E car would release its N cars: either a line ends at a hole, or the
+   column is full and rotates. So every column with a car contains an E car.
+2. If some column x had no E car, it would be empty by step 1. Then the E cars of column x−1 would
+   move, so column x−1 has no E car either. Inducting leftwards, there are no E cars at all, and
+   then no cars at all by step 1, contradicting n ≥ 1.
+3. So every column has an E car, and symmetrically every row has an N car: n ≥ W + H.
+
+*Construction.* Take the closed staircase of winding (1,1): from path cell i, step east iff
+i·W mod (W+H) < W. This gives exactly W east steps, spread so that each row gets ⌈W/H⌉ < W of them.
+Mark a cell E if the path leaves it eastwards, N otherwise.
+- Every E line ends at an N car, and every N line at an E car.
+- No row is a full E ring and no column a full N ring.
+
+So it is stuck with W + H cars. Then add blocked cars one at a time
+(`extremal.train_stuck_with`). The construction is checked for every n and all 2 ≤ W, H ≤ 8; the
+⟺ is checked exhaustively for WH ≤ 12. ∎
+
+**Same question, two rules.** The least frozen car count is min(W, H) under this kernel (G1) and
+W + H under the train rule (T). On N×N these are N and Austin–Benjamini's 2N.
+
 ## 6. Extremal existence diagram (every finite torus)
 
 | car count n | gridlock possible | gridlock forced | free flow possible |
@@ -287,11 +364,12 @@ times, or taking an unproved union over unbounded time, does not close this gap.
 2. **Control formation of blocking loops under μ_p.** Section 8 gives the initial counting
    bound and explains the missing dynamical estimate. Do not treat a finite-time simulation
    or an iid count at time zero as an eventual-probability bound.
-3. **Reconcile literature semantics and novelty.** Resolve the Austin–Benjamini update-rule
-   correspondence and search for the complete rectangular formula. The 2/3 value and the
-   gcd obstruction already have prior literature; the stronger non-monotonicity witness
-   above closes the earlier local example gap.
-4. Extend the exhaustive tables to 4×5 (3²⁰ ≈ 3.5·10⁹ states). That needs a symmetry quotient
+3. **Literature and novelty.** The Austin–Benjamini rule correspondence is resolved (§5b).
+   Still open: search for the complete rectangular formula; read the full text of [HBK]; and
+   formalise the Prop 1 transfer of §2. The 2/3 value and the gcd obstruction already have prior
+   literature.
+4. **Why is un-jamming trivial on tori with ≤ 6 cells?** Is there a structural reason (§4)?
+5. Extend the exhaustive tables to 4×5 (3²⁰ ≈ 3.5·10⁹ states). That needs a symmetry quotient
    (translations × species-preserving symmetries).
 
 ## References checked on 2026-11-18
@@ -309,9 +387,13 @@ times, or taking an unproved union over unbounded time, does not close this gap.
   model for traffic flow*, Physical Review E 71 (2005), 066112. DOI: 10.1103/PhysRevE.71.066112.
 - [YT] M. V. Yashina, A. G. Tatashev, *Necessary condition for self-organization in the
   BML model with stochastic direction choice*, arXiv:2311.17120 (2023), Theorem 1 for q=0.
+- [HBK] G. Hertzberg Rabinovich, O. Biham, E. Katzav, *Structure and dynamics in the
+  low-density phase of a two-dimensional cellular automaton model of traffic flow*,
+  arXiv:2601.01180 (2026). Abstract only.
 
 [BML]: https://arxiv.org/pdf/cond-mat/9206001
 [AHM]: https://arxiv.org/pdf/math/0504001
 [AB]: https://arxiv.org/pdf/math/0607759
 [DS]: https://doi.org/10.1103/PhysRevE.71.066112
 [YT]: https://arxiv.org/pdf/2311.17120
+[HBK]: https://arxiv.org/abs/2601.01180

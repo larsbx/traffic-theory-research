@@ -56,6 +56,12 @@ empty at the start of that half-step. In particular, a car cannot move into a si
 merely because its occupant will move during the same half-step. The model was
 introduced by Biham, Middleton, and Levine in 1992 [1].
 
+This is the repository's **CLASSIC** rule. The separate Python **TRAIN** rule
+moves queues together and can rotate a fully occupied single-species ring.
+The blocking, fixed-point, and Wang statements in this note and its linked
+Lean/Quint coverage use CLASSIC. They do not assert those conclusions for TRAIN;
+see the separate [rule comparison](../theorems.md).
+
 Here, "completely frozen" means that neither species makes any move in either
 half-step. A full traffic cycle consists of both species' half-steps. This avoids
 confusing a quiet half-step with permanent gridlock.

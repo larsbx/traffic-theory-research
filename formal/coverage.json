@@ -99,6 +99,7 @@
     "Derivation of modular closure from an actual finite traffic dependency cycle",
     "Probabilistic high-density gridlock or percolation",
     "Pure point diffraction or spatial dynamical spectrum",
-    "Quint Apalache verification or exhaustive unbounded temporal verification"
+    "Quint Apalache verification or exhaustive unbounded temporal verification",
+    "TRAIN-rule semantics, G0 equivalence, or Lean/Quint correspondence; both formal suites cover CLASSIC old-state-vacancy movement only"
   ]
 }

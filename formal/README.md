@@ -1,12 +1,24 @@
 # Formal coverage and validation
 
 The `BML` suite implements the same positive W×H torus and synchronous **east
-then north** updates as `bml/model.py`. Move eligibility is read from the complete
+then north** updates as the `bml.model.CLASSIC` rule. Move eligibility is read from the complete
 pre-half-step state. Width or height one is allowed. A jam must be nonempty;
 the empty fixed state is classified as free flow.
 
 The formal kernel, finite correspondence checks, and prose mathematics have
 different scopes. This register records those distinctions explicitly.
+
+## Update-rule boundary
+
+Both `BML` and `Traffic`, in Lean and Quint, implement **CLASSIC**: a destination
+must be vacant in the state read at the start of that species' half-step.
+The separate Python **TRAIN** implementation moves same-species queues together
+and rotates full single-species rings. None of the formal coverage or replay
+receipts on this page establishes a TRAIN theorem or correspondence result.
+In particular, a rotating full ring has an unchanged occupancy pattern with
+moving cars, so the CLASSIC equivalence between a fixed point and no movement
+(G0) is not valid for TRAIN. The prose TRAIN result and its bounded Python
+checks are recorded separately in [the theorem document](../docs/theorems.md).
 
 ## Two complementary proof suites
 
@@ -78,6 +90,9 @@ Quint parse, typecheck, and seven deterministic tests are required before the
 cross-language replay. This is not an Apalache result or sampled model checking.
 
 ## Finite evidence scopes
+
+All Lean/Quint replay rows in this table use CLASSIC; TRAIN is not in these
+comparison domains.
 
 | Check | Exhaustive scope |
 |---|---|

@@ -11,6 +11,13 @@ This is the detailed register for the **Traffic suite**. Start at the
 proofs, arithmetic components of G1/F, and its Python/Quint replay evidence.
 No general theorem identifying the `BML` and `Traffic` definitions is claimed.
 
+Both formal suites use **CLASSIC** old-state-vacancy movement. The Python
+**TRAIN** rule is separate and has no Lean/Quint coverage here. Under TRAIN,
+full single-species rings rotate without changing occupancy; consequently the
+CLASSIC fixed-point/blocking equivalence and its Wang interpretation do not
+transfer to TRAIN. All finite comparisons, frozen-state tests, and staircase
+results on this page are scoped to CLASSIC.
+
 ## Reproduce the acceptance gate
 
 Requirements: Lean 4.34.1 (including Lake), Node.js compatible with Quint 0.33.1,
