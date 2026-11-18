@@ -1,0 +1,19 @@
+L=32 p=0.200 jammed=0.00 mean_velocity=0.999
+L=32 p=0.225 jammed=0.00 mean_velocity=0.999
+L=32 p=0.250 jammed=0.00 mean_velocity=0.998
+L=32 p=0.275 jammed=0.00 mean_velocity=0.988
+L=32 p=0.300 jammed=0.00 mean_velocity=0.984
+L=32 p=0.325 jammed=0.00 mean_velocity=0.962
+L=32 p=0.350 jammed=0.00 mean_velocity=0.921
+L=32 p=0.375 jammed=0.00 mean_velocity=0.861
+L=32 p=0.400 jammed=0.03 mean_velocity=0.755
+L=32 p=0.425 jammed=0.44 mean_velocity=0.323
+L=32 p=0.450 jammed=0.81 mean_velocity=0.091
+L=32 p=0.475 jammed=0.94 mean_velocity=0.032
+L=32 p=0.500 jammed=0.94 mean_velocity=0.051
+L=32 p=0.525 jammed=1.00 mean_velocity=0.000
+L=32 p=0.550 jammed=1.00 mean_velocity=0.000
+
+real	0m22.086s
+user	0m22.237s
+sys	0m0.028s
