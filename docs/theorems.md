@@ -79,6 +79,25 @@ require care when proposing a single sharp threshold. Primary-source checks give
 The AHM paper starts with the opposite first species; interchanging coordinates and species
 gives the same iid law and the same fixation statement for our phase convention.
 
+The [tagged-fixation reduction](research/2026-11-18-tagged-fixation-and-gridlock.md)
+gives a further exact deterministic theorem for this CLASSIC kernel. Let `J`
+mean eventual nonempty global jam, `S` mean that some original car moves only
+finitely often, and `R` mean an initially full E-row or N-column. Then
+`S = J union R`, with a complete Lean proof. Write `q_L(p) = Pr_p(J)`.
+For `p > 0`, let `f_L(p)` be the probability that the original car at a specified
+site eventually stops, conditioned on that site being occupied. The separate
+prose probability argument proves
+
+\[
+|f_L(p)-q_L(p)|\le
+\frac{1}{2L}\sqrt{\frac{1-p}{p}}+L(p/2)^{L-1}.
+\]
+
+Thus the two probabilities have the same fixed-positive-density limits whenever
+those limits exist. This reduction does not establish their existence or a
+positive sharp critical density; full movement and infinite-volume fixation
+remain distinct questions.
+
 Below are exact **extremal existence thresholds** on each finite torus. They do not settle
 the complete deterministic question of which car counts force eventual free flow, or the
 probability of gridlock at fixed positive density.
