@@ -243,7 +243,12 @@ verification or unbounded source-refinement theorem is claimed.
 These Quint suites do not prove eventual classification for all configurations,
 G1/G2/Theorem F, a critical density, high-density random gridlock, infinite
 Fibonacci frequencies, trigonometric identities, or diffraction theorems.
-The separate Lean libraries prove complete CLASSIC G1 and the rectangular TRAIN
-zero-movement existence threshold; the Quint runs remain bounded evidence. The empty state
-has no movers but is not a nonempty jam. In TRAIN, fixed occupancy can coexist
-with moving cars, and the model's stuck predicate uses mover counts.
+The separate Lean libraries prove complete CLASSIC G1/G2, the forced-gridlock
+boundary among feasible CLASSIC populations n≤WH, and the rectangular TRAIN
+zero-movement existence threshold; the Quint runs remain bounded evidence.
+CLASSIC G2 constructs a board of each sub-full count that never reaches a
+nonempty jam, without claiming eventual free flow. Full CLASSIC occupancy
+forces a jam at time zero. The empty fixed state has no movers but is not a
+nonempty jam, including on the 1×1 torus. In TRAIN, fixed occupancy can coexist
+with moving cars, and the model's stuck predicate uses mover counts; the
+CLASSIC forced-gridlock boundary does not transfer to that rule.

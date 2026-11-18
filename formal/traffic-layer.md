@@ -8,9 +8,12 @@ the executable correspondence table apply to explicitly bounded finite grids.
 This is the detailed register for the **Traffic suite**. Start at the
 [shared formal coverage register](README.md) for all suites. The separate
 `BML` library proves finite-torus numerical conservation, the complete G1
-population interval through blocker-cycle winding and all-count constructions, and strong
-non-monotonicity. It also supplies F arithmetic components and separate
-Python/Quint replay evidence.
+population interval through blocker-cycle winding and all-count constructions,
+and G2's exact-count configurations that never jam below full occupancy.
+It also proves that eventual CLASSIC gridlock is forced exactly at full
+occupancy among feasible populations n≤WH. Strong non-monotonicity, F
+arithmetic components, and separate Python/Quint replay evidence complete
+the BML register.
 No general theorem identifying the `BML` and `Traffic` definitions is claimed.
 
 The `BML` and `Traffic` suites use **CLASSIC** old-state-vacancy movement.
@@ -157,11 +160,12 @@ The following remain outside this layer:
 - A dependency-cycle bridge for the `Traffic` modular-closure predicate. The
   separate `BML` library proves finite closed-carrier cycle extraction and
   derives winding from its actual blocker walk.
-- Complete Lean proofs of G2, Lemma R, and Theorem F in
+- Complete Lean proofs of Lemma R and Theorem F in
   [the extremal research note](../docs/theorems.md). `Traffic` supplies G0 and
-  winding under modular closure; `BML` proves complete G1 with exact-count
-  constructions and exclusion of eventual gridlock below its minimum.
-  The general G2/R/F results remain unformalized.
+  winding under modular closure; `BML` proves complete G1/G2 with exact-count
+  constructions. Its persistent mixed-lane argument excludes a nonempty jam
+  at every iterate of each G2 construction; it does not assert free flow.
+  The general R/F results remain unformalized.
 - Reproduction of the published large-grid intermediate-state experiments.
 
 Published claims in the research note retain their literature attribution.

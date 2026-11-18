@@ -32,21 +32,26 @@ terminal cycle. This equivalence concerns **existence**, not every initial confi
 **Verification boundary.** The prose proofs below are distinct from the Lean theorems and
 bounded computational checks. [The formal coverage register](../formal/README.md) identifies
 the statements currently checked by Lean, the actual Quint replay bounds, and the remaining
-G2/R/F obligations. A bounded table does not prove a universal statement.
+R/F obligations. A bounded table does not prove a universal statement.
 
 The `BML` library supplies the finite-torus kernel, numerical species-count
-conservation, the complete G1 exact-count theorem, F arithmetic
+conservation, the complete G1 and G2 exact-count theorems, F arithmetic
 components, and the strong non-monotonicity theorem below. Its G1 proof extracts
 an actual simple occupied blocker cycle, proves torus winding, and bounds the
 cycle length by the executable car count. Conservation then rules out a jam
 at any future time below `min(W,H)` cars. Executable row/column prefix
 constructions have proved counts at every `min(W,H) ≤ n ≤ WH`, completing
-sufficiency and the equivalent existence theorem for orbits reaching a jam. The
+sufficiency and the equivalent existence theorem for orbits reaching a jam.
+G2 supplies a configuration at every `n < WH` that never reaches a nonempty
+jam. For positive n, a mixed single-species lane retains a car, a hole, and an
+eligible mover under every iterate; n = 0 uses the empty fixed point.
+Together with full-occupancy blocking, this proves that gridlock is forced
+exactly at `n = WH` among feasible populations. The
 [companion Traffic suite](../formal/traffic-layer.md) independently supplies the
 fixed-point/blocking equivalence, Wang recoding, and staircase constructions.
 Its finite-walk winding theorem assumes modular closure; the separate `BML`
 proof does not require an unproved bridge between the two Lean libraries.
-The general G2/R/F arguments remain outside the current Lean coverage.
+The general R/F arguments remain outside the current Lean coverage.
 
 The `BML` and `Traffic` suites use **CLASSIC** old-state vacancy semantics.
 The separate [`BML.Train` Lean and `Train.qnt` Quint layer](../formal/TRAIN.md)
@@ -55,7 +60,7 @@ complete Theorem T in §5b, numeric conservation, and the distinction between
 fixed occupancy and zero movement. A full single-species TRAIN ring rotates
 while its occupancy is unchanged, so G0's fixed-point criterion cannot be
 transferred to that rule. The additional 3×4 non-monotonicity witness remains
-Python-only; the general CLASSIC G2/R/F arguments retain their stated
+Python-only; the general CLASSIC R/F arguments retain their stated
 prose/bounded-evidence boundaries.
 
 ## 0. The open problem, stated precisely
@@ -159,7 +164,8 @@ asserting equality between the two constructors.
 
 ## 3. Theorem G2 (no forced gridlock below full density)
 
-**Claim.** If WH ≥ 2 and 0 ≤ n < WH, some n-car configuration never gridlocks.
+**Claim.** For every positive W,H and every 0 ≤ n < WH, some n-car configuration
+never gridlocks. This includes n = 0 on the 1×1 torus.
 
 *Proof.* If n = 0, use the empty configuration, which is not gridlock. Otherwise say W ≥ 2;
 if not, swap the roles of E/rows and N/columns.
@@ -168,10 +174,46 @@ if not, swap the roles of E/rows and N/columns.
 2. Fill rows so that some row holds between 1 and W−1 cars. If n ≢ 0 (mod W), filling greedily
    leaves a partial row. If n ≡ 0 (mod W) and n > 0, then n ≤ WH − W, so an empty row exists;
    move one car into it.
-3. In a ring with a car and a hole, the car directly behind a hole always moves. So the row never
-   freezes. ∎
+3. A mixed ring has a car-to-hole boundary, so at least one car moves. Cars persist, and each
+   filled hole leaves a hole at the moving car's source. Thus the row keeps both a car and a
+   hole and never freezes. ∎
 
 Hence the deterministic switch is *not* at any density below 1: every n < WH is unforced.
+
+**Lean boundary.** G2 is complete, with the actual numerical count and an
+unbounded-time conclusion. `BML.nonGridlockWith` fills a column-major prefix
+with east cars when W ≥ 2, or a north-only prefix when W = 1.
+`BML.nonGridlockWith_carCount` proves its exact population using rank
+bijections. `BML.nonGridlockWith_never_jam` and
+`BML.exists_never_jam_with_count` prove that no full-step iterate is `Jam`.
+The proof in [`Lanes.lean`](../formal/lean/BML/Lanes.lean) preserves a mixed
+row or column under the actual synchronous phases, then uses cyclic
+reachability from [`Ring.lean`](../formal/lean/BML/Ring.lean) to find an
+eligible mover at every time. The empty case is handled separately: the
+empty fixed point is not a nonempty jam.
+
+**Forced-gridlock boundary.** For positive W,H and a feasible population
+`0 ≤ n ≤ WH`, [`BML.forced_eventual_jam_iff`](../formal/lean/BML/GridlockThresholds.lean)
+proves
+
+\[
+\bigl(\forall s,\ |s|=n\ \Longrightarrow
+  \exists t\in\mathbb{N},\ \operatorname{Jam}(f^t(s))\bigr)
+\quad\Longleftrightarrow\quad n=WH.
+\]
+
+At full occupancy every target is occupied, so every configuration is already
+a nonempty jam at time zero. Below full occupancy the G2 constructor disproves
+the universal claim. The feasibility assumption is necessary: when n > WH,
+there are no n-car configurations, making the universal statement vacuous.
+On the 1×1 torus, n = 0 is the empty non-jam and n = 1 is already jammed under
+CLASSIC. G2 proves absence of a nonempty jam, not that every car moves at every
+step or that the orbit eventually reaches free flow.
+
+The separate G2 trace gate is scoped to every positive W,H≤12, every `n < WH`,
+and times `0 ≤ t ≤ 2 max(W,H)`. Its finite implementation comparisons are
+separate from the all-time invariant proof; consult the source-bound run
+receipt for completed acceptance at a given revision.
 
 ## 4. Non-monotonicity
 
@@ -370,6 +412,11 @@ proof here of Austin–Benjamini's eventual-speed-one result below N/2.
 
 ## 6. CLASSIC extremal existence diagram (every finite torus)
 
+The table concerns feasible populations `0 ≤ n ≤ WH`. “Gridlock forced” means
+that every configuration at that count eventually reaches a nonempty jam.
+The G1 existence interval and the G2/full-occupancy forced boundary are proved
+in Lean; the general free-flow formula F remains a prose theorem.
+
 | car count n | gridlock possible | gridlock forced | free flow possible |
 |---|---|---|---|
 | n = 0 | no | no | yes (vacuously) |
@@ -455,10 +502,10 @@ all possible global jams.
 
 ## 9. Next targets
 
-1. **Continue the CLASSIC Lean proof layer.** G0, numerical conservation, complete G1,
-   and the concrete recurrent witnesses have kernel-checked coverage; the separate TRAIN
-   threshold T is fully proved. Next prove G2's all-count non-gridlocking
-   construction, the coset identity G = ker φ, and the
+1. **Continue the CLASSIC Lean proof layer.** G0, numerical conservation, complete G1/G2,
+   the feasible-population forced-gridlock boundary, and the concrete recurrent witnesses
+   have kernel-checked coverage; the separate TRAIN threshold T is fully proved.
+   Next prove the coset identity G = ker φ and the
    rigidity/optimization implications of R/F. See the precise [coverage register](../formal/README.md).
 2. **Control formation of blocking loops under μ_p.** Section 8 gives the initial counting
    bound and explains the missing dynamical estimate. Do not treat a finite-time simulation

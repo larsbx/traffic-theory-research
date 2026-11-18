@@ -20,6 +20,7 @@ ring may keep the same colors in the same cells while cars move.
 cd formal/lean
 lake build
 lake env lean Audit.lean
+lake env lean G2Audit.lean
 .lake/build/bin/bml_replay 3 3
 ```
 
@@ -50,6 +51,10 @@ It does not embed Python-produced expected transitions.
 | `BML/Blocking.lean` | A frozen state's blocker map preserves occupancy. An actual blocker walk lifts to nonnegative east/north displacements and seam-crossing counts. Closure implies divisibility by the torus side lengths, hence the shorter-side lower bound. |
 | `BML/Extremal.lean` | Full east rows and full north columns are nonempty frozen states with exactly WIDTH and HEIGHT cars. Choosing the shorter line attains `min(WIDTH, HEIGHT)`. |
 | `BML/Gridlock.lean` | Every jam has a simple occupied blocker cycle of length between `min(WIDTH, HEIGHT)` and its actual car count. Combining this with the all-count constructor proves the full G1 iff, both for already-jammed states and the existence of orbits reaching a jam. Fewer cars never reach a jam at any iterate. |
+| `BML/Ring.lean` | Iterating a positive cyclic coordinate has the expected modular value and period; every site is reachable from every other site in fewer than the lane length many shifts. |
+| `BML/Lanes.lean` | An east-only mixed row or north-only mixed column preserves a car and a hole under each actual full step. Cyclic reachability provides an eligible car, excluding freezing and jamming at every iterate. The absent species phase is proved to be the identity. |
+| `BML/NonGridlock.lean` | Total executable `nonGridlockWith` has exactly n cars and never jams for every n<WIDTH*HEIGHT. Its column-major east prefix has a mixed first or last row when WIDTH≥2; width-one boards use a north prefix. The zero population remains empty and is not Jam. This completes G2. |
+| `BML/GridlockThresholds.lean` | Actual car count equals area iff every cell is occupied. On every positive torus and for every feasible n≤WIDTH*HEIGHT, every n-car configuration eventually jams iff n=WIDTH*HEIGHT. |
 | `BML/Arithmetic.lean` | Divisibility of positive winding lengths implies the `min(WIDTH, HEIGHT)` lower bound. The proposed class packing expression simplifies to `floor(2*g/3)` and attains exact `2/3` iff `3` divides `g`. These are arithmetic components of G1 and F. |
 | `BML/Witnesses.lean` | A stronger nonmonotonicity example on width 4, height 2. State `3858` reaches jam `2048` after three steps. Adding one north car at `(0,0)` yields `3860 ↔ 4340`, which never jams. The added car remains blocked forever. An explicitly tracked original north car moves at every step. |
 
@@ -79,6 +84,20 @@ bound with the executable all-count construction to prove
 `exists_eventual_jam_with_count_iff` proves the same interval for initial
 populations admitting an orbit that reaches a jam.
 
+`exists_never_jam_with_count` completes G2 with an exact population and a
+conclusion quantified over every natural time. For positive populations below
+area, the constructor uses a board of one species containing a mixed cyclic
+lane. Its car and hole persist under the actual synchronous phase, and cyclic
+reachability finds a car directly before a hole. This supplies a mover at each
+iterate. Other lanes can remain blocked, so this is an avoidance-of-total-jam
+theorem, not an assertion that every car eventually moves freely.
+
+`forced_eventual_jam_iff` combines G2 with full occupancy. Its premise
+`n ≤ WIDTH*HEIGHT` is necessary: above the area there are no n-car boards and
+the universal quantifier would be true vacuously. Empty boards are fixed but
+not jammed; on 1×1 the only sub-full population is zero. Single rows and columns
+are covered without an extra lower bound on the other dimension.
+
 `g1_export --max-side 12` evaluates the actual Lean constructor at all 5,578
 admissible counts on the 144 positive rectangles within those side bounds.
 Its TSV columns are width, height, requested count, actual count, east count,
@@ -86,6 +105,17 @@ north count, and row-major cell digits. `scripts/check_g1_constructions.py`
 checks complete coverage, valid digits, all counts, and zero movement under
 both actual Python CLASSIC phases. It does not compare this constructor's
 array with the differently ordered Python `gridlock_with` construction.
+
+`g2_export --max-side 12` evaluates the actual Lean G2 constructor at every
+sub-full population on those 144 rectangles, then emits the actual intermediate
+and final configurations through times `0…2 max(WIDTH, HEIGHT)`. Its TSV columns
+are width, height, population, time, actual count, east count, north count, east
+moves, north moves, jam flag, and row-major digits before the east phase, after
+the east phase, and after the north phase. `scripts/check_g2_constructions.py`
+checks exact coverage, both Python CLASSIC phases and movement counts, trace
+continuity, species and population preservation, the persistent mixed lane, and
+the special empty-state convention. These are finite implementation checks;
+the unbounded-time conclusion comes from the Lean theorem.
 
 The strong witness's `originalTrace` is an identity-following recurrence using
 `transport`, rather than a statement that some unlabeled car moves. The tracked
@@ -108,7 +138,9 @@ with an explicit integer movement bound, not a novelty claim.
 ## Audit and trust boundary
 
 `Audit.lean` traverses the imported CLASSIC `BML` declarations, the G1 exporter,
-and its global entry point, checking their transitive axiom dependencies. It
+and its global entry point, checking their transitive axiom dependencies.
+`G2Audit.lean` separately checks the G2 exporter and its global entry point;
+the G2 mathematical theorems are required by the main BML audit. Each audit
 requires the named mathematical results to be theorem declarations and rejects
 any axiom outside Lean's usual `propext`, `Quot.sound`, and `Classical.choice`.
 Thus incomplete proofs and native decision-result axioms fail the audit.
@@ -157,7 +189,6 @@ with the actual Quint interpreter and Python TRAIN implementation.
 This package does **not** prove the full list G0–F. The missing general
 mathematics remains:
 
-- Formalize the G2 non-gridlocking configurations for every sub-full car count.
 - Prove the subgroup/coset assertion and both directions of rigidity Lemma R.
 - Connect Lemma R to the cyclic class packing upper bound and all densest
   constructions in F.

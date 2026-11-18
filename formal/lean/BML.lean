@@ -10,4 +10,8 @@ import BML.FiniteCycle
 import BML.Blocking
 import BML.Extremal
 import BML.Gridlock
+import BML.Ring
+import BML.Lanes
+import BML.NonGridlock
+import BML.GridlockThresholds
 import BML.Capture

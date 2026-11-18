@@ -229,8 +229,13 @@ The separate CLASSIC rule is Model I of
 
 Austin–Benjamini's eventual-speed-one result below N/2, its proposed transfer
 to CLASSIC, sharp random-density thresholds, and loop-formation probability
-bounds remain outside this formalization. The separate CLASSIC library now
-proves complete G1; its remaining G2/R/F obligations are listed in
+bounds remain outside this formalization. The separate CLASSIC library proves
+complete G1/G2 and the forced-gridlock boundary among feasible populations:
+every n-car configuration eventually jams exactly when n=WH, assuming n≤WH.
+That forced boundary does not transfer to TRAIN: a fully east-filled TRAIN
+board has rotating rings. CLASSIC G2 establishes never reaching a nonempty
+jam for its sub-full constructions, without asserting eventual speed one.
+The remaining CLASSIC R/F obligations are listed in
 [the shared register](README.md). Real projection,
 Fibonacci frequency limits, and diffraction likewise remain outside the
 TRAIN proof layer.

@@ -70,8 +70,11 @@ fixed-point result does not transfer.
   G0 equivalences, and the complete G1 theorem: an n-car jam exists exactly when
   `min(W,H) ≤ n ≤ W*H`. Lean extracts a simple occupied blocker cycle, proves its
   winding and car-count bounds, and constructs a jam at every admissible exact
-  count. Conservation also proves that fewer
-  cars can never evolve into a jam. The suite also proves permanent cores and
+  count. Conservation also proves that fewer cars can never evolve into a jam.
+  The complete G2 construction realizes every `0 ≤ n < W*H` with a state that
+  never jams: a single-species mixed lane retains both a car and a hole at every
+  iterate. Among feasible populations, all configurations eventually jam iff
+  `n = W*H`. The suite also proves permanent cores and
   route-cover capture bounds, arithmetic components of F, and the strong 4×2
   non-monotonicity witness. Finite replays compare Lean with NumPy on 93,387
   states and Quint with NumPy on 3,720 states plus three witness rows; see the
@@ -105,10 +108,12 @@ Direct derivations carry no claim of novelty.
 
 The repository contains executable CLASSIC and TRAIN models, historical exhaustive tables
 (`data/exhaustive.json`), machine-checked kernel and exact gridlock-population
-theorems, and an automated test suite. The complete CLASSIC G1 and TRAIN T
+theorems, and an automated test suite. The complete CLASSIC G1, G2, and TRAIN T
 existence thresholds are proved in Lean for every positive rectangle, including
-their constructions at every admissible exact count. The general G2/R/F
-arguments remain prose proofs with bounded computational support. The formal register states the exact
+their constructions at every admissible exact count. CLASSIC G2 establishes
+perpetual avoidance of total gridlock, which does not require eventual free
+flow. The general R/F arguments remain prose proofs with bounded computational
+support. The formal register states the exact
 replay domains and distinguishes regenerated data from inherited tables.
 
 The initial research boundary is explicit: permanent blocking is a property of

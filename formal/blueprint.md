@@ -1,27 +1,29 @@
-# Blueprint: open formal obligations
+# Blueprint: proof status and open formal obligations
 
-This is a hand-off document. It states the remaining obligations of
-[the coverage register](README.md) precisely, with proofs decomposed into
+This hand-off document records the completed B0/B1/B5 proofs and the remaining
+obligations of [the coverage register](README.md), with proofs decomposed into
 lemmas small enough to formalise one at a time.
 
 - Each lemma lists the existing results it rests on, so a prover can work
   bottom-up. Lean signatures target the `BML` kernel in this package (`Kernel`,
   `Torus`, `Transport`, `Counting`, `Enumeration`). `carCount` is the actual
   occupied-position count, proved equal to the executable species-count sum.
-- Signatures are **specifications, not compiled code**. Adjust names freely,
-  but keep the statements.
-- The open signatures below become Lean theorems only after `lake build` and the
-  axiom audit. G1's exact-count construction is now complete in `AllCounts.lean`
-  and `Gridlock.lean`; the prefix-rank counting theorem in `Enumeration.lean`
-  can be reused for B1. B5 has been completed by the separate TRAIN library linked below.
+- Signatures in the open B2–B4 sections are **specifications, not compiled code**.
+  Adjust those names freely, but keep the statements. B0/B1 and B5 identify
+  compiled declarations.
+- G1's exact-count construction is complete in `AllCounts.lean` and
+  `Gridlock.lean`. B0 is complete in `Ring.lean`; B1 uses `Lanes.lean`,
+  `NonGridlock.lean`, and the prefix-rank counting theorem in `Enumeration.lean`.
+  `GridlockThresholds.lean` proves the forced-gridlock boundary among feasible
+  populations. B5 is complete in the separate TRAIN library linked below.
 
 Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 `f = torusStep w h hw hh = step E N`, and `f^t = iterate f t`.
 
 | Id | Obligation | Status of the mathematics | Depends on |
 |---|---|---|---|
-| B0 | Ring arithmetic helpers | elementary | — |
-| B1 | G2: no forced gridlock below full occupancy | complete proof below | B0, Kernel |
+| B0 | Ring arithmetic helpers | kernel-checked in `Ring.lean`, including bounded reachability | `Torus` |
+| B1 | G2: no forced gridlock below full occupancy | kernel-checked exact-count construction and all-time non-jamming; forced boundary proved for n≤WH | B0, `Kernel`, `Enumeration`, `Lanes` |
 | B2 | Coset identity ⟨(1,−1)⟩ = ker φ | complete proof below (Bézout) | — |
 | B3 | Lemma R: static ⟺ perpetual free flow | complete proof below | B0, B2, Kernel |
 | B4 | Theorem F: densest free flow | proof outline; the packing step needs care | B3 |
@@ -29,30 +31,44 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 
 ---
 
-## B0. Ring arithmetic helpers
+## B0. Ring arithmetic helpers: completed
+
+[`BML/Ring.lean`](lean/BML/Ring.lean) proves these statements for the actual
+cyclic coordinates used by the CLASSIC kernel:
 
 ```lean
 theorem cyclicNext_val (n : Nat) (hn : 0 < n) (i : Fin n) :
     (cyclicNext n hn i).val = (i.val + 1) % n
 
-theorem iterate_cyclicNext_val (n : Nat) (hn : 0 < n) (i : Fin n) (k : Nat) :
+theorem iterate_cyclicNext_val (n : Nat) (hn : 0 < n) (k : Nat) (i : Fin n) :
     (iterate (cyclicNext n hn) k i).val = (i.val + k) % n
+
+theorem cyclicNext_reaches_lt (n : Nat) (hn : 0 < n) (i j : Fin n) :
+    ∃ k, k < n ∧ iterate (cyclicNext n hn) k i = j
 ```
 
 *Proof.*
+
 - First lemma: case `i.val + 1 < n` (then `Nat.mod_eq_of_lt`), else
   `i.val + 1 = n` (then `Nat.mod_self`).
 - Second lemma: induction on `k`, using `Nat.mod_add_mod`.
 
-**Corollary (reachability).** For `i j : Fin n`, take `k = (j.val + n - i.val) % n`.
-Then `iterate (cyclicNext n hn) k i = j`; check with `Fin.ext` and `omega` on the values.
+**Reachability.** The compiled proof takes `k = j.val - i.val` when `i.val ≤ j.val`,
+and `k = n + j.val - i.val` otherwise. The modular formula, `Fin.ext`, and the
+coordinate bounds prove that k<n and the target is j. `cyclicNext_reaches`
+forgets the bound; `iterate_cyclicNext_period` proves return after n steps,
+including singleton rings.
 
 ---
 
-## B1. G2: some configuration with n cars never gridlocks, for 0 ≤ n < WH
+## B1. G2: completed for every 0 ≤ n < WH
+
+[`BML/NonGridlock.lean`](lean/BML/NonGridlock.lean) proves the following theorem
+for every positive rectangle. E, N, and f abbreviate the actual directions and
+step function as above.
 
 ```lean
-theorem exists_never_frozen (w h : Nat) (hw : 0 < w) (hh : 0 < h)
+theorem exists_never_jam_with_count (w h : Nat) (hw : 0 < w) (hh : 0 < h)
     (n : Nat) (hn : n < w * h) :
     ∃ s : Config (Position w h), carCount w h s = n ∧
       ∀ t, ¬ Jam E N (iterate f t s)
@@ -66,14 +82,16 @@ For `n = 0`, use the empty state with `empty_not_jam` and `empty_fixed`. Below, 
 
 **Lemma B1.1 (a mixed row exists).** Let y₀ = 0 if n ≤ (w−1)·h, else y₀ = h−1. Row y₀ holds
 an east car at x = 0 and an empty cell at x = w−1.
+
 - If n ≤ (w−1)·h: the car is at index 0 < n, and the hole is at index (w−1)·h ≥ n.
 - Otherwise the car is at index h−1 < h ≤ (w−1)·h < n, and the hole is at index w·h−1 ≥ n.
 
-Both cases are pure `omega` once the indices are written out.
+`eastColumnPrefix_mixed_row` establishes the product bounds and closes the
+index inequalities with `omega`.
 
 **Count.** `k ↦ (k / h, k % h)` is a bijection from `{k < n}` onto the east cells, so
-`carCount = n`. Use `carCount_of_rank` from `Enumeration.lean` with the
-column-major rank bijection, or an explicit `List.range n` permutation argument.
+`carCount = n`. `eastColumnPrefix_carCount` applies `carCount_of_rank` from
+`Enumeration.lean` with this column-major rank bijection and its inverse.
 
 **Invariant.** `I y₀ s := (∀ p, s p ≠ .north) ∧ (∃ x, s (x, y₀) = .east) ∧ (∃ x, s (x, y₀) = .empty)`.
 
@@ -86,12 +104,14 @@ with `c = .north`.
 
 **Lemma B1.4 (a row's car persists).** If `s (x, y₀) = .east`, then some x′ has
 `halfStep E .east s (x′, y₀) = .east`.
+
 - If the car moves: `moving_destination_filled`, with x′ = `cyclicNext x`. The east
   neighbour keeps y.
 - If it does not move: unfold `halfStep` at `(x, y₀)`; the car stays.
 
 **Lemma B1.5 (a row's hole persists).** If `s (x, y₀) = .empty`, then some x′ has
 `halfStep E .east s (x′, y₀) = .empty`.
+
 - If `s (E.prev (x, y₀)) = .east`, that car can move, since its east cell is `(x, y₀)`,
   which is empty. By `moving_source_emptied` its source `E.prev (x, y₀)`, still in row y₀,
   becomes empty.
@@ -102,6 +122,7 @@ neighbour saw it occupied. That is exactly why `moving_source_emptied` holds.
 
 **Lemma B1.6 (a mixed ring has a mover).** If row y₀ has an east car at x₀ and an empty cell
 at x₁, then some p in row y₀ has `CanMove E .east s p`.
+
 - Let `cᵢ = (iterate (cyclicNext w hw) i x₀, y₀)`.
 - Prove by induction on i: `s cᵢ = .empty → ∃ p, CanMove E .east s p`.
   - i = 0 is impossible, because c₀ is the car.
@@ -112,6 +133,7 @@ at x₁, then some p in row y₀ has `CanMove E .east s p`.
   is needed.
 
 **Assembly.**
+
 1. `I y₀ s → I y₀ (f s)`: combine B1.2–B1.5. The north phase acts on a state with no
    north cars (B1.3), so it is the identity (B1.2).
 2. `I y₀ s → ¬ Frozen E N s`: B1.6 gives a mover, which contradicts `Blocked E .east s`.
@@ -121,6 +143,28 @@ at x₁, then some p in row y₀ has `CanMove E .east s p`.
 rows. The east phase is the identity (B1.2 with species swapped), and B1.4–B1.6 run along
 `N`. Alternatively, fill `s (x, y) = .north ↔ y.val < n` and work in column x = 0, which
 holds n ≥ 1 cars and h − n ≥ 1 holes.
+
+**Compiled declarations.** `Lanes.lean` defines `EastMixedRow` and
+`NorthMixedColumn`. `halfStep_eq_of_absent_species` proves B1.2;
+`EastMixedRow.halfStep` combines B1.3–B1.5; `EastMixedRow.has_mover` proves
+B1.6 from B0 reachability. The `.step`, `.iterate`, and `.never_jam` theorems
+assemble the invariant, with dual declarations for a north-only column.
+`nonGridlockWith` selects the appropriate prefix, `nonGridlockWith_carCount`
+proves its count, and `nonGridlockWith_never_jam` proves the all-time conclusion.
+
+The empty configuration is frozen but is not `Jam`, which requires a car.
+This is why the theorem says **never jammed**, rather than never frozen.
+The 1×1 torus has just the sub-full case n=0; its n=1 configurations are already
+CLASSIC jams. Positive constructions retain an eligible mover but need not
+have every car moving, so neither speed one nor eventual free flow is claimed.
+
+**Forced-gridlock corollary.** `GridlockThresholds.lean` proves
+`carCount_eq_area_iff`, `full_carCount_is_jam`, and
+`forced_eventual_jam_iff`: for positive w,h and `n ≤ w*h`, every n-car
+configuration eventually reaches a nonempty jam if and only if `n = w*h`.
+Full occupancy jams at time zero; G2 supplies a counterexample at every
+smaller count. The feasibility assumption excludes the vacuous universal
+statement at n>w*h.
 
 ---
 
