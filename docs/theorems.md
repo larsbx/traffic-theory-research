@@ -583,7 +583,7 @@ Bernstein-coefficient certificate. Each difference b_{n+1} − b_n equals (jam-c
 jam-destroying single-car additions)/(number of pairs), so configurationwise non-monotonicity
 is outweighed level by level. See the
 [finite iid monotonicity note](research/2026-11-18-finite-iid-monotonicity.md). The fixed-count
-fraction is *not* monotone in general: exactly, b₇ < b₆ on 2×12 and 2×14, while monotonicity
+fraction is *not* monotone in general: exactly, b₇ < b₆ on 2×11, 2×12 and 2×14, while monotonicity
 of q itself is open there. This settles nothing asymptotically.
 
 ## 9. Next targets

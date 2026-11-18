@@ -77,11 +77,16 @@ def test_rooted_level_counter_matches_exhaustive(h, w, n):
     assert level_jam_count(h, w, n) == r["table"][str(n)]["jam"]
 
 
-def test_monotonicity_fails_on_2x12():
-    """Exact counterexample beyond the exhaustive sizes (data from bml.levels, ~3 min to recompute):
-    on 2×12, b_7 < b_6. Jam probability is NOT monotone in the car count in general."""
-    d = json.loads((ROOT / "data" / "level-counterexample.json").read_text())
-    for rec in d:
-        N = rec["h"] * rec["w"]
-        b = {int(n): Fraction(j, comb(N, int(n)) * 2 ** int(n)) for n, j in rec["jam_by_level"].items()}
-        assert b[7] < b[6]
+def test_fixed_count_monotonicity_fails_on_thin_tori():
+    """Exact counts from bml.levels (minutes to recompute). On 2×11, 2×12 and 2×14,
+    b_7 < b_6, so jam probability is NOT monotone in the car count in general. On 2×10,
+    levels 5–8 are still nondecreasing."""
+    d = {(r["h"], r["w"]): r for r in json.loads((ROOT / "data" / "level-counterexample.json").read_text())}
+    def b(h, w):
+        N = h * w
+        return {int(n): Fraction(j, comb(N, int(n)) * 2 ** int(n))
+                for n, j in d[(h, w)]["jam_by_level"].items()}
+    for hw in [(2, 11), (2, 12), (2, 14)]:
+        assert b(*hw)[7] < b(*hw)[6]
+    b10 = b(2, 10)
+    assert b10[5] <= b10[6] <= b10[7] <= b10[8]

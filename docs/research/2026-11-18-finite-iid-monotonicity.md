@@ -6,7 +6,7 @@ asks whether the iid-averaged jam probability q_L(p) is monotone in the density 
 disproves monotonicity configuration by configuration, and for the mixed-cycle event M. It
 leaves q_L itself open. This note settles the finite-size question exactly for every torus
 with W·H ≤ 16 and for 2×9: q is nondecreasing there. It also shows exactly that the stronger
-fixed-count statement fails on 2×12 and 2×14. It makes no asymptotic claim and no novelty
+fixed-count statement fails on 2×11, 2×12 and 2×14. It makes no asymptotic claim and no novelty
 claim.
 
 CLASSIC rule throughout. The iid law μ_p puts E, N or nothing in each cell with probabilities
@@ -103,25 +103,29 @@ classifies each configuration by Floyd cycle detection: a configuration jams iff
 orbit reaches is a fixed point. There is no time horizon. The counter reproduces the
 exhaustive counts on 2×8, 3×4, 4×3 and 3×3 (`tests/test_iid.py`).
 
-| torus | b₆ | b₇ |
-|---|---|---|
-| 2×12 | 45685/2153536 ≈ 0.021214 | 38251/1845888 ≈ 0.020722 |
-| 2×14 | 4729/287040 ≈ 0.016475 | 147133/9472320 ≈ 0.015533 |
+| torus | b₆ | b₇ | b₇ ≥ b₆? |
+|---|---|---|---|
+| 2×10 | 95/3264 ≈ 0.029105 | 7379/248064 ≈ 0.029746 | yes (levels 5–8 all nondecreasing) |
+| **2×11** | 3561/144704 ≈ 0.024609 | 12181/496128 ≈ 0.024552 | **no** |
+| 2×12 | 45685/2153536 ≈ 0.021214 | 38251/1845888 ≈ 0.020722 | **no** |
+| 2×14 | 4729/287040 ≈ 0.016475 | 147133/9472320 ≈ 0.015533 | **no** |
 
-So **b₇ < b₆ on 2×12 and 2×14**. For a uniformly random configuration, the jam probability is
+So **b₇ < b₆ on 2×11, 2×12 and 2×14**. At 22 cells, 2×11 is the smallest torus where a
+decrease is known. 2×10 has none at levels 5–8, but its other levels and other 20–21-cell
+shapes were not checked. For a uniformly random configuration, the jam probability is
 not monotone in the car count in general. The counts are in
 `data/level-counterexample.json`, and §3's theorem is sharp in this sense: it holds up to 16
-cells and on 2×9, and fails by 24 cells.
+cells and on 2×9, and fails by 22 cells.
 
 **Still open at these sizes.** Whether the iid probability q(p) is nondecreasing. A dip in b
 makes one Bernstein coefficient of q′ negative, but q′ can stay positive everywhere. Deciding
-it exactly needs every level of 2×12, which is 3²⁴ ≈ 2.8·10¹¹ states, beyond the exhaustive
+it exactly needs every level of 2×11, which is 3²² ≈ 3.1·10¹⁰ states, beyond the exhaustive
 method.
 
 ## 5. What this does and does not show
 
 - It answers the roadmap's monotonicity question for W·H ≤ 16 and 2×9 only. The stronger
-  fixed-count monotonicity fails on 2×12 (§4), so no proof can establish it in general. Nothing here
+  fixed-count monotonicity fails on 2×11 (§4), so no proof can establish it in general. Nothing here
   implies monotonicity of q_L for large L, or the existence of a threshold.
 - Configurationwise non-monotonicity (§4 of theorems.md, and the 13→14-car square
   counterexample in the probability note) is fully compatible with monotone averages. The
@@ -129,9 +133,9 @@ method.
 - The mixed-cycle probability m_3(p) decreases near p = 1 (probability note, §6), while q_3
   is increasing. The difference is the full-lane event R, which is in J but not in M.
 - §2 suggested proving monotonicity by showing that jam-creating additions dominate
-  jam-destroying ones level by level. §4 shows that this is false on 2×12, so that route
+  jam-destroying ones level by level. §4 shows that this is false on 2×11, so that route
   cannot prove monotonicity of q in general. A proof for q would have to use the averaging
   over n built into the iid law.
-- The parity effect on 2×W (dips at even n) suggests even-length east lanes matter:
-  two-row tori with an even number of east cars per lane may favour moving configurations.
-  This is a conjecture from the data, not a result.
+- On thin 2×W tori the decrease appears at the step n = 6 → 7 on widths 11, 12 and 14, and
+  the Monte Carlo z-scores are worst at even n. Why this level is special is not understood.
+  The data alone don't support a parity rule: width 11 is odd.
