@@ -15,19 +15,22 @@ connections to tiling and dynamical-systems theory.
   - gridlock is never forced below full density;
   - free flow is rigid, and the densest free flow is (WH/g)·⌊(g+⌊g/3⌋)/2⌋ with
     g = gcd(W,H), density → 2/3 on L×L;
-  - adding one car can un-jam a configuration (non-monotonicity).
+  - adding one car can un-jam a configuration, even reviving all the original cars
+    (non-monotonicity);
+  - under Austin–Benjamini's train rule, the least stuck configuration has W+H cars.
 
 ## Code
 
-- `bml/model.py` — pure, vectorised dynamics.
+- `bml/model.py` — pure, vectorised dynamics (classical and Austin–Benjamini train rule).
 - `bml/exhaustive.py` — exact classification of every state (pointer doubling on the step map).
 - `bml/extremal.py` — constructions and characterisations.
 - `bml/analysis.py` — tables for all tori with WH ≤ 16, written to `data/exhaustive.json` (~6 min).
+- `bml/nonmonotone.py` — un-jamming pairs with car identities tracked.
 - `bml/montecarlo.py` — empirical jam curves (not a proof).
 
 ```sh
 pip install numpy pytest hypothesis
-python -m pytest -q          # 405 tests
+python -m pytest -q          # 479 tests
 python -m bml.analysis 16    # regenerate data/exhaustive.json
 ```
 
