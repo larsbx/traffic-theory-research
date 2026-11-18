@@ -6,3 +6,4 @@ import BML.Transport
 import BML.Capture
 import BML.Lanes
 import BML.Formation
+import BML.Fixation

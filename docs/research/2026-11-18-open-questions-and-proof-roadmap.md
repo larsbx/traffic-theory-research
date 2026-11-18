@@ -11,6 +11,15 @@ PR status in this note is a dated snapshot, not a continuously updated assertion
 The [formal register](../../formal/README.md), [TRAIN register](../../formal/TRAIN.md),
 and [Traffic register](../../formal/traffic-layer.md) give the detailed scopes.
 
+**Subsequent probability follow-up:** the
+[tagged-fixation note](2026-11-18-tagged-fixation-and-gridlock.md) adds a complete
+Lean proof that some original car eventually stops iff global jam occurs or an
+initial full monochromatic lane exists. Its prose Palm calculation connects
+one tagged car's fixation probability to global jam probability with an
+explicit vanishing error. This supplies an alternative core-to-route-cover
+proof without cycle extraction; the fixed-positive-density questions in §5
+remain unresolved. The status table below retains its original pinned snapshot.
+
 | Status at this snapshot | Consequence for this roadmap |
 | --- | --- |
 | [PR #9](https://github.com/larsbx/traffic-theory-research/pull/9) and [PR #11](https://github.com/larsbx/traffic-theory-research/pull/11) merged | The complete rectangular TRAIN jam theorem and strict sparse-square eventual-speed-one theorem are already in Lean. |

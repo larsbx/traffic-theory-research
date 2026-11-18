@@ -27,7 +27,25 @@ elab "audit_bml" : command => do
     ``BML.fullEastRow_excludes_fullNorthColumn,
     ``BML.northFreeColumn_iterate_iff, ``BML.northFreeStrip_iterate_iff,
     ``BML.eastRowsBelow_iterate_iff,
-    ``BML.staircase_pair_preimage_iff, ``BML.staircase_formed]
+    ``BML.staircase_pair_preimage_iff, ``BML.staircase_formed,
+    ``BML.same_cell_no_round_move,
+    ``BML.tagEventuallyStopped_iff_finitely_many_moves,
+    ``BML.hasPermanentSite_iff_hasEventuallyStoppedCar,
+    ``BML.occupied_forever_has_permanent_site,
+    ``BML.eventuallyPermanent_east_successor,
+    ``BML.eventuallyPermanent_north_successor,
+    ``BML.future_blockingCore_of_permanent_site,
+    ``BML.BlockingCore.full_east_row_of_missed_row,
+    ``BML.BlockingCore.full_north_column_of_missed_column,
+    ``BML.BlockingCore.routeCover_of_no_full_lane,
+    ``BML.BlockingCore.routeCover_or_full_lane,
+    ``BML.BlockingCore.jammed_by_budget_of_no_full_lane,
+    ``BML.eventuallyJammed_every_tag_stops,
+    ``BML.allCarsEventuallyStopped_iff_empty_or_jam,
+    ``BML.hasPermanentSite_iff_jam_or_full_lane,
+    ``BML.hasEventuallyStoppedCar_iff_jam_or_full_lane,
+    ``BML.every_site_empty_arbitrarily_late,
+    ``BML.every_tag_moves_arbitrarily_late]
   for name in required do
     match env.find? name with
     | none => throwError "BML audit missing required theorem {name}"
