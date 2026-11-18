@@ -22,9 +22,9 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B2 | Coset identity ⟨(1,−1)⟩ = ker φ | complete proof below (Bézout) | — |
 | B3 | Lemma R: static ⟺ perpetual free flow | complete proof below | B0, B2, Kernel |
 | B4 | Theorem F: densest free flow | complete proof below; DP-checked to g = 6 | B3 |
-| B6 | Low density forces speed one (Austin–Benjamini Prop 1, CLASSIC, W×H) | complete proof below; explicit bound m(g−2) | B0, Transport, car count |
 | B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
 | B6 | TRAIN eventual speed one on sparse N×N squares | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `Train/Diagonals`, `Train/FreeFlow`, actual diagonal transport/release |
+| B7 | Low density forces speed one (Austin–Benjamini Prop 1, CLASSIC, W×H) | complete proof below; explicit bound m(g−2) | B0, Transport, car count |
 
 ---
 
@@ -324,69 +324,7 @@ Chaining B4.8, B4.9 and B4.10 gives carCount ≤ M·V(g).
 **B4.11 (class size).** |φ⁻¹(c)| = M. Each row meets each class in exactly w/g cells: the
 cells (x, y) with x ≡ c − y (mod g) form an arithmetic progression of step g in ℤ_w.
 
-## B6. Low density forces speed one (Austin–Benjamini Prop 1, CLASSIC rule, any W×H)
-
-Austin–Benjamini prove this for their queue ("train") rule on N×N. Their argument transfers to
-the CLASSIC kernel, and to every W×H with g = gcd(w, h) in place of N. The transfer, and the
-explicit bound below, are our derivation.
-
-```lean
-/-- Time-corrected class occupancy: some car at time t lies in class (z + t) mod g. -/
-def Occ (s) (t z : Nat) : Prop := ∃ p, f^t s p ≠ .empty ∧ φ p = (z + t) % g
-
-theorem low_density_speed_one (s) (hm : 2 * carCount w h s < Nat.gcd w h) :
-    ∃ T, ∀ t ≥ T, AllMove (f^t s)
-
-/-- Explicit form: at most m·(g − 2) steps contain a blocked car. -/
-theorem low_density_block_bound (s) (hm : 2 * carCount w h s < Nat.gcd w h) (T : Nat) :
-    ((List.range T).filter fun t => ¬ AllMove (f^t s)).length ≤ carCount w h s * (g - 2)
-```
-
-If g ≤ 2, the hypothesis forces m = 0 and the statement is trivial. Assume g ≥ 3. Write
-"Y-value z at time t" for the class (z + t) mod g. A car that moves keeps its Y-value; a blocked
-car's Y-value drops by 1.
-
-**B6.0 (one step advances the class by 1).** φ (E.next p) = φ p + 1 and φ (N.next p) = φ p + 1
-(mod g). The wrap-around x = w−1 → 0 is harmless because g ∣ w (B0); likewise g ∣ h.
-
-**B6.1 (release).** `Occ s t z ∧ ¬ Occ s t (z+1) → Occ s (t+1) z`.
-- If class D = z + t holds an east car, its target lies in class D + 1, which is empty. So it
-  moves, and lands in class D + 1, which is Y-value z at time t + 1.
-- If D holds no east car, after the east phase class D + 1 is still empty: east cars enter it only
-  from D, and there are none. So the north cars of D move (`CanMove` on the intermediate state).
-
-**B6.2 (survival).** `Occ s t (z+1) → Occ s (t+1) z ∨ Occ s (t+1) (z+1)`. Each car survives a
-step, moving at most one cell east or north (`transport_preserves_car` for each phase, with B6.0).
-
-**B6.3 (empty pairs persist backwards).**
-`¬ Occ s (t+1) z ∧ ¬ Occ s (t+1) (z+1) → ¬ Occ s t z ∧ ¬ Occ s t (z+1)`.
-- If `Occ s t (z+1)`, then B6.2 contradicts the hypothesis.
-- If `Occ s t z` and not `Occ s t (z+1)`, then B6.1 contradicts it.
-
-By induction on T − t: an empty pair at time T has been empty at every t ≤ T.
-
-**B6.4 (an empty pair always exists).** If 2·carCount < g, then for every t there is z with
-`¬ Occ s t z ∧ ¬ Occ s t (z+1)`.
-- At most carCount Y-values are occupied (the car count is conserved, by PR #7's conservation).
-- Double counting: Σ_z ([Occ z] + [Occ (z+1)]) = 2·#occupied ≤ 2m < g. So some z has both
-  indicators 0. This is the same trick as B4.2.
-
-**B6.5 (each car is blocked at most g − 2 times).** Fix T, and let z be the empty pair at time T
-from B6.4. By B6.3, Y-values z and z+1 are empty at every t ≤ T.
-- Follow one car with `transport`. Its Y-value never equals z or z+1 before T.
-- It changes only by −1 steps.
-- Starting at Y₀ ∉ {z, z+1}, it would reach z after (Y₀ − z) mod g ≤ g − 1 blocks. So it is
-  blocked at most (Y₀ − z) mod g − 1 ≤ g − 2 times in [0, T).
-
-**Assembly.**
-- A step contains a blocked car iff `¬ AllMove`.
-- Summing B6.5 over the m cars bounds those steps in [0, T) by m·(g − 2), for every T. This gives
-  `low_density_block_bound`.
-- Hence only finitely many steps contain a blocked car, which gives `low_density_speed_one`.
-
-**Evidence.** `tests/test_blueprint.py`:
-- B6.1 and B6.2 checked on every state of 2×2, 3×3, 2×4, 4×2, 2×6;
-- the per-car block bound checked on random runs over N×N and N×2N with 2m < g.
+---
 
 ## B5. Theorem T: completed TRAIN formalization
 
@@ -472,6 +410,72 @@ every terminal-cycle edge. Eight targeted orbit certificates add 53 transition
 rows; ten new Quint tests and six controls check the clock, counts, recurrence,
 enumeration, and square scope. See [TRAIN.md](TRAIN.md) for exact domains,
 commands, and source-bound acceptance status.
+
+---
+
+## B7. Low density forces speed one (Austin–Benjamini Prop 1, CLASSIC rule, any W×H)
+
+Austin–Benjamini prove this for their queue ("train") rule on N×N. Their argument transfers to
+the CLASSIC kernel, and to every W×H with g = gcd(w, h) in place of N. The transfer, and the
+explicit bound below, are our derivation.
+
+```lean
+/-- Time-corrected class occupancy: some car at time t lies in class (z + t) mod g. -/
+def Occ (s) (t z : Nat) : Prop := ∃ p, f^t s p ≠ .empty ∧ φ p = (z + t) % g
+
+theorem low_density_speed_one (s) (hm : 2 * carCount w h s < Nat.gcd w h) :
+    ∃ T, ∀ t ≥ T, AllMove (f^t s)
+
+/-- Explicit form: at most m·(g − 2) steps contain a blocked car. -/
+theorem low_density_block_bound (s) (hm : 2 * carCount w h s < Nat.gcd w h) (T : Nat) :
+    ((List.range T).filter fun t => ¬ AllMove (f^t s)).length ≤ carCount w h s * (g - 2)
+```
+
+If g ≤ 2, the hypothesis forces m = 0 and the statement is trivial. Assume g ≥ 3. Write
+"Y-value z at time t" for the class (z + t) mod g. A car that moves keeps its Y-value; a blocked
+car's Y-value drops by 1.
+
+**B7.0 (one step advances the class by 1).** φ (E.next p) = φ p + 1 and φ (N.next p) = φ p + 1
+(mod g). The wrap-around x = w−1 → 0 is harmless because g ∣ w (B0); likewise g ∣ h.
+
+**B7.1 (release).** `Occ s t z ∧ ¬ Occ s t (z+1) → Occ s (t+1) z`.
+- If class D = z + t holds an east car, its target lies in class D + 1, which is empty. So it
+  moves, and lands in class D + 1, which is Y-value z at time t + 1.
+- If D holds no east car, after the east phase class D + 1 is still empty: east cars enter it only
+  from D, and there are none. So the north cars of D move (`CanMove` on the intermediate state).
+
+**B7.2 (survival).** `Occ s t (z+1) → Occ s (t+1) z ∨ Occ s (t+1) (z+1)`. Each car survives a
+step, moving at most one cell east or north (`transport_preserves_car` for each phase, with B7.0).
+
+**B7.3 (empty pairs persist backwards).**
+`¬ Occ s (t+1) z ∧ ¬ Occ s (t+1) (z+1) → ¬ Occ s t z ∧ ¬ Occ s t (z+1)`.
+- If `Occ s t (z+1)`, then B7.2 contradicts the hypothesis.
+- If `Occ s t z` and not `Occ s t (z+1)`, then B7.1 contradicts it.
+
+By induction on T − t: an empty pair at time T has been empty at every t ≤ T.
+
+**B7.4 (an empty pair always exists).** If 2·carCount < g, then for every t there is z with
+`¬ Occ s t z ∧ ¬ Occ s t (z+1)`.
+- At most carCount Y-values are occupied (the car count is conserved, by PR #7's conservation).
+- Double counting: Σ_z ([Occ z] + [Occ (z+1)]) = 2·#occupied ≤ 2m < g. So some z has both
+  indicators 0. This is the same trick as B4.2.
+
+**B7.5 (each car is blocked at most g − 2 times).** Fix T, and let z be the empty pair at time T
+from B7.4. By B7.3, Y-values z and z+1 are empty at every t ≤ T.
+- Follow one car with `transport`. Its Y-value never equals z or z+1 before T.
+- It changes only by −1 steps.
+- Starting at Y₀ ∉ {z, z+1}, it would reach z after (Y₀ − z) mod g ≤ g − 1 blocks. So it is
+  blocked at most (Y₀ − z) mod g − 1 ≤ g − 2 times in [0, T).
+
+**Assembly.**
+- A step contains a blocked car iff `¬ AllMove`.
+- Summing B7.5 over the m cars bounds those steps in [0, T) by m·(g − 2), for every T. This gives
+  `low_density_block_bound`.
+- Hence only finitely many steps contain a blocked car, which gives `low_density_speed_one`.
+
+**Evidence.** `tests/test_blueprint.py`:
+- B7.1 and B7.2 checked on every state of 2×2, 3×3, 2×4, 4×2, 2×6;
+- the per-car block bound checked on random runs over N×N and N×2N with 2m < g.
 
 ---
 
