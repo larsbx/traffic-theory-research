@@ -108,3 +108,38 @@ def test_B4_floor_superadditive_and_V():
         for b in range(60):
             assert (2 * a) // 3 + (2 * b) // 3 <= (2 * (a + b)) // 3
     assert all((g + g // 3) // 2 == (2 * g) // 3 for g in range(200))
+
+
+def _occupied_classes(s, g):
+    y, x = np.indices(s.shape)
+    return {int(c) for c in ((x + y) % g)[s != 0]}
+
+
+@pytest.mark.parametrize("h,w", [(2, 2), (3, 3), (2, 4), (4, 2), (2, 6)])
+def test_B6_release_and_survival_exhaustive(h, w):
+    """B6.1: Occ_t(z) ∧ ¬Occ_t(z+1) → Occ_{t+1}(z).   B6.2: Occ_t(z+1) → Occ_{t+1}(z) ∨ Occ_{t+1}(z+1)."""
+    g = gcd(h, w)
+    for s in decode(np.arange(3 ** (h * w), dtype=np.int64), h, w):
+        O0 = _occupied_classes(s, g)
+        O1 = {(c - 1) % g for c in _occupied_classes(step(s)[0], g)}   # Y-values at t+1
+        for z in range(g):
+            if z in O0 and (z + 1) % g not in O0:
+                assert z in O1
+            if (z + 1) % g in O0:
+                assert z in O1 or (z + 1) % g in O1
+
+
+@pytest.mark.parametrize("seed", range(40))
+def test_B6_each_car_blocked_at_most_g_minus_2_times(seed):
+    from bml.nonmonotone import labelled_step
+    rng = np.random.default_rng(seed)
+    N = int(rng.integers(5, 15)); h, w = (N, N) if seed % 2 else (N, 2 * N)
+    g = gcd(h, w); m = int(rng.integers(1, (g - 1) // 2 + 1))
+    s = np.zeros(h * w, np.int8); s[rng.choice(h * w, m, replace=False)] = rng.choice([EAST, NORTH], m)
+    s = s.reshape(h, w); ids = np.full(s.shape, -1); ids[s != 0] = np.arange(m)
+    blocks = np.zeros(m, int)
+    for _ in range(4 * g * m + 50):
+        s, ids, moved = labelled_step(s, ids)
+        for i in set(range(m)) - moved:
+            blocks[i] += 1
+    assert blocks.max() <= g - 2
