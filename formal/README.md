@@ -10,39 +10,46 @@ different scopes. This register records those distinctions explicitly.
 
 ## Update-rule boundary
 
-Both `BML` and `Traffic`, in Lean and Quint, implement **CLASSIC**: a destination
+The `BML` and `Traffic` suites, in Lean and Quint, implement **CLASSIC**: a destination
 must be vacant in the state read at the start of that species' half-step.
-The separate Python **TRAIN** implementation moves same-species queues together
-and rotates full single-species rings. None of the formal coverage or replay
-receipts on this page establishes a TRAIN theorem or correspondence result.
-In particular, a rotating full ring has an unchanged occupancy pattern with
-moving cars, so the CLASSIC equivalence between a fixed point and no movement
-(G0) is not valid for TRAIN. The prose TRAIN result and its bounded Python
-checks are recorded separately in [the theorem document](../docs/theorems.md).
+The separate `BML.Train` Lean namespace and `Train.qnt` model implement
+**TRAIN**, matching Python's queue propagation and full single-species ring
+rotation. Its complete rectangular jam threshold, movement/count invariants,
+and finite replay domains are recorded in [TRAIN.md](TRAIN.md).
+A rotating full ring has unchanged occupancy with moving cars, so the CLASSIC
+equivalence between a fixed point and no movement (G0) is not valid for TRAIN.
+The TRAIN library proves this distinction and states its threshold using
+actual zero movement.
 
-## Two complementary proof suites
+## Separately scoped proof suites
 
 | Suite | Proved constructions and checks | Detailed entry point |
 | --- | --- | --- |
 | `BML` / `BML.qnt` | Finite-torus update semantics, species transport bijections, nonempty-jam boundaries, persistent cores and route-cover capture, G1/F arithmetic components, and a strong identity-aware non-monotonicity witness. Separate finite replays compare Lean and Quint with NumPy. | The register and commands below; [Lean package](lean/README.md). |
 | `Traffic` / `traffic.qnt` | General-grid freezing, exact 21-Wang-tile recoding, a constructed infinite staircase for any supplied direction word, finite Fibonacci count and algebraic-length identities, and winding conditional on modular closure. Six finite grids are compared directly between Lean and Quint. | [Traffic coverage and acceptance](traffic-layer.md); [Traffic inventory](coverage.json). |
+| `BML.Train` / `Train.qnt` | Queue and ring movement, transport bijections and numeric conservation, actual zero-movement characterization, and the full theorem that an n-car jam exists iff W+H≤n≤WH on every positive rectangle. | [TRAIN coverage and acceptance](TRAIN.md); [TRAIN inventory](train-coverage.json). |
 
-Both suites use old-state simultaneous eligibility and east-then-north full
-steps. Their types, predicates, and executable comparison contracts are
+All suites use simultaneous half-steps and east-then-north full steps. The
+CLASSIC and TRAIN eligibility rules differ. Their types, predicates, and executable comparison contracts are
 separate. No general `BML`–`Traffic` equivalence or unbounded cross-language
 refinement theorem is asserted. Their finite replay counts must not be added
 and described as a single common domain or theorem.
 
-The shared dependency-free Lean package pins Lean 4.34.1. `lake build` builds
-`BML`, `bml_replay`, `Traffic`, and `traffic_export`. `Audit.lean` remains the BML
-audit; `TrafficAudit.lean` checks the Traffic declarations and exporter.
+The shared dependency-free Lean package pins Lean 4.34.1. It contains the
+`BML`, `Traffic`, and `Train` libraries, with their `bml_replay`,
+`traffic_export`, and `train_replay` executable targets. `Audit.lean` remains
+the CLASSIC BML audit; `TrafficAudit.lean` checks the Traffic declarations and
+exporter, and `TrainAudit.lean` checks the TRAIN layer.
 `formal/coverage.json` is the Traffic suite's inventory, not a replacement for
 the BML audit's required theorem list.
 
 The rest of this page retains the **BML finite-torus coverage register**.
 Run `python3 scripts/check_formal.py` for the separate Traffic acceptance gate,
 after installing the same locked Quint dependency; its instructions and full
-scope are in [traffic-layer.md](traffic-layer.md).
+scope are in [traffic-layer.md](traffic-layer.md). Run
+`python3 scripts/check_train.py` for the separate TRAIN gate described in
+[TRAIN.md](TRAIN.md). A successful receipt from one suite does not certify the
+other suites.
 
 ## BML finite-torus coverage register
 
@@ -95,8 +102,8 @@ cross-language replay. This is not an Apalache result or sampled model checking.
 
 ## Finite evidence scopes
 
-All Lean/Quint replay rows in this table use CLASSIC; TRAIN is not in these
-comparison domains.
+All Lean/Quint replay rows in this table use CLASSIC. The separate TRAIN
+domains and receipts are in [TRAIN.md](TRAIN.md#finite-executable-evidence).
 
 | Check | Exhaustive scope |
 |---|---|

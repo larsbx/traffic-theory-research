@@ -1,9 +1,18 @@
-# Lean finite-torus kernel
+# Lean proof suites
 
-This dependency-free package pins **Lean 4.34.1** and formalizes synchronous BML
-updates: east cars move simultaneously from the pre-east state, then north cars
-move simultaneously from the resulting state. Both torus dimensions must be
-positive. Singleton dimensions are included.
+This dependency-free package pins **Lean 4.34.1**. The `BML` and `Traffic`
+libraries implement **CLASSIC** updates, with vacant destinations required in
+the pre-half-step state. The `Train` library, in namespace `BML.Train`, implements
+**TRAIN** queue movement and full-ring rotation. All use simultaneous east then
+north full steps. Both torus dimensions must be positive; singleton dimensions
+are included.
+
+This page retains the detailed **CLASSIC BML finite-torus register**. See the
+[Traffic register](../traffic-layer.md) for its tiling/staircase layer and the
+[TRAIN register](../TRAIN.md) for the complete zero-movement existence theorem,
+numeric conservation, and bounded implementation comparisons. The CLASSIC
+fixed-point equivalence below does not hold for TRAIN occupancy: a rotating
+ring may keep the same colors in the same cells while cars move.
 
 ## Run
 
@@ -31,7 +40,7 @@ It does not embed Python-produced expected transitions.
 | Module | Results |
 |---|---|
 | `BML/Kernel.lean` | Moving sources empty and destinations fill; other species remain in place; a half-step is fixed iff its cars are blocked; a full east-then-north step is fixed iff both local blocking conditions hold; equivalence with no movement in either phase; frozen-state persistence, including after a transient; full occupancy freezes; the empty state is fixed but is not a jam. |
-| `BML/Transport.lean` | Explicit bijection between each species' cars before and after its phase: survival, injectivity, and surjectivity. Nonemptiness is preserved by a full step and every iterate. The finite cardinality consequence is justified by the bijection, while the executable `speciesCount` sum itself has no separate general equality theorem. |
+| `BML/Transport.lean` | Explicit bijection between each species' cars before and after its phase: survival, injectivity, and surjectivity. Nonemptiness is preserved by a full step and every iterate. The finite cardinality consequence is justified by the bijection; this CLASSIC module has no separate general equality theorem for the executable `speciesCount` sum. The TRAIN library supplies its own numeric conservation proofs. |
 | `BML/Capture.lean` | Successor-closed occupied cores persist. A supplied occupied closed walk yields a core (distinct sites are not required by this Lean declaration). Full-round tagged transport is bijective. Explicit core obstacles on every row and column give a kernel-derived cyclic-distance rank, a bound `M = n_E*(W-1) + n_N*(H-1)` on every finite prefix of tagged moves, and a nonempty jam by full round M. |
 | `BML/Torus.lean` | Positive finite cyclic coordinates with proved inverse shifts; the general kernel is instantiated on `Fin WIDTH × Fin HEIGHT`; executable base-three encoding, decoding, and counts. |
 | `BML/Arithmetic.lean` | Divisibility of positive winding lengths implies the `min(WIDTH, HEIGHT)` lower bound. The proposed class packing expression simplifies to `floor(2*g/3)` and attains exact `2/3` iff `3` divides `g`. These are arithmetic components of G1 and F. |
@@ -65,17 +74,48 @@ with an explicit integer movement bound, not a novelty claim.
 
 ## Audit and trust boundary
 
-`Audit.lean` traverses every `BML` declaration and its transitive axiom
+`Audit.lean` traverses every imported CLASSIC `BML` declaration and its transitive axiom
 dependencies. It checks that the required theorem names are present and rejects
 any axiom outside Lean's usual `propext`, `Quot.sound`, and `Classical.choice`.
 Thus incomplete proofs and native decision-result axioms fail the audit.
 Concrete witness proofs use kernel-reduced `decide`, and the infinite-time
 claims use induction.
 
-The replay executable provides finite comparison evidence against the Python
+The CLASSIC replay executable provides finite comparison evidence against the Python
 and Quint implementations. Such comparisons are not an all-size source
 refinement proof. General correctness of the encoding/counting routines is not
 claimed merely because they compile.
+
+## TRAIN library and executable
+
+`Train/Threshold.lean` proves, for every positive W,H, that a nonempty
+zero-movement n-car TRAIN state exists iff W+H≤n≤WH. Its explicit all-count
+constructor is connected to the executable kernel, and the singleton interval
+is empty. `Train/Conservation.lean` proves numeric species/population
+conservation and separates actual movement from occupancy equality.
+
+```sh
+cd formal/lean
+lake build Train train_replay
+lake env lean TrainAudit.lean
+.lake/build/bin/train_replay --max-cells 6
+.lake/build/bin/train_replay --construct 8
+```
+
+The standard replay is headerless TSV with ten fields:
+
+```text
+width,height,input,east,north,full,eastMoves,northMoves,cycleNorthMoves,stuck
+```
+
+`north` and `northMoves` refer to a north half-step on the original board;
+`full` and `cycleNorthMoves` use the state after the east half-step. These
+movement counts include homogeneous-ring rotation. The constructor mode emits
+the requested and actual populations before the standard row's eight fields
+after width and height. The Boolean `stuckCheck` is proved equivalent to the
+semantic `Stuck` predicate. `TrainAudit.lean` audits this layer separately;
+[`scripts/check_train.py`](../../scripts/check_train.py) compares its outputs
+with the actual Quint interpreter and Python TRAIN implementation.
 
 ## Remaining obligations
 

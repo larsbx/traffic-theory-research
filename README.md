@@ -18,7 +18,8 @@ connections to tiling and dynamical-systems theory.
   - adding a stationary car can make an original car move forever: a proved
     4×2 non-monotonicity witness; a Python identity replay on 3×4 shows one
     added car reviving all seven original cars;
-  - under Austin–Benjamini's train rule, the least stuck configuration has W+H cars;
+  - under Austin–Benjamini's train rule, the least stuck configuration has W+H
+    cars when W,H≥2; singleton dimensions admit no nonempty jam;
   - the square-density 2/3 observation is already in the 1992 literature, and
     a time-zero blocking-loop bound does not control eventual jamming.
 - [Freezing, nucleation, and BML gridlock](docs/research/2026-11-18-freezing-gridlock-nucleation.md)
@@ -29,8 +30,9 @@ connections to tiling and dynamical-systems theory.
   results do not determine a probabilistic jamming threshold.
 - [Formal coverage and validation](formal/README.md): the CLASSIC finite-torus
   `BML` proofs, identity-preserving transport and non-monotonicity witness, together
-  with the complementary `Traffic` tiling/staircase proofs, actual Quint
-  evaluation, bounded correspondence, and the remaining proof obligations.
+  with the complementary `Traffic` tiling/staircase proofs, the complete
+  [TRAIN rectangular jam theorem](formal/TRAIN.md), actual Quint evaluation,
+  bounded correspondence, and the remaining proof obligations.
 
 ## Code
 
@@ -57,12 +59,12 @@ PR's exact head and publishes separate Python, Lean, and Quint receipts.
 
 ## Formalization suites
 
-Both Lean libraries and both Quint suites formalize the **CLASSIC** rule:
-movement requires a vacant destination in the pre-half-step state. Python also
-implements **TRAIN**, where queues can move together and full rings rotate.
-The formal results and replays below do not cover TRAIN; an unchanged occupancy
-pattern can hide movement under that rule, so the CLASSIC G0 fixed-point result
-does not transfer.
+The `BML` and `Traffic` suites formalize the **CLASSIC** rule: movement requires
+a vacant destination in the pre-half-step state. The separate `BML.Train` Lean
+namespace and `Train.qnt` Quint model implement **TRAIN**, where queues can move
+together and full rings rotate. An unchanged occupancy pattern can hide TRAIN
+movement, so its jam predicate uses actual zero movement. The CLASSIC G0
+fixed-point result does not transfer.
 
 - **BML:** the finite-torus kernel, species transport bijections, local G0
   equivalences, permanent cores and route-cover capture bounds, arithmetic
@@ -76,6 +78,13 @@ does not transfer.
   closure. Its acceptance gate compares 3,120 board/phase cases between Lean
   and Quint across six small grids; see the
   [Traffic evidence register](formal/traffic-layer.md).
+- **TRAIN:** executable queue and ring semantics, car transport and numeric
+  species/population conservation, and the complete theorem that a nonempty
+  zero-movement n-car state exists exactly when W+H≤n≤WH, for every positive
+  rectangle. The interval is empty for singleton dimensions. The proof includes
+  a construction for every allowed count. Lean and Quint replay evidence is
+  recorded separately from this universal Lean theorem; see the
+  [TRAIN evidence register](formal/TRAIN.md).
 
 These are separately scoped proof and validation suites in one pinned Lean
 package. The replay domains are finite executable checks, and no general
@@ -90,11 +99,12 @@ The notes distinguish published theorems, published numerical or geometric
 analysis, direct mathematical derivations, and proposed research obligations.
 Direct derivations carry no claim of novelty.
 
-The repository contains an executable BML model, historical exhaustive tables
+The repository contains executable CLASSIC and TRAIN models, historical exhaustive tables
 (`data/exhaustive.json`), machine-checked local kernel theorems, and an automated
 test suite. The full G1/G2/R/F extremal arguments are still prose proofs with
 bounded computational support; the Lean arithmetic components are not presented
-as formal proofs of those full results. The formal register states the exact
+as formal proofs of those full results. The TRAIN all-count threshold T has a
+complete Lean proof. The formal register states the exact
 replay domains and distinguishes regenerated data from inherited tables.
 
 The initial research boundary is explicit: permanent blocking is a property of

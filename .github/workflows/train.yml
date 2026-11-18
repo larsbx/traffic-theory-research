@@ -1,0 +1,122 @@
+name: TRAIN acceptance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: train-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  train:
+    name: TRAIN proofs, models, and correspondence
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Check out the exact proposed revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Record the checked-out revision
+        run: |
+          mkdir -p .artifacts
+          git rev-parse HEAD > .artifacts/revision.txt
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24.22.3"
+          cache: npm
+          cache-dependency-path: formal/quint/package-lock.json
+
+      - name: Install the pinned Lean release
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 \
+            https://github.com/leanprover/lean4/releases/download/v4.34.1/lean-4.34.1-linux.tar.zst \
+            --output "$RUNNER_TEMP/train-lean.tar.zst"
+          echo "47bf4bbd78f70c2e9670598ab7124d92b6efb7330ff33e5fbb4030f6fd72e4e4  $RUNNER_TEMP/train-lean.tar.zst" | sha256sum --check
+          tar --zstd -xf "$RUNNER_TEMP/train-lean.tar.zst" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/lean-4.34.1-linux/bin" >> "$GITHUB_PATH"
+
+      - name: Install pinned Python dependencies
+        run: python3 -m pip install -r requirements-dev.txt
+
+      - name: Install locked Quint dependencies
+        working-directory: formal/quint
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Check TRAIN proofs, models, and cross-language agreement
+        run: |
+          set -euo pipefail
+          python3 scripts/check_train.py --report .artifacts/train-acceptance.json \
+            | tee .artifacts/train-acceptance.log
+
+      - name: Record failure evidence if acceptance could not finish
+        if: always()
+        env:
+          TRAIN_JOB_STATUS: ${{ job.status }}
+          TRAIN_EXPECTED_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import subprocess
+
+          artifacts = Path(".artifacts")
+          artifacts.mkdir(exist_ok=True)
+          report = artifacts / "train-acceptance.json"
+          if not report.exists():
+              revision = subprocess.run(["git", "rev-parse", "HEAD"], text=True, capture_output=True)
+              tracked = subprocess.run(["git", "ls-files", "-z"], capture_output=True)
+              sources = {}
+              if tracked.returncode == 0:
+                  for raw in tracked.stdout.split(b"\0"):
+                      if not raw:
+                          continue
+                      name = os.fsdecode(raw)
+                      path = Path(name)
+                      if path.is_file() and (name.startswith(("formal/", "scripts/", "bml/", ".github/"))
+                                             or name == "requirements-dev.txt"):
+                          sources[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+              report.write_text(json.dumps({
+                  "schema": "train.acceptance.unavailable.v1",
+                  "status": "failed",
+                  "reason": "The acceptance command did not finish or could not write its report.",
+                  "revision": revision.stdout.strip() if revision.returncode == 0 else None,
+                  "expected_revision": os.environ["TRAIN_EXPECTED_REVISION"],
+                  "workflow_job_status": os.environ["TRAIN_JOB_STATUS"],
+                  "sources_sha256": sources,
+              }, indent=2, sort_keys=True) + "\n")
+          PY
+
+      - name: Preserve source-bound TRAIN evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: train-${{ github.event.pull_request.head.sha || github.sha }}
+          path: .artifacts/
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30

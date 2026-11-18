@@ -1,6 +1,6 @@
 # Blueprint: open formal obligations
 
-This is a hand-off document. It states the open obligations of
+This is a hand-off document. It states the remaining obligations of
 [the coverage register](README.md) precisely, with proofs decomposed into
 lemmas small enough to formalise one at a time.
 
@@ -9,7 +9,8 @@ lemmas small enough to formalise one at a time.
   `Torus`, `Transport`); `carCount` refers to PR #7's `Counting.lean`.
 - Signatures are **specifications, not compiled code**. Adjust names freely,
   but keep the statements.
-- Nothing here is a Lean theorem until it passes `lake build` and the axiom audit.
+- The open signatures below become Lean theorems only after `lake build` and the
+  axiom audit. B5 has been completed by the separate TRAIN library linked below.
 
 Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 `f = torusStep w h hw hh = step E N`, and `f^t = iterate f t`.
@@ -21,7 +22,7 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B2 | Coset identity ⟨(1,−1)⟩ = ker φ | complete proof below (Bézout) | — |
 | B3 | Lemma R: static ⟺ perpetual free flow | complete proof below | B0, B2, Kernel |
 | B4 | Theorem F: densest free flow | proof outline; the packing step needs care | B3 |
-| B5 | Theorem T: train rule, least stuck count W+H | complete proof below; needs a TRAIN kernel | new kernel |
+| B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
 
 ---
 
@@ -255,43 +256,33 @@ over rows and columns with PR #7's counting.
 
 ---
 
-## B5. Theorem T: train rule (needs a TRAIN kernel)
+## B5. Theorem T: completed TRAIN formalization
 
-The Lean kernel is CLASSIC only. TRAIN moves a maximal line of same-species cars when the cell
-ahead of its head is empty, or when the line is a full ring.
+This obligation is now discharged by the executable `BML.Train` library.
+[`Train/Kernel.lean`](lean/Train/Kernel.lean) defines actual snapshot queue movement
+and full-ring rotation. It proves that its bounded scan equals a propagated
+movement mask together with full rings, and that stopped cars have opposite
+blockers. An unchanged occupancy pattern is not sufficient for TRAIN gridlock.
 
-```lean
-/-- The sp-car at p belongs to a line that moves under TRAIN. -/
-def TrainMoves (d : Direction α) (sp : Species) (s : Config α) (p : α) (L : Nat) : Prop :=
-  s p = sp.cell ∧
-  ((∃ k < L, (∀ i ≤ k, s (iterate d.next i p) = sp.cell) ∧
-              s (iterate d.next (k+1) p) = .empty) ∨
-   (∀ i < L, s (iterate d.next i p) = sp.cell))
-```
+[`Train/Threshold.lean`](lean/Train/Threshold.lean) proves
+`BML.Train.noMoves_population_iff`: for all positive w,h and natural n, a nonempty
+configuration with zero movers in both successive TRAIN phases and population n
+exists if and only if w+h≤n≤w*h. `jam_rows_columns` and `jam_population_lower`
+formalize the east-per-column/north-per-row proof outlined here. Disjoint witness
+lists supply the numerical lower bound. Singleton dimensions have no such jam.
 
-Here L is the ring length: w for east, h for north. The disjunction reads "the queue ends in a
-hole" or "the queue is the whole ring". The TRAIN `halfStep` moves exactly the `TrainMoves`
-cars. Its Quint/Python correspondence should be replayed against `bml.model.TRAIN`.
+The proof supplies every population in the interval. The executable
+`stuckConfig w h k` uses a core with word E^(w−1) N^(h−1) E N and a prefix of
+interior north cars, counted by an explicit duplicate-free listing.
+`stuckConfig_jam` proves actual TRAIN blockage and `stuckConfig_population`
+proves population w+h+k. Python's `train_stuck_with` uses the same closed form.
 
-```lean
-theorem train_stuck_lower_bound (s) (hstuck : TrainStuck s) (hne : Nonempty s) :
-    w + h ≤ carCount w h s
-```
-
-**Proof.**
-1. Every column has an east car. A column with north cars but no east car contains a north
-   line that ends in a hole or fills the column, and that line moves. An empty column x has
-   column x−1 also without east cars, because an east car there would move into x. By
-   induction westwards there would be no east cars at all, and then no cars at all.
-2. Symmetrically, every row has a north car.
-3. Choose one east car per column, an injection `Fin w →` east cells, and one north car per row,
-   `Fin h →` north cells. The images are disjoint because the species differ, so
-   w + h ≤ carCount.
-
-**Construction.** Use the staircase from `bml.extremal.train_stuck_with`: path cell i steps east
-iff i·w mod (w+h) < w. Check stuckness locally (each line ends at a car of the other species,
-and no line is a full ring), then extend greedily. For a first formal version, prove only
-attainment at n = w + h.
+Numeric species and population conservation, movement-based jam equivalence,
+and persistence are also proved. `TrainAudit.lean` audits the compiled library
+and exporter. The actual Lean, Quint, and Python evaluators are compared on
+explicit finite domains by `scripts/check_train.py`; this finite replay is
+separate from the universal Lean theorem. See [TRAIN.md](TRAIN.md) for the
+complete statements, construction, commands, and evidence boundaries.
 
 ---
 
