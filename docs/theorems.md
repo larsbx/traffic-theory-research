@@ -577,6 +577,15 @@ jam/free-flow representatives in typical conserved lane classes and a
 finite-time isolation bound showing that the size and time limits need not
 commute.
 
+**Finite iid monotonicity.** On every torus with W·H ≤ 16, the jam fraction among n-car
+configurations is nondecreasing in n. So q(p) = P_p(J) is nondecreasing in p, exactly, by a
+Bernstein-coefficient certificate. Each difference b_{n+1} − b_n equals (jam-creating minus
+jam-destroying single-car additions)/(number of pairs), so configurationwise non-monotonicity
+is outweighed level by level. See the
+[finite iid monotonicity note](research/2026-11-18-finite-iid-monotonicity.md). The fixed-count
+fraction is *not* monotone in general: exactly, b₇ < b₆ on 2×11, 2×12 and 2×14, while monotonicity
+of q itself is open there. This settles nothing asymptotically.
+
 ## 9. Next targets
 
 The [dated open questions and proof roadmap](research/2026-11-18-open-questions-and-proof-roadmap.md)
