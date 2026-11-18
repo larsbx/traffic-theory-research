@@ -48,6 +48,7 @@ It does not embed Python-produced expected transitions.
 | `BML/Formation.lean` | Exact local initial predicate for an E site and adjacent N site after one round, conditional on the next N target being E after the east phase; simultaneous formation from initial predicates and a supplied successor geometry; construction of the formed occupied core. All are deterministic actual-kernel results. The transfer probability and torus winding/cover instantiation remain separate prose arguments. |
 | `BML/Absorption.lean` | All-time soundness of hit/safe/unresolved cutoff certificates for an absorbing target; finite natural-weight bounds, nested intervals, and exactness at zero unresolved weight. Instantiated with actual CLASSIC nonempty `Jam`, with a proved data-valued board refinement for executable probes. |
 | `BML/Delay.lean` | An initial eastbound run of length `T+2` blocks its original rear car at round `T`, regardless of the exterior. A permanent full-movement starting time must exceed `T`. Kernel-checked `4x4` vacant east/south cycle that disappears into a nonempty jam after one round. |
+| `BML/GuardedQueue.lean` | A main E run at offsets `0..T`, a hole at `T+1`, and a lower E guard at offsets `1..T` force the original rear tag's first move to occur in round `T`, regardless of the exterior. One-round and iterated shrinking follow from the actual two-phase kernel. Any nonempty jam time is strictly greater than `T`. Generic results assume east-next commutes with north-previous; torus specializations discharge this premise. |
 | `BML/Fixation.lean` | Eventual constancy of an original `carTrace` is equivalent to finitely many actual moves. An eventually permanent car has an eventually permanent successor, with the north proof using the post-east checkpoint. All permanent sites form a nonempty core at a common future time. A core that misses a row forces a full E-row; a missed column forces a full N-column. Consequently, some original car fixes iff eventual nonempty jam or an initial full monochromatic lane occurs. All cars fix iff the state is empty or eventually jams. Outside both exceptional events, every original car moves and every site becomes empty arbitrarily late. |
 | `BML/Torus.lean` | Positive finite cyclic coordinates with proved inverse shifts; the general kernel is instantiated on `Fin WIDTH × Fin HEIGHT`; executable base-three encoding, decoding, and counts. |
 | `BML/Arithmetic.lean` | Divisibility of positive winding lengths implies the `min(WIDTH, HEIGHT)` lower bound. The proposed class packing expression simplifies to `floor(2*g/3)` and attains exact `2/3` iff `3` divides `g`. These are arithmetic components of G1 and F. |
@@ -194,9 +195,31 @@ axiom dependencies. The finite three-language gate is
 22,320 exhaustive cutoff rows and larger targeted cases. See the
 [certificate note](../../docs/research/2026-11-18-certified-absorption-bounds.md)
 for exact probability accounting and the separate remaining asymptotic target.
-The queue-based probability and logarithmic-time arguments are prose results
+The unguarded queue's probability and logarithmic lower bound on permanent
+full-movement settling are prose results
 in the [relaxation note](../../docs/research/2026-11-18-relaxation-obstructions.md),
 not Lean probability theorems.
+
+`BML/GuardedQueue.lean` separately provides a local obstruction to early
+gridlock. Its `GuardedEastQueue` predicate specifies `T+1` east cars in the
+main row, an empty site immediately ahead, and `T` east cars in the preceding
+north row at offsets `1,...,T`. The guard is empty when `T=0`.
+`GuardedEastQueue.step` proves that a full CLASSIC round shortens both runs
+and advances the hole one site toward the rear. A guard car may itself move
+east: the proof needs only that the east phase cannot turn it into a north
+car, so it cannot fill the newly vacated main site in the following phase.
+
+`GuardedEastQueue.rear_first_move` states that the original tag's `carTrace`
+equals its initial coordinate at every time `t <= T`, equals its east
+successor at time `T+1`, and that this successor is a different coordinate.
+`GuardedEastQueue.jam_after` proves `T < U` whenever a nonempty jam occurs at
+time `U`. The public torus declarations
+`torus_guardedEastQueue_first_move`, `torus_guardedEastQueue_jam_after`, and
+`torus_guardedEastQueue_no_jam_through` use only positive dimensions and the
+supplied pattern; they impose no condition on the exterior. For the iid
+application, `H >= 2` and `T+2 <= W` ensure that the prescribed sites are
+distinct. The pattern probability, cyclic-window avoidance bound, and
+logarithmic lower bound on gridlock time are separate prose results.
 
 ## TRAIN library and executable
 
