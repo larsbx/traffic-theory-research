@@ -39,6 +39,25 @@ def replayThrough (maxCells : Nat) : IO Unit := do
         if hh : 0 < h then
           replayRectangle w h hw hh
 
+/-- Increasing base-three codes with at most `budget` occupied digits.
+Generate the sparse domain directly, rather than scanning all 3^cells codes. -/
+def sparseCodes : Nat → Nat → List Nat
+  | 0, _ => [0]
+  | cells + 1, budget =>
+    let vacancies := sparseCodes cells budget
+    if budget = 0 then vacancies
+    else
+      let occupied := sparseCodes cells (budget - 1)
+      vacancies ++ occupied.map (fun c => c + 3 ^ cells) ++
+        occupied.map (fun c => c + 2 * 3 ^ cells)
+
+/-- Every square configuration satisfying 2*population<N, for N up to maxSide. -/
+def replayLowDensity (maxSide : Nat) : IO Unit := do
+  for n in [1:maxSide + 1] do
+    if hn : 0 < n then
+      for code in sparseCodes (n*n) ((n-1)/2) do
+        emitValues (replayValues n n hn hn code (decode n n code))
+
 /-- All population values for every rectangle with both dimensions in 2..maxSide.
 The two fields after width/height are requested and actual population; the
 remaining eight fields are the standard replay row after width/height. -/
@@ -71,6 +90,18 @@ end BML.Train
 
 def main (args : List String) : IO UInt32 := do
   match args with
+  | ["--low-density", ns] =>
+      match ns.toNat? with
+      | some n =>
+          if 0 < n && n ≤ 7 then
+            BML.Train.replayLowDensity n
+            return 0
+          else
+            IO.eprintln "low-density max-side must be in 1..7"
+            return 2
+      | none =>
+          IO.eprintln "low-density max-side must be a natural number"
+          return 2
   | ["--max-cells", ns] =>
       match ns.toNat? with
       | some n =>
@@ -117,5 +148,6 @@ def main (args : List String) : IO UInt32 := do
   | _ =>
       IO.eprintln "usage: train_replay WIDTH HEIGHT [CODE ...]"
       IO.eprintln "       train_replay --max-cells N | --construct MAX_SIDE"
+      IO.eprintln "       train_replay --low-density MAX_SIDE"
       IO.eprintln "TSV: width,height,input,east,north,full,eastMoves,northMoves,cycleNorthMoves,stuck"
       return 2

@@ -52,6 +52,8 @@ while its occupancy is unchanged, so G0's fixed-point criterion cannot be
 transferred to that rule. The additional 3×4 non-monotonicity witness remains
 Python-only; the complete CLASSIC G1/G2/R/F arguments retain their stated
 prose/bounded-evidence boundaries.
+The sparse-square TRAIN speed-one result in §5c is also fully kernel-checked,
+including the actual diagonal dynamics and numerical movement conclusion.
 
 ## 0. The open problem, stated precisely
 
@@ -69,7 +71,7 @@ require care when proposing a single sharp threshold. Primary-source checks give
 | result | statement |
 |---|---|
 | [Angel–Holroyd–Martin][AHM], *Electron. Comm. Probab.* 10 (2005), Theorems 1–2 | On ℤ², for p sufficiently close to 1, every car moves only finitely often a.s. The finite-torus theorem also gives eventual gridlock with probability tending to 1 as both dimensions grow and their ratio converges in (0,∞). |
-| [Austin–Benjamini][AB], arXiv:math/0607759v3 (2006), Propositions 1, 6, 8 | Prop 1: eventual speed one below N/2 cars. Prop 6: a stuck configuration of m cars exists ⟺ m ≥ 2N. **Different update rule (resolved in §5b):** their written rule moves a maximal queue of same-species cars together whenever its head is unblocked, so a full ring rotates (the *train rule*, `bml.model.TRAIN`). That explains 2N against this kernel's N. Prop 6 is re-proved and extended to rectangles under the train rule in §5b. Prop 1's argument appears to transfer to this kernel (§2); it is not imported as verified. |
+| [Austin–Benjamini][AB], arXiv:math/0607759v3 (2006), Propositions 1, 6, 8 | Prop 1: eventual speed one below N/2 cars. Prop 6: a stuck configuration of m cars exists ⟺ m ≥ 2N. **Different update rule (resolved in §5b):** their written rule moves same-species queues together and rotates a full ring (the *train rule*, `bml.model.TRAIN`). That explains 2N against the CLASSIC kernel's N. Prop 6 is re-proved and extended to rectangles in §5b. The full TRAIN Prop 1 Lean proof is described in §5c. Its proposed CLASSIC transfer (§2) remains unproved. |
 | [Hertzberg Rabinovich–Biham–Katzav][HBK], arXiv:2601.01180v2 (2026) | Square lattices: free-flowing periodic states are the zero set of a distance D = D∥ + D⊥, and the zero set persists. The full text studies relaxation with numerical fits; it does not prove our fixed-positive-density probability target. |
 | [D'Souza][DS], *Phys. Rev. E* 71 (2005), 066112 | Numerical stable intermediate phases and dependence on lattice aspect ratio. |
 | [Yashina–Tatashev][YT], arXiv:2311.17120 (2023), Theorem 1 | For deterministic fixed directions and both species present, perpetual free motion requires gcd(W,H) ≥ 3; this overlaps a consequence of Lemma R. |
@@ -124,7 +126,11 @@ positive asymptotic velocity. The empty state is FREE by convention. G1 is the e
 threshold for gridlock *existence* and holds for every aspect ratio. It does not establish
 eventual free flow for all configurations below that threshold. ∎
 
-*Austin–Benjamini Prop 1 under this kernel (our derivation, not a verified import).*
+*Proposed CLASSIC transfer of Austin–Benjamini Prop 1 (not a verified import).*
+
+The paper's written rule is TRAIN, and §5c treats that actual rule. The following
+argument is a proposed extension to CLASSIC; the TRAIN proof does not itself
+establish it.
 - Their proof tracks empty arcs of time-corrected NW–SE diagonals. It uses only two facts:
   cars advance at most one diagonal per step, and a diagonal with an empty diagonal above it
   always releases at least one car.
@@ -132,8 +138,8 @@ eventual free flow for all configurations below that threshold. ∎
   if it has none, every N car moves.
 - So m < N/2 should force eventual speed one under this kernel too, which is stronger than the
   corollary above on square tori.
-- Random tests up to 14×14 under both rules agree (`tests/test_train_rule.py`). This is not yet
-  in the formal register.
+- Random tests up to 14×14 under both rules agree (`tests/test_train_rule.py`).
+  This CLASSIC transfer still has no complete Lean proof.
 
 ## 3. Theorem G2 (no forced gridlock below full density)
 
@@ -343,8 +349,81 @@ mathematical theorem comes from Lean's proof.
 W + H under the train rule (T). On N×N these are N and Austin–Benjamini's 2N.
 The 21 Wang tile types in the tiling note encode occupied directed targets,
 which suffice for CLASSIC freezing. A TRAIN jam additionally excludes full E
-rows and full N columns. There is no claimed TRAIN Wang encoding or formal
-proof here of Austin–Benjamini's eventual-speed-one result below N/2.
+rows and full N columns. There is no claimed TRAIN Wang encoding. The separate
+square speed-one statement is described next.
+
+## 5c. The train rule: eventual speed one below N/2 on squares
+
+**Formal status:** the full theorem is kernel-checked in
+[`Train/SpeedOne.lean`](../formal/lean/Train/SpeedOne.lean), using the proved
+cyclic argument, actual diagonal dynamics, and numerical movement
+characterization. Its public statement assumes only the square domain,
+positive side length, and strict population bound.
+
+**Proposition S (Austin–Benjamini Proposition 1).** Let N>0 and let s be any
+TRAIN configuration on an N×N torus. If `2 * population s < N`, then
+
+\[
+\exists T\;\forall t\ge T:\quad
+\operatorname{totalMoveCount}(\operatorname{torusStep}^{t}(s))
+=\operatorname{population}(s).
+\]
+
+`totalMoveCount` adds east moves and north moves in the following half-step.
+Lean's `fullSpeed_iff_all_phases_move` proves that this equals the population
+exactly when every car moves in its own phase. Thus the conclusion asserts
+eventual speed one, rather than merely perpetual positive movement. It
+includes the empty configuration and imposes no species balance. The public
+theorem names are `BML.Train.sparse_square_eventually_fullSpeed` and
+`BML.Train.sparse_square_moves_equal_population`.
+
+*Proof route.* [Austin–Benjamini, pp. 2–3][AB] uses corrected diagonals; the
+formal argument works with adjacent empty pairs instead of maximal arcs.
+
+1. Label the initial cars and track each through both phases. The corrected
+   tag is `x+y−t mod N`, where t counts full cycles. A moving car keeps its tag;
+   a blocked car moves one tag backwards. Transport covers every current car.
+2. An occupied physical diagonal followed by an empty one releases at least
+   one car in the next full cycle. If an east car is present, it can move;
+   otherwise north cars can move because the east phase cannot fill their
+   target diagonal from that source diagonal.
+3. The condition 2m<N guarantees two adjacent empty tags at every time. If
+   no such pair existed, the m occupied tags and their predecessors would
+   cover all N tags, contradicting N>2m. Tags may coincide without harming
+   the count.
+4. Every empty pair at t+1 was already empty at t: occupants of its old second
+   site have nowhere to go, and release would keep some corrected tag at its
+   old first site if that site were occupied. Thus pair sets decrease. A finite
+   descending-family argument gives one pair that stays empty forever.
+5. Cut the cyclic order at a permanent vacancy. Each car's natural-number
+   rank drops when it is blocked and otherwise stays fixed. Its attained
+   minimum gives eventual tag stability. The finite list of initial cars
+   has a common eventual time; the actual movement equivalence and count
+   conservation give the displayed conclusion.
+
+The generic cyclic argument is proved as
+`BML.Train.Diagonals.sparse_eventual_stable`; `Train/DiagonalDynamics.lean`
+discharges its release and step hypotheses from the actual TRAIN kernel. See the
+[TRAIN register](../formal/TRAIN.md#sparse-squares-eventual-speed-one) for the
+module boundaries and evidence scope.
+
+The statement is **square-only**. Replacing N by min(W,H) is false: one east
+and one north car on a 5×7 torus satisfy 2m<min(W,H), but rigid free trajectories
+would produce a future east-target/north-position collision by the Chinese
+remainder theorem. No rectangular speed-one theorem, effective stabilization
+time, random-density threshold, or CLASSIC transfer is claimed here.
+
+The finite acceptance domain consists of all 1,305 low-population states
+on N=1,…,5, closed under the actual successor map. Its criterion is that every
+terminal cycle has full actual movement on every edge. Eight further orbit
+certificates contribute 53 transition rows, including positive examples on
+6×6, 7×7, and 8×8. The 5×7 two-car counterexample has transient 1 and period
+15, with 29 moves in 30 car-step opportunities on its terminal cycle. Ten
+additional Quint tests and six adversarial controls check the clock, phase
+counts, recurrence, domain completeness, and theorem scope. The
+[TRAIN register](../formal/TRAIN.md#eventual-speed-one-acceptance) records the
+exact domains and commands; source-bound receipts distinguish completed
+acceptance from the all-size Lean proof.
 
 ## 6. CLASSIC extremal existence diagram (every finite torus)
 

@@ -4,3 +4,7 @@ import Train.Finite
 import Train.Counting
 import Train.Conservation
 import Train.Threshold
+import Train.FreeFlow
+import Train.Diagonals
+import Train.DiagonalDynamics
+import Train.SpeedOne
