@@ -20,6 +20,17 @@ explicit vanishing error. This supplies an alternative core-to-route-cover
 proof without cycle extraction; the fixed-positive-density questions in §5
 remain unresolved. The status table below retains its original pinned snapshot.
 
+**Further probability follow-up:** the
+[profile obstruction](2026-11-18-lane-profile-obstruction.md) now has a Lean
+construction of ringless jams with arbitrary positive profiles satisfying
+\(\max r+\max c\le L\). Its prose probability consequence rules out
+high-probability, universally sound nonjamming certificates based solely on
+conserved lane counts at any fixed \(0<p<1\). The
+[capacity bound](2026-11-18-disjoint-strip-capacity.md) improves finite
+empty-strip estimates, and Theorem 6a of the probability note sharpens the
+sparse window to \(p_LL\le2\log\log L-4\log\log\log L-2\).
+These advances leave the fixed-density, long-time formation problem open.
+
 | Status at this snapshot | Consequence for this roadmap |
 | --- | --- |
 | [PR #9](https://github.com/larsbx/traffic-theory-research/pull/9) and [PR #11](https://github.com/larsbx/traffic-theory-research/pull/11) merged | The complete rectangular TRAIN jam theorem and strict sparse-square eventual-speed-one theorem are already in Lean. |

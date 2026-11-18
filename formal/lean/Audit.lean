@@ -63,7 +63,17 @@ elab "audit_bml" : command => do
     ``BML.hasPermanentSite_iff_jam_or_full_lane,
     ``BML.hasEventuallyStoppedCar_iff_jam_or_full_lane,
     ``BML.every_site_empty_arbitrarily_late,
-    ``BML.every_tag_moves_arbitrarily_late]
+    ``BML.every_tag_moves_arbitrarily_late,
+    ``BML.profileReflection_involutive, ``BML.profileDistance_interval_count,
+    ``BML.laneProfileJam_placements_disjoint,
+    ``BML.laneProfileJam_eastRowCount, ``BML.laneProfileJam_northColumnCount,
+    ``BML.laneProfileJam_counts, ``BML.laneProfileJam_frozen,
+    ``BML.laneProfileJam_jam, ``BML.laneProfileJam_no_moves,
+    ``BML.laneProfileJam_fixed, ``BML.laneProfileJam_no_full_lane,
+    ``BML.exists_jam_with_lane_profile,
+    ``BML.exists_jam_with_lane_profile_of_caps,
+    ``BML.exists_jam_with_same_lane_profile,
+    ``BML.admissible_profile_cannot_certify_no_jam]
   for name in required do
     match env.find? name with
     | none => throwError "BML audit missing required theorem {name}"

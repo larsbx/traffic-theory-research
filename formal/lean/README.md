@@ -43,6 +43,7 @@ It does not embed Python-produced expected transitions.
 | `BML/Kernel.lean` | Moving sources empty and destinations fill; other species remain in place; a half-step is fixed iff its cars are blocked; a full east-then-north step is fixed iff both local blocking conditions hold; equivalence with no movement in either phase; frozen-state persistence, including after a transient; full occupancy freezes; the empty state is fixed but is not a jam. |
 | `BML/Transport.lean` | Explicit bijection between each species' cars before and after its phase: survival, injectivity, and surjectivity. Nonemptiness is preserved by a full step and every iterate. `BML/Lanes.lean` now connects the transport bijection to numerical CLASSIC count conservation; the TRAIN library retains its own separate conservation proofs. |
 | `BML/Lanes.lean` | Actual CLASSIC numerical species-count, east-row-count, and north-column-count conservation through half-steps, full steps, and iterates. Full E-rows and full N-columns persist and reflect backward, cannot coexist, and have no hidden movement. Specified north-free columns, cyclic strips, and row-count bounds are invariant through every iterate. |
+| `BML/Profiles.lean` | An explicit square-torus configuration realizes arbitrary positive E-row and N-column count vectors whenever every row-count/column-count sum is at most the side length. Exact executable lane counts follow from an involutive cyclic-coordinate bijection. The configuration is a nonempty CLASSIC jam, has no movement or full monochromatic lane, and is fixed by the actual kernel. Same-profile existence and rejection by universally sound profile-only jam-exclusion predicates are proved. |
 | `BML/Capture.lean` | Successor-closed occupied cores persist. A supplied occupied closed walk yields a core (distinct sites are not required by this Lean declaration). Full-round tagged transport is bijective. Explicit core obstacles on every row and column give a kernel-derived cyclic-distance rank, a bound `M = n_E*(W-1) + n_N*(H-1)` on every finite prefix of tagged moves, and a nonempty jam by full round M. |
 | `BML/Formation.lean` | Exact local initial predicate for an E site and adjacent N site after one round, conditional on the next N target being E after the east phase; simultaneous formation from initial predicates and a supplied successor geometry; construction of the formed occupied core. All are deterministic actual-kernel results. The transfer probability and torus winding/cover instantiation remain separate prose arguments. |
 | `BML/Absorption.lean` | All-time soundness of hit/safe/unresolved cutoff certificates for an absorbing target; finite natural-weight bounds, nested intervals, and exactness at zero unresolved weight. Instantiated with actual CLASSIC nonempty `Jam`, with a proved data-valued board refinement for executable probes. |
@@ -123,6 +124,38 @@ The public invariant results include `speciesCount_iterate`,
 `eastRowsBelow_iterate_iff`. `NorthFreeStrip` permits arbitrary lengths for its
 deterministic invariant; any use of distinct columns in a probability argument
 must separately require that the length not exceed the width.
+
+### Jammed representatives of prescribed lane profiles
+
+`Profiles.lean` treats a square of positive side length `L` and arbitrary vectors
+`r c : Fin L → Nat`. Its main hypotheses are `1 ≤ r y`, `1 ≤ c x`, and
+`r y + c x ≤ L` for every row and column. Equivalently, the sum of the two
+profile maxima is at most `L`. The caps interface
+`exists_jam_with_lane_profile_of_caps` accepts any proved upper bounds `R,C`
+with `R+C ≤ L`. Positivity makes `L=1` inadmissible and keeps every individual
+lane count strictly below `L`.
+
+The executable `laneProfileJam` puts E at `(x,y)` when the forward cyclic
+distance from `x` to `y` is below `r y`, and N when the distance from `y` to `x`
+is in `[1,c x]`. These are the modular placements `E(y-j,y)` for `0≤j<r y`
+and `N(x,x-i)` for `1≤i≤c x`. Disjointness and exact numerical counts are
+proved rather than assumed. `laneProfileJam_jam`, `laneProfileJam_no_moves`,
+`laneProfileJam_fixed`, and `laneProfileJam_no_full_lane` cover the actual
+CLASSIC dynamics and exclude a full-lane explanation of the constructed jam.
+
+`exists_jam_with_same_lane_profile` says that any configuration satisfying
+these profile bounds shares its exact conserved count vectors with an already
+jammed configuration. It does not assert that the original configuration
+evolves into that representative. The theorem
+`admissible_profile_cannot_certify_no_jam` explicitly assumes a predicate of
+only the two vectors is sound for excluding already jammed states, and proves
+that the predicate rejects every admissible profile. This applies in particular
+to universally sound certificates of eventual nonjamming. Probability estimates
+for typical iid profiles and their consequence for the acceptance probability
+of such certificates remain prose results in the
+[lane-profile note](../../docs/research/2026-11-18-lane-profile-obstruction.md).
+No bound on a jammed basin's conditional probability, and no fixed-density
+transition theorem, follows from representative existence alone.
 
 ## Audit and trust boundary
 
