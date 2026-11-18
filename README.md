@@ -43,6 +43,12 @@ connections to tiling and dynamical-systems theory.
   the underlying CLASSIC count invariants; exact finite Python probabilities
   and obstruction checks remain distinct from these asymptotic proofs. A
   fixed positive critical density is still unproved.
+- [Fixed-density mixed-cycle formation](docs/research/2026-11-18-fixed-density-formation.md)
+  (2026-11-18): initial-law exponential bounds on early capture formation and
+  an exact one-round winding-cycle probability. A transfer calculation and a
+  complete 4x4 one-step census quantify the failure of evolved independence.
+  Lean checks the deterministic preimage and formed core; positivity of a
+  critical density remains open.
 - [Formal coverage and validation](formal/README.md): the CLASSIC finite-torus
   `BML` proofs, identity-preserving transport and non-monotonicity witness, together
   with the complementary `Traffic` tiling/staircase proofs, the complete

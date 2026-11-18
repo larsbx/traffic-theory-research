@@ -26,7 +26,8 @@ elab "audit_bml" : command => do
     ``BML.hasFullMonochromaticLane_iterate_iff,
     ``BML.fullEastRow_excludes_fullNorthColumn,
     ``BML.northFreeColumn_iterate_iff, ``BML.northFreeStrip_iterate_iff,
-    ``BML.eastRowsBelow_iterate_iff]
+    ``BML.eastRowsBelow_iterate_iff,
+    ``BML.staircase_pair_preimage_iff, ``BML.staircase_formed]
   for name in required do
     match env.find? name with
     | none => throwError "BML audit missing required theorem {name}"
