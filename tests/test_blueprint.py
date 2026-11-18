@@ -116,8 +116,8 @@ def _occupied_classes(s, g):
 
 
 @pytest.mark.parametrize("h,w", [(2, 2), (3, 3), (2, 4), (4, 2), (2, 6)])
-def test_B6_release_and_survival_exhaustive(h, w):
-    """B6.1: Occ_t(z) ∧ ¬Occ_t(z+1) → Occ_{t+1}(z).   B6.2: Occ_t(z+1) → Occ_{t+1}(z) ∨ Occ_{t+1}(z+1)."""
+def test_B7_release_and_survival_exhaustive(h, w):
+    """B7.1: Occ_t(z) ∧ ¬Occ_t(z+1) → Occ_{t+1}(z).   B7.2: Occ_t(z+1) → Occ_{t+1}(z) ∨ Occ_{t+1}(z+1)."""
     g = gcd(h, w)
     for s in decode(np.arange(3 ** (h * w), dtype=np.int64), h, w):
         O0 = _occupied_classes(s, g)
@@ -130,7 +130,7 @@ def test_B6_release_and_survival_exhaustive(h, w):
 
 
 @pytest.mark.parametrize("seed", range(40))
-def test_B6_each_car_blocked_at_most_g_minus_2_times(seed):
+def test_B7_each_car_blocked_at_most_g_minus_2_times(seed):
     from bml.nonmonotone import labelled_step
     rng = np.random.default_rng(seed)
     N = int(rng.integers(5, 15)); h, w = (N, N) if seed % 2 else (N, 2 * N)
