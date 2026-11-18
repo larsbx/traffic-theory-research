@@ -68,7 +68,11 @@ other suites.
 |---|---|---|
 | Half-step semantics, no collisions or created cars | Universal Lean proofs of source/destination behavior and an explicit bijection on each species' cars; the other species stays in place. `BML/Lanes.lean` connects the bijection to numerical `speciesCount` conservation through both phases and every iterate. | Unrestricted correspondence with the Python source remains separate. |
 | CLASSIC conserved lanes and strips | `BML/Lanes.lean` derives east-row and north-column numerical count conservation from actual kernel transport. Full E-rows, full N-columns, and specified north-free columns or cyclic strips are present at an iterate iff present initially; full monochromatic lanes have no hidden movement. | Mixed-cycle exclusion and the strip-crossing obstruction are proved in prose, not derived as Lean probability theorems. |
+| Jammed representatives of positive lane profiles | `BML/Profiles.lean` constructs a ringless actual-kernel jam with exact E-row and N-column counts whenever every count is positive and the two profile maxima sum to at most the square side. It also proves that every profile predicate soundly excluding jams rejects those profiles. | The [profile note](../docs/research/2026-11-18-lane-profile-obstruction.md) derives exact iid bounds and exponentially vanishing acceptance of such certificates at every fixed `0<p<1`. Those probability statements are prose proofs and do not measure basin probabilities. |
+| Disjoint-strip capacity | The [capacity note](../docs/research/2026-11-18-disjoint-strip-capacity.md) proves that `B` disjoint north-empty strips of width `k` exclude mixed cycles when `B > sum_y floor(r_y/k)`. Python validates supplied certificates and exact iid marginal laws. | The crossing and probability arguments remain prose mathematics. No Lean capacity theorem or fixed-positive-density bound is claimed. |
 | G0 local equivalence | Lean proves full-step fixed ⇔ local blockage ⇔ no movers in either phase, on the actual finite-torus kernel. Frozen states persist through every iterate. | General eventual periodicity and correctness of the orbit classifier are still separate obligations; the cycle-average formulation is explained in prose. |
+| Certified eventual-gridlock intervals | `BML/Absorption.lean` proves actual-kernel hit/safe soundness at every cutoff, all-time avoidance from nonjam recurrence, finite Nat-weight lower/upper bounds, nested intervals, and exactness at zero unresolved mass. Its data-valued board evaluator is proved equivalent to the original update. Actual Quint and Python counterparts are evaluated on explicit finite domains. | Initial iid normalization and analytic limits retain the scope in the [certificate note](../docs/research/2026-11-18-certified-absorption-bounds.md). No size-uniform unresolved-mass estimate, unrestricted source refinement or pointer-doubling correctness theorem is claimed. |
+| Relaxation obstructions | `BML/Delay.lean` proves an initial run of T+2 east cars blocks its original rear car through round T, regardless of exterior traffic. It also proves a specific winding vacant cut disappears into a nonempty jam after one round. | The [logarithmic iid consequence and late-defect criterion](../docs/research/2026-11-18-relaxation-obstructions.md) have prose proofs. HBK defect coercivity, probability integration and late expected-defect decay are not Lean theorems. |
 | Full occupancy and the empty boundary | Lean proves full occupancy freezes; the empty state is fixed but is not a jam. Nonemptiness is invariant under evolution. | No missing local boundary lemma is claimed. |
 | Persistent occupied cores | `BlockingCore.persists` proves preservation under the actual two-phase kernel; `BlockerCycle.persists` derives a core from a supplied occupied closed walk. | The Lean closed walk may revisit sites. Extraction of a simple cycle from an arbitrary frozen state remains separate. |
 | One-round staircase formation | `BML/Formation.lean` proves the exact local initial-site predicate for adjacent E/N targets, simultaneous formation from a supplied geometry, and construction of the resulting successor-closed core. The [formation note](../docs/research/2026-11-18-fixed-density-formation.md) integrates the independent initial cells into an exact transfer trace. | Probability integration, torus winding/cover instantiation, early-formation bounds, and large-size limits remain prose proofs. This is not a positive critical-density theorem. |
@@ -82,7 +86,7 @@ other suites.
 | Strong non-monotonicity | Lean proves code 3858 reaches a jam, while adding a stationary N yields the perpetual two-cycle 3860↔4340. An explicitly tracked original car moves every step. Independent labeled Python replay also checks the identities. | No minimality or novelty claim. |
 | No initial simple loop, followed by gridlock | Reproducible identity-aware Python certificate on 3×2, compared against NumPy. | This witness is not currently a Lean theorem. |
 | Python/Lean/Quint correspondence | Actual implementations are evaluated and compared on the finite domains below, including both half-steps and separate move counts. | A finite replay is not unrestricted source refinement or proof of the classifier algorithm. |
-| Probability reductions and sparse no-gridlock window | The [probability note](../docs/research/2026-11-18-probabilistic-gridlock-bounds.md) gives prose proofs of `M = J intersect R-complement`, a uniform exponentially small ring exception, and no eventual gridlock with high probability when `p_L*L <= (2-epsilon)*log(log(L))`. Python checks finite iid probabilities and strip certificates. | The probability laws, analytic limits, cycle extraction, and strip-crossing argument are not an end-to-end Lean theorem. No fixed-positive-density nonjamming interval, sharp transition, or critical-density value is proved. |
+| Probability reductions and sparse no-gridlock window | The [probability note](../docs/research/2026-11-18-probabilistic-gridlock-bounds.md) gives prose proofs of `M = J intersect R-complement`, a uniform exponentially small ring exception, and no eventual gridlock with high probability when `p_L*L <= 2*log(log(L))-4*log(log(log(L)))-2` eventually. Python checks finite iid probabilities and strip certificates. | The probability laws, analytic limits, cycle extraction, and strip-crossing argument are not an end-to-end Lean theorem. No fixed-positive-density nonjamming interval, sharp transition, or critical-density value is proved. |
 
 ## Reproduce the BML suite
 
@@ -96,6 +100,8 @@ python scripts/check_capture.py --report .artifacts/capture-replay.json
 python scripts/check_probability.py --report .artifacts/probability-replay.json
 python scripts/check_formation.py --report .artifacts/formation-replay.json
 python scripts/check_fixation.py --report .artifacts/fixation-replay.json
+python scripts/check_profiles.py --report .artifacts/profiles-replay.json
+python scripts/check_capacity.py --report .artifacts/capacity-replay.json
 npm ci --ignore-scripts --prefix formal/quint
 cd formal/lean
 lake build
@@ -103,6 +109,7 @@ lake env lean Audit.lean
 cd ../..
 python scripts/check_lean_replay.py --max-cells 9 --report .artifacts/lean-replay.json
 python formal/quint/check.py --max-cells 6 --report .artifacts/quint-replay.json
+python scripts/check_absorption.py --report .artifacts/absorption-acceptance.json
 ```
 
 The Lean package has no external library dependencies. Its transitive axiom
@@ -133,6 +140,8 @@ domains and receipts are in [TRAIN.md](TRAIN.md#finite-executable-evidence).
 | Static cores and independent capture replay | All 34,344 states on 2×2, 3×2, 2×3, 4×2, 2×4, and 3×3 tori. All 831 states with a mixed core have independent tagged capture replay (964 edges, including frozen self-edges). These are separate from the kernel correspondence domains above. |
 | Eventual mixed-cycle formation, ring exceptions, and strip obstructions | All 565,785 states on those six tori plus 4×3. Eventual mixed-cycle occurrence is propagated from separately detected cycles through the successor graph and compared with the jam classifier. Every allowed strip width is checked. The 4×4 non-monotonicity example is a trajectory control, not an exhaustive 4×4 census. |
 | Specified winding staircase after one round | All 43,046,721 initial states on 4×4: the local preimage predicate is compared pointwise with the full-round kernel, and car-count coefficients are integrated under exact initial iid weights. This is a one-step event census, not an eventual-basin census on 4×4. |
+| Disjoint-strip capacity and exact marginal laws | All 565,785 states on the seven probability domains above; 8,821,224 predicates cover every strip width and cyclic partition offset. All 525 marginal evaluations match direct initial-state weights. The certificate union adds 696 states beyond all cyclic north-empty single-strip certificates in the same orientation. Separate 8×8 controls check both orientations; those controls and optimized 8×8/12×12 bounds are not basin censuses on the larger squares. |
+| Prescribed lane-profile jam witnesses | Every admissible ordered positive profile pair on square sides 2–5: 16,492 pairs, each checked for exact counts, actual zero movement, and an independent labeled fixed point. Nine larger profiles are targeted controls. The separate initial-law census contains every state on sides 1–3 (19,767 states), with 15 exact density evaluations and 75 shared-cell probability-mass checks. |
 
 `scripts/check_capture.py` writes source-bound capture counts and separately
 identified production-classifier phase totals. `trace_capture` records the first
@@ -161,6 +170,15 @@ initial-iid weights then verify the Palm score identity and covariance bound.
 Its report records source hashes, domain sizes, and corrupted-witness controls.
 These finite calculations support the probability code; the universal
 deterministic identity is proved separately in `BML/Fixation.lean`.
+
+`scripts/check_profiles.py` separately checks the prescribed-profile constructor
+against exact lane counts and both production half-steps, and verifies finite
+initial-law certificate bounds. Its probability output concerns acceptance of
+sound profile-only certificates, not the actual eventual-gridlock event.
+`scripts/check_capacity.py` checks the stronger conserved obstruction against
+the complete finite basin classifier and integrates each marginal law directly.
+The corresponding notes keep these finite checks separate from universal
+Lean construction theorems and prose probability arguments.
 
 Quint mutation controls execute actual altered specifications and require
 rejection for reversed phase order, asynchronous scanning, and invalid cell
