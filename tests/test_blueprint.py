@@ -84,3 +84,27 @@ def test_B2_representative_bound_is_necessary():
     w = h = 2; a, b = 2, 0
     assert (a + b) % gcd(w, h) == 0
     assert not any(t % w == a for t in range(-10, 10))
+
+
+@pytest.mark.parametrize("h,w", [(3, 3), (4, 4), (3, 6), (5, 5), (6, 6), (8, 4)])
+def test_B4_theorem_F_matches_independent_dp(h, w):
+    """Independent of the packing proof: max-plus DP over the Lemma R conditions.
+    Covers g = 5 and g = 6, beyond the exhaustive tables (WH <= 16)."""
+    from bml.freeflow_dp import max_free_exact
+    from bml.extremal import max_free
+    assert max_free_exact(h, w) == max_free(h, w)
+
+
+@pytest.mark.parametrize("l", range(1, 40))
+def test_B4_block_value_bound(l):
+    """Block B^s A^r . of length l = s+r+1: ceil(s/2) + ceil(r/2) <= floor(2l/3)."""
+    for s in range(l):
+        r = l - 1 - s
+        assert (s + 1) // 2 + (r + 1) // 2 <= (2 * l) // 3
+
+
+def test_B4_floor_superadditive_and_V():
+    for a in range(60):
+        for b in range(60):
+            assert (2 * a) // 3 + (2 * b) // 3 <= (2 * (a + b)) // 3
+    assert all((g + g // 3) // 2 == (2 * g) // 3 for g in range(200))

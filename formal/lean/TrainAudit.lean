@@ -1,6 +1,8 @@
 import Train
 import Train.Export
-import Lean
+-- Batch audits need the command and axiom APIs, not the server/shell umbrella.
+import Lean.Elab.Command
+import Lean.Util.CollectAxioms
 
 open Lean Elab Command
 
@@ -52,7 +54,26 @@ run_cmd do
     ``BML.Train.jam_population_iff_positive,
     ``BML.Train.no_jam_singleton,
     ``BML.Train.noMoves_population_iff,
-    ``BML.Train.stuckCheck_eq_true_iff]
+    ``BML.Train.stuckCheck_eq_true_iff,
+    ``BML.Train.moveCount_le_speciesCount,
+    ``BML.Train.moveCount_eq_speciesCount_iff,
+    ``BML.Train.totalMoveCount_le_population,
+    ``BML.Train.fullSpeed_iff_all_phases_move,
+    ``BML.Train.fullSpeed_iff_all_cars_move,
+    ``BML.Train.fullSpeed_at_time_iff_tags,
+    ``BML.Train.eventuallyFullSpeed_iff_moves_equal_initial_population,
+    ``BML.Train.fullTransport_preserves_cell,
+    ``BML.Train.fullTransport_injective,
+    ``BML.Train.fullTransport_surjective,
+    ``BML.Train.trace_cell,
+    ``BML.Train.trace_injective,
+    ``BML.Train.trace_coverage,
+    ``BML.Train.corrected_trace_step_cases,
+    ``BML.Train.corrected_trace_release,
+    ``BML.Train.corrected_trace_stable_iff_move,
+    ``BML.Train.Diagonals.sparse_eventual_stable,
+    ``BML.Train.sparse_square_eventually_fullSpeed,
+    ``BML.Train.sparse_square_moves_equal_population]
   for name in required do
     unless (env.find? name).any ConstantInfo.isTheorem do
       throwError "TRAIN audit missing required theorem {name}"

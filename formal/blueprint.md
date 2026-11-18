@@ -1,6 +1,6 @@
 # Blueprint: proof status and open formal obligations
 
-This hand-off document records the completed B0/B1/B5 proofs and the remaining
+This hand-off document records the completed B0/B1/B2/B5/B6 proofs and the remaining
 obligations of [the coverage register](README.md), with proofs decomposed into
 lemmas small enough to formalise one at a time.
 
@@ -8,14 +8,15 @@ lemmas small enough to formalise one at a time.
   bottom-up. Lean signatures target the `BML` kernel in this package (`Kernel`,
   `Torus`, `Transport`, `Counting`, `Enumeration`). `carCount` is the actual
   occupied-position count, proved equal to the executable species-count sum.
-- Signatures in the open B2–B4 sections are **specifications, not compiled code**.
-  Adjust those names freely, but keep the statements. B0/B1 and B5 identify
+- Signatures in the open B3–B4 sections are **specifications, not compiled code**.
+  Adjust those names freely, but keep the statements. B0/B1/B2 and B5/B6 identify
   compiled declarations.
 - G1's exact-count construction is complete in `AllCounts.lean` and
   `Gridlock.lean`. B0 is complete in `Ring.lean`; B1 uses `Lanes.lean`,
   `NonGridlock.lean`, and the prefix-rank counting theorem in `Enumeration.lean`.
   `GridlockThresholds.lean` proves the forced-gridlock boundary among feasible
-  populations. B5 is complete in the separate TRAIN library linked below.
+  populations. B2 is complete in `Congruence.lean`, `Cosets.lean`, and
+  `CosetTimes.lean`. B5 and B6 are complete in the separate TRAIN library linked below.
 
 Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 `f = torusStep w h hw hh = step E N`, and `f^t = iterate f t`.
@@ -24,10 +25,11 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 |---|---|---|---|
 | B0 | Ring arithmetic helpers | kernel-checked in `Ring.lean`, including bounded reachability | `Torus` |
 | B1 | G2: no forced gridlock below full occupancy | kernel-checked exact-count construction and all-time non-jamming; forced boundary proved for n≤WH | B0, `Kernel`, `Enumeration`, `Lanes` |
-| B2 | Coset identity ⟨(1,−1)⟩ = ker φ | complete proof below (Bézout) | — |
+| B2 | Coset identity ⟨(1,−1)⟩ = ker φ | kernel-checked signed action, arbitrary-point fibers, east-translated coset, bounded/positive witnesses, and exact lcm period | B0, `Congruence`, actual cyclic coordinates |
 | B3 | Lemma R: static ⟺ perpetual free flow | complete proof below | B0, B2, Kernel |
-| B4 | Theorem F: densest free flow | proof outline; the packing step needs care | B3 |
+| B4 | Theorem F: densest free flow | complete proof below; DP-checked to g = 6 | B3 |
 | B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
+| B6 | TRAIN eventual speed one on sparse N×N squares | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `Train/Diagonals`, `Train/FreeFlow`, actual diagonal transport/release |
 
 ---
 
@@ -168,7 +170,7 @@ statement at n>w*h.
 
 ---
 
-## B2. Coset identity
+## B2. Coset identity: completed
 
 Let g = gcd w h. In ℤ_w × ℤ_h, the subgroup ⟨(1, −1)⟩ is the kernel of
 (x, y) ↦ x + y mod g. Stated on representatives, for `a < w` and `b < h`:
@@ -176,8 +178,14 @@ Let g = gcd w h. In ℤ_w × ℤ_h, the subgroup ⟨(1, −1)⟩ is the kernel o
 ```lean
 theorem coset_iff (w h a b : Nat) (hw : 0 < w) (hh : 0 < h) (ha : a < w) (hb : b < h) :
     (a + b) % Nat.gcd w h = 0 ↔
-      ∃ t : Int, t % w = a ∧ (b + t) % h = 0
+      ∃ t : Int, t % (w : Int) = (a : Int) ∧ ((b : Int) + t) % (h : Int) = 0
 ```
+
+This is the compiled `BML.coset_iff` in
+[`Congruence.lean`](lean/BML/Congruence.lean). `coset_dvd_iff` first proves the
+signed divisibility criterion, and `coset_int_iff` expresses it with integer
+remainders for arbitrary signed coordinate differences. No coprimality or
+supplied Bézout coefficients are assumed.
 
 Read it as: (a, b) = (t mod w, −t mod h) for some t ∈ ℤ.
 
@@ -187,14 +195,17 @@ equivalence, but it keeps (a, b) a representative pair as B3 uses it.
 
 **Lemma B2.1 (Bézout).** `∃ x y : Int, x * m + y * n = Nat.gcd m n`.
 
-Use `Nat.gcd.induction` with the predicate P m n := ∃ x y, x*m + y*n = gcd m n.
+`nat_gcd_bezout` uses `Nat.gcd.induction` with the predicate
+P m n := ∃ x y, x*m + y*n = gcd m n.
+
 - Base `P 0 n`: take x = 0, y = 1, since gcd 0 n = n.
 - Step: assume 0 < m and `P (n % m) m`, so x′·(n % m) + y′·m = gcd (n % m) m = gcd m n.
-- Substitute n % m = n − m·(n / m), i.e. `Int.emod_def`.
+- Substitute n % m = n − m·(n / m); the compiled proof casts `Nat.mod_add_div` into Int.
 - This gives (y′ − x′·(n/m))·m + x′·n = gcd m n.
 
 **(→)** Write a + b = g·k. Take x, y from B2.1 for (w, h); then x·k·w + y·k·h = a + b.
 Put t := a − x·k·w.
+
 - Then t ≡ a (mod w), so `t % w = a % w = a`, using `a < w` and `Int.emod_emod_of_dvd`
   or `Int.add_mul_emod_self`.
 - And b + t = y·k·h, which is ≡ 0 (mod h).
@@ -204,11 +215,47 @@ Put t := a − x·k·w.
 twice, then cast back to `Nat`.
 
 **Corollary B2.2.** The coset (1, 0) + ⟨(1, −1)⟩ is {(a, b) : (a + b) % g = 1 % g}.
-Apply `coset_iff` to (a − 1 mod w, b).
+The compiled `phaseClass_east` gives the actual east neighbor's class as
+`(phaseClass p + 1) % gcd w h`. `east_diagonalShift_exists_iff` identifies its
+signed orbit with precisely that next class, covering g=1 and singleton axes.
 
 **Corollary B2.3 (non-negative time).** If t ∈ ℤ witnesses `coset_iff`, so does
-t + L·lcm(w, h) for any L. So a witness can be taken in any window of length lcm(w, h),
-for example [1, lcm(w, h)].
+t + k·lcm(w, h) for any integer k. `diagonalShift_emod_lcm` proves that reduction
+modulo lcm preserves the actual signed action. Writing L = lcm(w,h), the
+compiled `diagonalStep_reaches_lt_iff` and `diagonalStep_reaches_pos_iff` give
+equivalent witnesses in `[0,L)` and `[1,L]`, respectively.
+`east_diagonalStep_reaches_lt_iff` and `east_diagonalStep_reaches_pos_iff`
+give the same two windows for the translated class-one relation.
+
+**Bridge to actual coordinates.** [`Cosets.lean`](lean/BML/Cosets.lean) defines
+`diagonalStep p = (cyclicNext w hw p.1, cyclicPrev h hh p.2)` and the signed
+action `diagonalShift`. Its action laws and `iterate_diagonalStep` connect the
+integer congruences to actual iteration, rather than to a separately assumed
+coordinate-motion model. For arbitrary p,q,
+
+```lean
+theorem diagonalShift_exists_iff (w h : Nat) (hw : 0 < w) (hh : 0 < h)
+    (p q : Position w h) :
+    (∃ t : Int, diagonalShift w h hw hh t p = q) ↔
+      phaseClass w h p = phaseClass w h q
+```
+
+`diagonal_kernel_iff` specializes this to the origin and zero class.
+[`CosetTimes.lean`](lean/BML/CosetTimes.lean) proves return after L steps and
+the stronger `iterate_diagonalStep_eq_self_iff`: a natural time returns to its
+start exactly when L divides it. Thus the least positive return time is L.
+These are statements about positions, with no configuration or free-flow
+assumption. They supply B3's class-zero and class-one encounter geometry and
+its required time windows; B3's traffic-dynamics implications remain open.
+
+**Finite implementation gate.** `CosetExport.lean` emits the actual diagonal
+successor, phase class, and east translate at every coordinate. The checker
+`scripts/check_cosets.py` reconstructs each complete cycle, compares an
+independent modular oracle, and checks both ordered-pair relations. Its default
+domain W,H≤12 contains 144 rectangles, 6,084 positions, 283,526 orbit visits,
+and 422,500 ordered pairs per relation, with 12 required rejection controls.
+These totals describe finite coordinate checks; successful acceptance is
+recorded in a source-bound receipt and does not establish B3 or B4.
 
 ---
 
@@ -278,30 +325,100 @@ Each case needs only the easy direction (←) of B2 and B2.2.
 
 ---
 
-## B4. Theorem F: densest free flow (outline)
+## B4. Theorem F: densest free flow
 
-With g = gcd(w, h) and V(g) = ⌊2g/3⌋ (already proved: `freeClasses_eq_two_thirds`):
-- for g = 1: n_free = max(h⌊w/2⌋, w⌊h/2⌋);
-- for g ≥ 2: n_free = (w·h/g) · V(g).
+With g = gcd(w, h), M = w·h/g (the size of each class φ⁻¹(c)) and V(g) = ⌊2g/3⌋
+(already proved: `freeClasses_eq_two_thirds`):
 
-**Construction (≥).** Label the classes ℤ_g with k blocks `N E ·`, then blocks `E ·`, with
-k = ⌊g/3⌋ − ((⌊g/3⌋ − g) mod 2). Show `StaticFree` with decidable class arithmetic, then apply
-B3. The count is (w·h/g) × (number of non-blank labels), because each class has w·h/g cells.
-- Cells per class: the map p ↦ φ p is (w·h/g)-to-one. Show it via the bijection
-  (x, y) ↦ (x, x + y mod h), or count rows: each row meets each class in w/g cells.
+```lean
+theorem free_count_le (s) (hs : StaticFree s) :
+    carCount w h s ≤ if Nat.gcd w h = 1 then max (h * (w / 2)) (w * (h / 2))
+                     else (w * h / Nat.gcd w h) * ((2 * Nat.gcd w h) / 3)
 
-**Upper bound (≤).** This is the delicate step. Let A = φ(E cars) and B = φ(N cars). B3 gives
-B ∩ (A ∪ (A+1)) = ∅.
-1. Per row, the cells of a maximal A-run of length r form w/g horizontal segments of length r.
-   Conjunct 1 of `StaticFree` caps each segment at ⌈r/2⌉. Columns and B-runs are symmetric.
-2. Combinatorics on the cyclic word over {A, B, ·}: Σ over blocks Bˢ Aʳ · of
-   ⌈s/2⌉ + ⌈r/2⌉ ≤ V(g). Both prose proofs are in `docs/theorems.md` §5.
+theorem free_count_attained (n : Nat) (hn : n ≤ freeMax w h) :
+    ∃ s, StaticFree s ∧ carCount w h s = n
+```
 
-Suggested route: prove the word inequality as a standalone `Nat` lemma over `List (Fin 3)`,
-by strong induction on the block decomposition. Then prove the per-segment cap. Finally sum
-over rows and columns with the proved counting identities in `Counting.lean`.
+Combined with B3, these give Theorem F.
 
----
+For Lean, formalize the block inequality over lists, then the per-segment caps,
+and sum over rows and columns with the proved identities in `Counting.lean`.
+The full prose argument follows; its remaining steps are not compiled theorems.
+
+**Evidence beyond the exhaustive tables.** `bml.freeflow_dp.max_free_exact` computes the
+maximum independently: a max-plus transfer matrix over rows, under the Lemma R conditions only.
+It agrees with the formula on 3×3, 4×4, 3×6, 5×5 (g = 5), 6×6 (g = 6) and 8×4
+(`tests/test_blueprint.py`).
+
+### Upper bound (≤)
+
+Fix `StaticFree s`. Let A = {φ e : e an east car} and B = {φ q : q a north car}, as subsets of ℤ_g.
+
+**B4.1 (class constraints).** A ∩ B = ∅ and (A + 1) ∩ B = ∅. These are conjunct 3 of
+`StaticFree`, read on classes.
+
+**B4.2 (ring cap).** On a cyclic ring of length L, a 0/1 sequence with no two cyclically
+adjacent 1s has sum ≤ ⌊L/2⌋.
+- Proof by double counting: Σₓ (zₓ + zₓ₊₁) ≤ L, and the left side is 2·Σ z.
+- For L = 1 the single cell is its own neighbour, so the sum is 0.
+
+**B4.3 (segment cap).** On a linear segment of length r, a 0/1 sequence with no two adjacent
+1s has sum ≤ (r + 1)/2. Proof by induction on r, peeling two cells at a time.
+
+**B4.4 (g = 1).** Then φ is constant, so B4.1 forbids having both species. With only east cars,
+conjunct 1 is B4.2 on each row, so the count is ≤ h·⌊w/2⌋. With only north cars it is ≤ w·⌊h/2⌋.
+
+**B4.5 (one letter fills ℤ_g).** If A = ℤ_g, then B = ∅. Each row is a ring and B4.2 gives
+count ≤ h⌊w/2⌋ ≤ w·h/2 = M·g/2 ≤ M·⌊2g/3⌋. The last step is `omega` with cases g = 2, 3;
+it holds for every g ≥ 2. The case B = ℤ_g is symmetric.
+
+**B4.6 (rows read the class word).** Assume g ≥ 2 and neither A nor B is ℤ_g. Label each
+c ∈ ℤ_g with a letter: `A` if c ∈ A, `B` if c ∈ B, `·` otherwise (well defined by B4.1).
+Then the word has a `·`:
+- if A and B are both nonempty, some A is followed by a non-A, which must be `·` by B4.1;
+- if only one of them is nonempty, it is not all of ℤ_g.
+
+Rotate the word to start just after a `·`, so it ends in `·`. In row y, cell x has class
+(x + y) mod g. Read from the matching column, the row is that linear word repeated w/g times.
+
+**B4.7 (block decomposition).** A linear word ending in `·` with no `A` immediately followed by
+`B` splits uniquely into blocks Bˢ Aʳ ·, each of length ℓ = s + r + 1. Induct on the list, cutting
+after each `·`.
+
+**B4.8 (per-row and per-column caps).**
+- In each row, every block contributes at most ⌈r/2⌉ east cars, by B4.3 on its A-segment.
+  Summing over the w/g copies: east cars per row ≤ (w/g)·Σ_blocks ⌈r/2⌉.
+- Columns read the same word (class increases by 1 northwards). B4.3 with conjunct 2 gives
+  north cars per column ≤ (h/g)·Σ_blocks ⌈s/2⌉.
+- Summing rows and columns: carCount ≤ M·Σ_blocks (⌈s/2⌉ + ⌈r/2⌉).
+
+**B4.9 (block value).** ⌈s/2⌉ + ⌈r/2⌉ ≤ ⌊2ℓ/3⌋ for ℓ = s + r + 1.
+- ℓ = 1: the value is 0.
+- ℓ = 2: the value is ≤ 1.
+- ℓ ≥ 3: the integer value is ≤ ⌊(ℓ + 1)/2⌋ ≤ ⌊2ℓ/3⌋.
+
+This is pure `omega` after writing ⌈k/2⌉ = (k + 1)/2. It is checked for ℓ < 40 in the tests.
+
+**B4.10 (superadditivity).** ⌊2a/3⌋ + ⌊2b/3⌋ ≤ ⌊2(a+b)/3⌋, by `omega`. Applied over the blocks:
+Σ_blocks ⌊2ℓ/3⌋ ≤ ⌊2g/3⌋ = V(g), since the block lengths sum to g.
+
+Chaining B4.8, B4.9 and B4.10 gives carCount ≤ M·V(g).
+
+### Construction (≥)
+
+- **g ≥ 2.** Take k = ⌊g/3⌋ − ((⌊g/3⌋ − g) mod 2), so that k ≡ g (mod 2) and 3k ≤ g. Label ℤ_g
+  with k blocks `N E ·`, then (g − 3k)/2 blocks `E ·`. Put an east car on every cell of an
+  `E` class and a north car on every cell of an `N` class.
+  - Check `StaticFree` class by class:
+    - conjunct 1: the class east of an `E` class is `·`;
+    - conjunct 2: the class north of an `N` class is `E`;
+    - conjunct 3: `E` and `N` classes are distinct, and the class after an `E` class is `·`.
+  - Count: 2k + (g − 3k)/2 = (g + k)/2 = V(g) labelled classes, each with M cells (B4.11).
+- **g = 1.** Alternate east cars in each row (h⌊w/2⌋) or north cars in each column (w⌊h/2⌋).
+- **Every smaller n.** Deleting cars preserves `StaticFree`, so delete from a maximal configuration.
+
+**B4.11 (class size).** |φ⁻¹(c)| = M. Each row meets each class in exactly w/g cells: the
+cells (x, y) with x ≡ c − y (mod g) form an arithmetic progression of step g in ℤ_w.
 
 ## B5. Theorem T: completed TRAIN formalization
 
@@ -333,7 +450,68 @@ complete statements, construction, commands, and evidence boundaries.
 
 ---
 
+## B6. Completed TRAIN speed-one proof on sparse squares
+
+This obligation is discharged by the compiled `Train/SpeedOne.lean` theorem,
+including the pure cyclic proof, actual diagonal-dynamics bridge, and numerical
+full-speed characterization.
+
+The result is [Austin–Benjamini Proposition 1, v3](https://arxiv.org/pdf/math/0607759v3)
+for the actual TRAIN rule: for N>0 and any N×N configuration s,
+
+\[
+2\operatorname{population}(s)<N
+\;\Longrightarrow\;
+\exists T\;\forall t\ge T:\;
+\operatorname{totalMoveCount}(\operatorname{torusStep}^{t}(s))
+=\operatorname{population}(s).
+\]
+
+The public theorems are `sparse_square_eventually_fullSpeed` and
+`sparse_square_moves_equal_population`, both in `BML.Train`. The empty board
+is included. The condition is strict and requires no species balance.
+
+The existing compiled pieces are:
+
+- `Train/FreeFlow.lean`: movement counts are bounded by population, and equality
+  means every car moves in its own phase. Conservation rewrites eventual full
+  movement as equality with the initial population.
+- `Train/Diagonals.lean`: `sparse_eventual_stable` accepts a finite list of labels
+  and corrected cyclic traces. Each trace stays or moves one predecessor step;
+  an occupied class followed by an empty one must retain some occupant.
+  Under `2 * labels.length < N`, it proves a common time after which every
+  trace stays fixed. The empty list is permitted.
+
+`Train/DiagonalDynamics.lean` discharges those hypotheses for the actual kernel.
+Initial labels are `occupiedPositions s`. A full-cycle transport follows each
+car and covers every current car. The corrected tag is `x+y−t mod N`; it is
+stable for a moving car and decreases for a blocked one. Release follows by
+considering whether the occupied diagonal contains an east car before the
+east phase. The numeric wrapper then converts stable traces into full movement.
+
+The cyclic proof uses adjacent empty pairs. Sparse occupancy guarantees a pair
+at each time; one-step transport and release imply that every pair at t+1 was
+already empty at t. A finite descending-family argument yields a permanent
+pair. Cutting the cycle at a permanent vacancy makes each blocked event
+decrease a natural-number rank. Attained minima and a finite maximum of
+individual eventual times give simultaneous eventual stability. No eventual
+periodicity or bounded test result is assumed.
+
+This proves the result for squares only and supplies no effective stabilization-time bound.
+The CLASSIC transfer remains open. Separate finite acceptance covers all
+1,305 sparse square states through N=5 and checks full actual movement on
+every terminal-cycle edge. Eight targeted orbit certificates add 53 transition
+rows; ten new Quint tests and six controls check the clock, counts, recurrence,
+enumeration, and square scope. See [TRAIN.md](TRAIN.md) for exact domains,
+commands, and source-bound acceptance status.
+
+---
+
 ## Not in this blueprint
 
-The probabilistic switch (loop formation under μ_p) has no proof to blueprint yet;
-see `docs/theorems.md` §8.
+The fixed-positive-density probabilistic switch (loop formation under μ_p) has
+no proof to blueprint yet. The
+[probability note](../docs/research/2026-11-18-probabilistic-gridlock-bounds.md)
+separately proves the mixed-cycle reduction, a shrinking-density no-gridlock
+window, and finite-time bounds in prose; see `docs/theorems.md` §§8–8c. Those
+results do not establish a positive critical density.

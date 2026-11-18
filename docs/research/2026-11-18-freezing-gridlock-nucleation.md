@@ -6,6 +6,11 @@ and capture of the surrounding system. For BML, these become distinct
 deterministic and probabilistic questions. This note gives a finite capture
 argument and identifies the probability estimate it leaves open.
 
+The subsequent [probability note](2026-11-18-probabilistic-gridlock-bounds.md)
+identifies the exceptional initial full-lane event outside which mixed-cycle
+formation is equivalent to eventual gridlock, and proves a shrinking-density
+no-gridlock window. Its fixed-positive-density critical threshold remains open.
+
 Use the repository's synchronous **east-then-north** rule on
 \(\mathbb Z_W\times\mathbb Z_H\), with positive dimensions. Eligibility is
 computed before each half-step. Let \(F\) be a full step and let

@@ -11,7 +11,10 @@ This is the detailed register for the **Traffic suite**. Start at the
 population interval through blocker-cycle winding and all-count constructions,
 and G2's exact-count configurations that never jam below full occupancy.
 It also proves that eventual CLASSIC gridlock is forced exactly at full
-occupancy among feasible populations n≤WH. Strong non-monotonicity, F
+occupancy among feasible populations n≤WH. The B2 coset identity identifies
+its actual cyclic `(1,-1)` coordinate orbits with phase-class fibers, with
+signed and bounded forward witnesses. That auxiliary action is not the
+traffic update. Strong non-monotonicity, F
 arithmetic components, and separate Python/Quint replay evidence complete
 the BML register.
 No general theorem identifying the `BML` and `Traffic` definitions is claimed.
@@ -165,7 +168,9 @@ The following remain outside this layer:
   winding under modular closure; `BML` proves complete G1/G2 with exact-count
   constructions. Its persistent mixed-lane argument excludes a nonempty jam
   at every iterate of each G2 construction; it does not assert free flow.
-  The general R/F results remain unformalized.
+  Its B2 coset identity supplies geometric encounter classes and bounded time
+  witnesses on actual cyclic coordinates. Connecting those to rigid traffic
+  orbits and proving the general R/F results remain open.
 - Reproduction of the published large-grid intermediate-state experiments.
 
 Published claims in the research note retain their literature attribution.

@@ -258,6 +258,7 @@ def source_manifest() -> dict[str, str]:
         ROOT / "requirements-dev.txt", LEAN / "G2Export.lean", LEAN / "G2Audit.lean",
         LEAN / "BML.lean", LEAN / "Audit.lean", LEAN / "lakefile.toml",
         LEAN / "lake-manifest.json", LEAN / "lean-toolchain",
+        LEAN / "Train/Counting.lean",
     ]
     paths.extend(sorted((LEAN / "BML").glob("*.lean")))
     return {str(path.relative_to(ROOT)): sha256(path.read_bytes()) for path in sorted(paths)}

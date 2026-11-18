@@ -1,4 +1,6 @@
-import Lean
+-- Batch audits need the command and axiom APIs, not the server/shell umbrella.
+import Lean.Elab.Command
+import Lean.Util.CollectAxioms
 import BML
 import G1Export
 
@@ -29,13 +31,30 @@ elab "audit_bml" : command => do
     ``BML.nonGridlockWith_carCount, ``BML.nonGridlockWith_never_jam,
     ``BML.exists_never_jam_with_count, ``BML.carCount_eq_area_iff,
     ``BML.full_carCount_is_jam, ``BML.forced_eventual_jam_iff,
+    ``BML.nat_gcd_bezout, ``BML.coset_dvd_iff, ``BML.coset_int_iff, ``BML.coset_iff,
+    ``BML.cyclicShift_add, ``BML.diagonalShift_add, ``BML.iterate_diagonalStep,
+    ``BML.diagonalShift_exists_iff, ``BML.diagonal_kernel_iff,
+    ``BML.phaseClass_east, ``BML.phaseClass_surjective,
+    ``BML.east_diagonalShift_exists_iff,
+    ``BML.diagonalShift_emod_lcm, ``BML.iterate_diagonalStep_eq_self_iff,
+    ``BML.iterate_diagonalStep_lcm, ``BML.diagonalStep_reaches_lt_iff,
+    ``BML.diagonalStep_reaches_iff, ``BML.diagonalStep_reaches_pos_iff,
+    ``BML.east_diagonalStep_reaches_lt_iff, ``BML.east_diagonalStep_reaches_pos_iff,
     ``BML.torus_fixed_iff_blocked, ``BML.winding_length_lower_bound,
     ``BML.freeClasses_attains_two_thirds_iff,
     ``BML.Witness.after_never_jams, ``BML.Witness.original_traced_car_moves_forever,
     ``BML.BlockingCore.persists, ``BML.BlockerCycle.persists,
     ``BML.carTrace_bijection, ``BML.RouteCover.distance_roundTransport,
     ``BML.RouteCover.rank_balance, ``BML.RouteCover.total_moves_le,
-    ``BML.RouteCover.jammed_by_movementBudget]
+    ``BML.RouteCover.jammed_by_movementBudget,
+    ``BML.speciesCount_halfStep, ``BML.speciesCount_iterate,
+    ``BML.eastRowCount_iterate, ``BML.northColumnCount_iterate,
+    ``BML.fullEastRow_no_moves, ``BML.fullNorthColumn_no_moves,
+    ``BML.fullEastRow_iterate_iff, ``BML.fullNorthColumn_iterate_iff,
+    ``BML.hasFullMonochromaticLane_iterate_iff,
+    ``BML.fullEastRow_excludes_fullNorthColumn,
+    ``BML.northFreeColumn_iterate_iff, ``BML.northFreeStrip_iterate_iff,
+    ``BML.eastRowsBelow_iterate_iff]
   for name in required do
     match env.find? name with
     | none => throwError "BML audit missing required theorem {name}"
