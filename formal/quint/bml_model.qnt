@@ -1,7 +1,7 @@
 // Nondeterministic initial board; the subsequent BML update is deterministic.
 // This concrete module uses a 3x2 torus. The pure module supports other sizes.
 module bml_model {
-  import bml.* from "./bml"
+  import traffic.* from "./traffic"
 
   pure val WIDTH = 3
   pure val HEIGHT = 2

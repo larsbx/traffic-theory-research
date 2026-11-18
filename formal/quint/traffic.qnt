@@ -1,7 +1,7 @@
 // Cell codes: 0 vacant, 1 eastbound, 2 northbound.
 // Phase codes: 1 east, 2 north. Positive width/height are required.
 // Coordinates use row-major index x + width*y with y increasing northward.
-module bml {
+module traffic {
   type Board = List[int]
   type Tile = { here: int, east: int, north: int }
   type Tiles = List[Tile]

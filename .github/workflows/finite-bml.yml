@@ -1,0 +1,113 @@
+name: Finite BML acceptance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: finite-bml-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Python kernel and orbit certificates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Record revision and install Python dependencies
+        run: |
+          mkdir -p .artifacts
+          git rev-parse HEAD > .artifacts/revision.txt
+          python -m pip install -r requirements-dev.txt
+      - name: Kernel, classifier, constructions, and labeled witnesses
+        run: python -m pytest -q --junitxml=.artifacts/python-tests.xml | tee .artifacts/python-tests.log
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: bml-python-evidence
+          path: .artifacts/
+          include-hidden-files: true
+          if-no-files-found: error
+
+  lean:
+    name: Lean proofs, axiom audit, and replay
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Record revision and install replay dependencies
+        run: |
+          mkdir -p .artifacts
+          git rev-parse HEAD > .artifacts/revision.txt
+          python -m pip install -r requirements-dev.txt
+      - uses: leanprover/lean-action@ba3fdfe5c4476c925da13bf11a005ddb47e47aee # v1
+        with:
+          lake-package-directory: formal/lean
+          auto-config: 'false'
+          build: 'true'
+          test: 'false'
+          lint: 'false'
+          use-mathlib-cache: 'false'
+          use-github-cache: 'false'
+      - name: Audit all formal declarations and transitive axioms
+        working-directory: formal/lean
+        run: lake env lean Audit.lean | tee ../../.artifacts/lean-audit.log
+      - name: Compare both half-steps on every rectangle with at most nine cells
+        run: python scripts/check_lean_replay.py --max-cells 9 --report .artifacts/lean-replay.json | tee .artifacts/lean-replay.log
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: bml-lean-evidence
+          path: .artifacts/
+          include-hidden-files: true
+          if-no-files-found: error
+
+  quint:
+    name: Quint exhaustive replay and mutation controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - name: Record revision and install pinned tools
+        run: |
+          mkdir -p .artifacts
+          git rev-parse HEAD > .artifacts/revision.txt
+          python -m pip install -r requirements-dev.txt
+          npm ci --ignore-scripts --prefix formal/quint
+      - name: Quint tests, both half-steps, internal invariants, and mutations
+        run: python formal/quint/check.py --max-cells 6 --report .artifacts/quint-replay.json | tee .artifacts/quint-replay.log
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: bml-quint-evidence
+          path: .artifacts/
+          include-hidden-files: true
+          if-no-files-found: error

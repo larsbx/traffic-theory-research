@@ -1,6 +1,6 @@
 // A deterministic one-state export; no sampling is used to select rows.
 module bml_export {
-  import bml.* from "./bml"
+  import traffic.* from "./traffic"
   var rows: List[List[int]]
   action init = rows' = transitionRows(1, 1)
     .concat(transitionRows(1, 2))

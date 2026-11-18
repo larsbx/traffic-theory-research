@@ -4,8 +4,9 @@
   "private": true,
   "description": "Pinned executable BML model and bounded exhaustive acceptance",
   "scripts": {
-    "typecheck": "quint typecheck bml.qnt && quint typecheck bml_tests.qnt && quint typecheck bml_model.qnt && quint typecheck bml_export.qnt",
+    "typecheck": "quint typecheck BML.qnt && quint typecheck traffic.qnt && quint typecheck bml_tests.qnt && quint typecheck bml_model.qnt && quint typecheck bml_export.qnt",
     "test": "quint test bml_tests.qnt --backend=typescript --max-samples=1 --seed=20261118 && quint test bml_model.qnt --backend=typescript --max-samples=1 --seed=20261118",
+    "test:replay-model": "quint test BML.qnt --backend=typescript --max-samples=1 --seed=20261118",
     "simulate": "quint run bml_model.qnt --backend=typescript --invariant=safety --max-samples=100 --max-steps=20 --seed=20261118",
     "export": "node export.cjs"
   },

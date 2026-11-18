@@ -172,7 +172,7 @@ def main() -> int:
         require(quint_version == COVERAGE["quint_version"], f"wrong Quint version: {quint_version}")
         report["versions"] = {"lean": lean_version, "quint": quint_version, "node": node_version}
         run("lean-build", [lake, "build", "Traffic", "traffic_export"], LEAN)
-        audit = run("lean-axiom-audit", [lake, "env", "lean", "Audit.lean"], LEAN)
+        audit = run("lean-axiom-audit", [lake, "env", "lean", "TrafficAudit.lean"], LEAN)
         audited = {}
         summary = None
         for line in audit.splitlines():

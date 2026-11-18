@@ -1,31 +1,35 @@
-import Traffic
-import Traffic.Export
 import Lean
+import BML
 
 open Lean Elab Command
 
--- Audit every imported project declaration, including generated private declarations.
-run_cmd do
+/-- Audit every declaration in this package, including transitive proof dependencies. -/
+elab "audit_bml" : command => do
   let env ← getEnv
-  let names := (env.constants.toList.map Prod.fst).filter fun n =>
-    let inProjectModule := match env.getModuleIdxFor? n with
-      | none => false
-      | some idx =>
-        let moduleName := env.header.moduleNames[idx.toNat]!.toString
-        moduleName == "Traffic" || moduleName.startsWith "Traffic."
-    inProjectModule || n.toString.startsWith "Traffic." ||
-      n.toString.startsWith "_private.Traffic."
-  if names.isEmpty then
-    throwError "axiom audit found no Traffic declarations"
-  let mut theorems := 0
-  for name in names.toArray.qsort Name.lt do
-    let axioms ← collectAxioms name
-    for ax in axioms do
-      unless #["propext", "Quot.sound", "Classical.choice"].contains ax.toString do
-        throwError "disallowed axiom {ax} in {name}"
-    if (env.find? name).any ConstantInfo.isTheorem then
-      theorems := theorems + 1
-      liftIO <| IO.println s!"AUDIT_THEOREM\t{name}\t{String.intercalate "," (axioms.toList.map Name.toString)}"
-  if theorems == 0 then
-    throwError "axiom audit found no project theorems"
-  liftIO <| IO.println s!"AUDIT_SUMMARY\t{names.length}\t{theorems}"
+  let mut declarations : Nat := 0
+  let mut theorems : Nat := 0
+  let mut used : Array Name := #[]
+  let required : Array Name := #[
+    ``BML.step_eq_iff_frozen, ``BML.step_eq_iff_noMoves,
+    ``BML.transport_bijection, ``BML.iterate_nonempty_iff,
+    ``BML.torus_fixed_iff_blocked, ``BML.winding_length_lower_bound,
+    ``BML.freeClasses_attains_two_thirds_iff,
+    ``BML.Witness.after_never_jams, ``BML.Witness.original_traced_car_moves_forever]
+  for name in required do
+    if (env.find? name).isNone then
+      throwError "BML audit missing required theorem {name}"
+  let allowed : Array Name := #[``propext, ``Quot.sound, ``Classical.choice]
+  for (name, info) in env.constants.toList do
+    if (`BML).isPrefixOf name then
+      declarations := declarations + 1
+      if info.isTheorem then theorems := theorems + 1
+      let axioms ← collectAxioms name
+      for axiomName in axioms do
+        if !used.contains axiomName then used := used.push axiomName
+        if !allowed.contains axiomName then
+          throwError "BML axiom audit rejected {name}: {axiomName}"
+  if theorems < 25 then
+    throwError "BML audit found only {theorems} theorems; expected formal modules are missing"
+  logInfo m!"BML axiom audit passed: {declarations} declarations, {theorems} theorems; transitive axioms: {used}"
+
+audit_bml

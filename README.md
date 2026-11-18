@@ -9,27 +9,59 @@ connections to tiling and dynamical-systems theory.
   (2026-11-18): the rigorous high-density theorem, an exact encoding of frozen
   configurations by 21 Wang tiles, a Fibonacci blocking staircase and its
   projection, torus winding, published geometric traffic analysis, and diffraction.
-- [When does BML gridlock switch?](docs/theorems.md) (2026-11-18): the precise open
-  threshold problem, plus exact worst-case thresholds on every finite torus:
+- [When does BML gridlock switch?](docs/theorems.md) (2026-11-18): an open
+  probabilistic threshold question, plus extremal existence results on finite tori:
   - gridlock exists ⟺ n ≥ min(W,H);
   - gridlock is never forced below full density;
-  - free flow is rigid, with exact finite-torus capacity formulas and density
-    tending to 2/3 on L×L;
-  - adding one car can un-jam a configuration (non-monotonicity).
+  - for g = gcd(W,H) ≥ 2, maximal free-flow count is (WH/g)·⌊2g/3⌋;
+    for g = 1, it is max(H⌊W/2⌋, W⌊H/2⌋);
+  - adding a stationary car can make an original car move forever: a proved
+    4×2 non-monotonicity witness;
+  - the square-density 2/3 observation is already in the 1992 literature, and
+    a time-zero blocking-loop bound does not control eventual jamming.
+- [Formal coverage and validation](formal/README.md): the finite-torus `BML`
+  proofs, identity-preserving transport and non-monotonicity witness, together
+  with the complementary `Traffic` tiling/staircase proofs, actual Quint
+  evaluation, bounded correspondence, and the remaining proof obligations.
 
 ## Code
 
 - `bml/model.py` — pure, vectorised dynamics.
 - `bml/exhaustive.py` — exact classification of every state (pointer doubling on the step map).
 - `bml/extremal.py` — constructions and characterisations.
+- `bml/certificates.py` — independent labeled orbits and blocker-cycle certificates.
 - `bml/analysis.py` — tables for all tori with WH ≤ 16, written to `data/exhaustive.json` (~6 min).
 - `bml/montecarlo.py` — empirical jam curves (not a proof).
 
 ```sh
-pip install numpy pytest hypothesis
-python -m pytest -q          # 405 tests
+python -m pip install -r requirements-dev.txt
+python -m pytest -q
 python -m bml.analysis 16    # regenerate data/exhaustive.json
 ```
+
+For the pinned Lean and Quint toolchains, run the commands in the
+[formal coverage register](formal/README.md). Hosted acceptance checks out the
+PR's exact head and publishes separate Python, Lean, and Quint receipts.
+
+## Formalization suites
+
+- **BML:** the finite-torus kernel, species transport bijections, local G0
+  equivalences, arithmetic components of G1/F, and the strong 4×2
+  non-monotonicity witness. Finite replays compare Lean with NumPy on 93,387
+  states and Quint with NumPy on 3,720 states plus three witness rows; see the
+  [BML evidence register](formal/README.md#finite-evidence-scopes).
+- **Traffic:** the exact 21-Wang-tile correspondence, an infinite blocked
+  staircase for any supplied bi-infinite direction word, finite Fibonacci
+  counts and formal algebraic scaling, and winding under explicit modulo
+  closure. Its acceptance gate compares 3,120 board/phase cases between Lean
+  and Quint across six small grids; see the
+  [Traffic evidence register](formal/traffic-layer.md).
+
+These are separately scoped proof and validation suites in one pinned Lean
+package. The replay domains are finite executable checks, and no general
+cross-language or cross-library refinement is claimed. The infinite staircase
+proof does not supply an infinite Fibonacci hull, real projection, or a spatial
+spectral theorem.
 
 ## Evidence and scope
 
@@ -37,26 +69,12 @@ The notes distinguish published theorems, published numerical or geometric
 analysis, direct mathematical derivations, and proposed research obligations.
 Direct derivations carry no claim of novelty.
 
-The repository contains a Python BML model, exhaustive classification receipts
-(`data/exhaustive.json`), automated tests, and the scoped Lean and Quint layer
-below. The extremal claims in `docs/theorems.md` beyond the G0 fixed-point
-characterization remain outside the Lean proofs.
-
-## Formalization
-
-The [Lean and Quint layer](formal/README.md) supplies:
-
-- Lean 4.34.1 proofs connecting actual simultaneous traffic updates to freezing,
-  the exact 21-Wang-tile correspondence, infinite blocking staircases, finite
-  Fibonacci counts and algebraic scaling, and conditional winding arithmetic.
-- An executable Quint 0.33.1 torus model, 29 deterministic tests, and explicitly
-  bounded exhaustive checks over six grid sizes.
-- A common acceptance gate comparing every one of 3,120 finite board/phase
-  cases between Lean and Quint, with a compiled theorem/axiom audit and
-  source-bound CI evidence.
-
-Run instructions, exact theorem coverage, and limits are in the formalization
-README and its machine-readable coverage manifest.
+The repository contains an executable BML model, historical exhaustive tables
+(`data/exhaustive.json`), machine-checked local kernel theorems, and an automated
+test suite. The full G1/G2/R/F extremal arguments are still prose proofs with
+bounded computational support; the Lean arithmetic components are not presented
+as formal proofs of those full results. The formal register states the exact
+replay domains and distinguishes regenerated data from inherited tables.
 
 The initial research boundary is explicit: permanent blocking is a property of
 traffic time evolution; quasiperiodicity and pure point spatial spectrum concern

@@ -2,7 +2,7 @@
 'use strict';
 
 // Serialization adapter only. All boards, transitions and properties are
-// evaluated by the pinned Quint interpreter from bml.qnt.
+// evaluated by the pinned Quint interpreter from traffic.qnt.
 const { spawnSync } = require('node:child_process');
 const { mkdtempSync, readFileSync, rmSync } = require('node:fs');
 const { tmpdir } = require('node:os');

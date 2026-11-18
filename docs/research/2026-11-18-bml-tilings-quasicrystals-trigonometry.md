@@ -5,7 +5,7 @@ Date: 2026-11-18
 Status: research note recording published results and explicit derivations from
 the discussion that motivated this repository. The arguments below are exposition,
 with no novelty claim. A selected subset now has a
-[Lean and Quint formalization](../../formal/README.md); its coverage matrix
+[Traffic Lean and Quint formalization](../../formal/traffic-layer.md); its coverage matrix
 distinguishes kernel-checked statements, bounded executable evidence, and the
 remaining mathematical obligations. Neither this note nor that layer establishes
 that random traffic generates quasicrystals.
@@ -520,7 +520,7 @@ point spatial spectrum.
 ## 8. Research and proof obligations
 
 The following table tracks the original proposal against the initial
-[formalization layer](../../formal/README.md). Its acceptance gate records the
+[Traffic formalization layer](../../formal/traffic-layer.md). Its acceptance gate records the
 source revision and hashes; formal status is limited to the stated theorem
 domains and finite checking bounds.
 
@@ -530,7 +530,7 @@ domains and finite checking bounds.
 | Wang recoding | Formalize the 21 types and inverse local encoding/decoding. | Lean proves exact enumeration and inverse recoding on a general grid; concrete cyclic grids instantiate it. |
 | Fibonacci path | Formalize a bi-infinite hull word, occupied successors, and projection. | Lean constructs a frozen staircase for any supplied bi-infinite direction word and proves finite Fibonacci count/algebraic identities. A Fibonacci hull element, real projection, frequency and density limits remain open. |
 | Finite demonstration | Choose boundary conditions that do not silently block a truncated endpoint. | Quint specifies finite tori and tests truncated-path and update-order controls; Lean–Quint agreement is checked on six small grid sizes. |
-| Traffic geometry | Reproduce selected Fibonacci-rectangle and square-grid cases. | Large-grid experiments remain open; the formal layer proves conditional modular winding arithmetic only. |
+| Traffic geometry | Reproduce selected Fibonacci-rectangle and square-grid cases. | Large-grid experiments remain open; the Traffic layer proves winding under modular closure, while BML also supplies arithmetic components of the separate extremal results. |
 | Spatial order | Specify an observable and a family or hull of limiting traffic patterns. | Recurrence/substitution/model-set identification and controlled correlation limits remain open. |
 | Spectral conclusion | Establish the appropriate spatial spectrum for that specified system. | A separate spectral proof or verified bridge to an applicable published theorem remains open. |
 

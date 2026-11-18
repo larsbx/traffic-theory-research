@@ -1,5 +1,5 @@
 module bml_tests {
-  import bml.* from "./bml"
+  import traffic.* from "./traffic"
 
   run emptyFrozenTest = assert(frozen([0, 0, 0, 0], 2, 2))
   run allOccupiedFrozenTest =
