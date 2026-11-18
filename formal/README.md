@@ -24,7 +24,7 @@ checks are recorded separately in [the theorem document](../docs/theorems.md).
 
 | Suite | Proved constructions and checks | Detailed entry point |
 | --- | --- | --- |
-| `BML` / `BML.qnt` | Finite-torus update semantics, species transport bijections, nonempty-jam boundaries, G1/F arithmetic components, and a strong identity-aware non-monotonicity witness. Separate finite replays compare Lean and Quint with NumPy. | The register and commands below; [Lean package](lean/README.md). |
+| `BML` / `BML.qnt` | Finite-torus update semantics, species transport bijections, nonempty-jam boundaries, persistent cores and route-cover capture, G1/F arithmetic components, and a strong identity-aware non-monotonicity witness. Separate finite replays compare Lean and Quint with NumPy. | The register and commands below; [Lean package](lean/README.md). |
 | `Traffic` / `traffic.qnt` | General-grid freezing, exact 21-Wang-tile recoding, a constructed infinite staircase for any supplied direction word, finite Fibonacci count and algebraic-length identities, and winding conditional on modular closure. Six finite grids are compared directly between Lean and Quint. | [Traffic coverage and acceptance](traffic-layer.md); [Traffic inventory](coverage.json). |
 
 Both suites use old-state simultaneous eligibility and east-then-north full
@@ -51,6 +51,9 @@ scope are in [traffic-layer.md](traffic-layer.md).
 | Half-step semantics, no collisions or created cars | Universal Lean proofs of source/destination behavior and an explicit bijection on each species' cars; the other species stays in place. | Relate the executable numerical `speciesCount` sum to this bijection in a separate general theorem. |
 | G0 local equivalence | Lean proves full-step fixed ⇔ local blockage ⇔ no movers in either phase, on the actual finite-torus kernel. Frozen states persist through every iterate. | General eventual periodicity and correctness of the orbit classifier are still separate obligations; the cycle-average formulation is explained in prose. |
 | Full occupancy and the empty boundary | Lean proves full occupancy freezes; the empty state is fixed but is not a jam. Nonemptiness is invariant under evolution. | No missing local boundary lemma is claimed. |
+| Persistent occupied cores | `BlockingCore.persists` proves preservation under the actual two-phase kernel; `BlockerCycle.persists` derives a core from a supplied occupied closed walk. | The Lean closed walk may revisit sites. Extraction of a simple cycle from an arbitrary frozen state remains separate. |
+| Capture from a core meeting every row and column | `RouteCover.jammed_by_movementBudget` proves a nonempty jam by `M = n_E*(W-1) + n_N*(H-1)` full rounds from explicit core obstacles on every row/column. `total_moves_le` bounds every finite prefix of actual tagged moves; rank decrease is derived from kernel transport. | Construct the row/column witnesses from mixed winding in Lean. Tagged movement has a proved car bijection but no separate equality with the Eulerian `moveCount` sum. No probability of forming a core is proved. |
+| Mixed-cycle capture certificates | Python validates distinct vertices, directions, edges, winding, and row/column coverage, then independently replays identities against the production kernel. The census checks 34,344 states on six tori, including all 831 mixed-core cases. Quint supplies three additional bounded persistence/capture/monochromatic controls. | These finite checks are not an unrestricted Python/Lean/Quint certificate refinement. A monochromatic core alone need not capture all cars. |
 | G1 minimum gridlock | Prose blocker-cycle proof; executable constructions; Lean winding arithmetic: a nonzero closed nonnegative winding costs at least min(W,H). | Extract a simple blocker cycle in Lean, connect its displacements and distinct-car count, and prove the all-count constructions. |
 | G2 sub-full non-gridlock construction | Prose proof, tested single-species constructions, and bounded classifier evidence. | Prove the all-count construction and its perpetual movement in Lean. |
 | R, free-flow rigidity and phase classes | Prose proof; static/dynamic equivalence tested on every state of every ordered rectangle with WH≤9 and random larger examples. | Prove ⟨(1,−1)⟩ = ker(x+y mod gcd(W,H)), and connect both directions of rigidity to the kernel. |
@@ -68,6 +71,7 @@ For the BML suite, use Python 3.12, Node.js 22, and the Lean toolchain pinned in
 ```sh
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
+python scripts/check_capture.py --report .artifacts/capture-replay.json
 npm ci --ignore-scripts --prefix formal/quint
 cd formal/lean
 lake build
@@ -86,7 +90,7 @@ and the tracked car's perpetual movement are proved by induction.
 
 Quint is pinned to version 0.33.1 by a package lock. The adapter invokes the
 actual TypeScript evaluator; it contains no replacement traffic dynamics.
-Quint parse, typecheck, and seven deterministic tests are required before the
+Quint parse, typecheck, and ten deterministic tests are required before the
 cross-language replay. This is not an Apalache result or sampled model checking.
 
 ## Finite evidence scopes
@@ -102,6 +106,18 @@ comparison domains.
 | Lemma R's static predicate vs direct free-motion simulation | All states on those same 23 rectangles; additional randomized dimensions 2…8. |
 | Historical table reproduction | All 23 stored records with WH≤9, regenerated and compared in full. |
 | G1 and F constructions | Every positive W,H≤12; these tests do not make the all-size claims Lean theorems. |
+| Static cores and independent capture replay | All 34,344 states on 2×2, 3×2, 2×3, 4×2, 2×4, and 3×3 tori. All 831 states with a mixed core have independent tagged capture replay (964 edges, including frozen self-edges). These are separate from the kernel correspondence domains above. |
+
+`scripts/check_capture.py` writes source-bound capture counts and separately
+identified production-classifier phase totals. `trace_capture` records the first
+observed direct core, mixed core, and global jam. It certifies an occupancy cycle
+only after exact recurrence; an exhausted observation budget remains
+`unresolved`. Neither a moving jam front nor a temporary zero in one half-step
+is treated as a permanent core or complete gridlock.
+
+See [the freezing/gridlock note](../docs/research/2026-11-18-freezing-gridlock-nucleation.md)
+for the direct mixed-winding argument, AHM prior art, and the remaining formation
+probability problem.
 
 Quint mutation controls execute actual altered specifications and require
 rejection for reversed phase order, asynchronous scanning, and invalid cell

@@ -51,6 +51,38 @@ module BML {
     w >= 1 and h >= 1 and s.length() == w * h and
     s.indices().forall(i => s[i] >= empty and s[i] <= north)
 
+  // A nonempty occupied core whose cars all point to another core site.
+  // This is CLASSIC snapshot-vacancy blocking, not TRAIN movement.
+  pure def closedCore(w: int, h: int, s: State, core: Set[int]): bool =
+    if (not(legal(w, h, s)) or core.size() == 0 or
+        not(core.forall(i => s.indices().contains(i)))) false
+    else core.forall(i => s[i] != empty and
+      core.contains(front(w, h, s[i], i)))
+
+  pure def coversRowsAndColumns(w: int, h: int, core: Set[int]): bool =
+    0.to(h - 1).forall(y => core.exists(i => i / w == y)) and
+    0.to(w - 1).forall(x => core.exists(i => i % w == x))
+
+  pure def captureBound(w: int, h: int, s: State): int =
+    count(s, east) * (w - 1) + count(s, north) * (h - 1)
+
+  // Bounded executable check, not a universal proof: replay the actual
+  // transition, preserve the core at both phases, and count every car move.
+  pure def captureCheck(w: int, h: int, s: State, core: Set[int]): bool =
+    if (not(closedCore(w, h, s, core)) or
+        not(coversRowsAndColumns(w, h, core))) false
+    else {
+      val bound = captureBound(w, h, s)
+      val result = range(0, bound).foldl(
+        { state: s, total: 0, held: true }, (acc, unused) => {
+          val t = transition(w, h, acc.state)
+          { state: t.next, total: acc.total + t.eastMoves + t.northMoves,
+            held: acc.held and core.forall(i =>
+              t.east[i] == s[i] and t.next[i] == s[i]) }
+        })
+      result.held and result.total <= bound and blocked(w, h, result.state)
+    }
+
   pure def row(w: int, h: int, index: int): List[int] = {
     val t = transition(w, h, decode(w, h, index))
     List(index, encode(t.east), encode(t.next), t.eastMoves, t.northMoves)
@@ -118,5 +150,36 @@ module BML {
     row(4, 2, 3860) == List(3860, 3860, 4340, 0, 1),
     row(4, 2, 4340) == List(4340, 4340, 3860, 0, 1),
     blocked(4, 2, step(4, 2, step(4, 2, step(4, 2, decode(4, 2, 3858))))),
+  })
+
+  // The core winds once in each direction, while the two non-core cars
+  // still move during capture. Row-major cycle: 0,3,6,7,1,2.
+  pure val captureCore3 = Set(0, 3, 6, 7, 1, 2)
+  run closedCorePersistenceTest = init.expect(all {
+    closedCore(3, 3, decode(3, 3, 5738), captureCore3),
+    closedCore(3, 3, transition(3, 3, decode(3, 3, 5738)).east, captureCore3),
+    closedCore(3, 3, step(3, 3, decode(3, 3, 5738)), captureCore3),
+    not(closedCore(3, 3, decode(3, 3, 5738), Set())),
+    not(closedCore(3, 3, decode(3, 3, 5738), Set(-1))),
+    not(closedCore(3, 3, decode(3, 3, 5738), Set(9))),
+    not(closedCore(3, 3, decode(3, 3, 5738), Set(0, 3, 6, 7, 1, 8))),
+  })
+  run mixedCoreCaptureTest = init.expect(all {
+    coversRowsAndColumns(3, 3, captureCore3),
+    captureBound(3, 3, decode(3, 3, 5738)) == 16,
+    not(blocked(3, 3, decode(3, 3, 5738))),
+    not(blocked(3, 3, step(3, 3, decode(3, 3, 5738)))),
+    blocked(3, 3, step(3, 3, step(3, 3, decode(3, 3, 5738)))),
+    captureCheck(3, 3, decode(3, 3, 5738), captureCore3),
+  })
+  run monochromaticCoreControlTest = init.expect({
+    val s = List(east, east, east, east, empty, empty)
+    all {
+      closedCore(3, 2, s, Set(0, 1, 2)),
+      not(coversRowsAndColumns(3, 2, Set(0, 1, 2))),
+      not(captureCheck(3, 2, s, Set(0, 1, 2))),
+      step(3, 2, step(3, 2, step(3, 2, s))) == s,
+      transition(3, 2, s).eastMoves == 1,
+    }
   })
 }

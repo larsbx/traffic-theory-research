@@ -32,6 +32,7 @@ It does not embed Python-produced expected transitions.
 |---|---|
 | `BML/Kernel.lean` | Moving sources empty and destinations fill; other species remain in place; a half-step is fixed iff its cars are blocked; a full east-then-north step is fixed iff both local blocking conditions hold; equivalence with no movement in either phase; frozen-state persistence, including after a transient; full occupancy freezes; the empty state is fixed but is not a jam. |
 | `BML/Transport.lean` | Explicit bijection between each species' cars before and after its phase: survival, injectivity, and surjectivity. Nonemptiness is preserved by a full step and every iterate. The finite cardinality consequence is justified by the bijection, while the executable `speciesCount` sum itself has no separate general equality theorem. |
+| `BML/Capture.lean` | Successor-closed occupied cores persist. A supplied occupied closed walk yields a core (distinct sites are not required by this Lean declaration). Full-round tagged transport is bijective. Explicit core obstacles on every row and column give a kernel-derived cyclic-distance rank, a bound `M = n_E*(W-1) + n_N*(H-1)` on every finite prefix of tagged moves, and a nonempty jam by full round M. |
 | `BML/Torus.lean` | Positive finite cyclic coordinates with proved inverse shifts; the general kernel is instantiated on `Fin WIDTH × Fin HEIGHT`; executable base-three encoding, decoding, and counts. |
 | `BML/Arithmetic.lean` | Divisibility of positive winding lengths implies the `min(WIDTH, HEIGHT)` lower bound. The proposed class packing expression simplifies to `floor(2*g/3)` and attains exact `2/3` iff `3` divides `g`. These are arithmetic components of G1 and F. |
 | `BML/Witnesses.lean` | A stronger nonmonotonicity example on width 4, height 2. State `3858` reaches jam `2048` after three steps. Adding one north car at `(0,0)` yields `3860 ↔ 4340`, which never jams. The added car remains blocked forever. An explicitly tracked original north car moves at every step. |
@@ -47,6 +48,20 @@ a counterexample to the classification convention that assigns it free flow.
 The strong witness's `originalTrace` is an identity-following recurrence using
 `transport`, rather than a statement that some unlabeled car moves. The tracked
 car occupies column 1 in both cycle states and was present before the added car.
+
+For capture, `RouteCover` supplies an already occupied successor-closed core
+and a specified core obstacle on every row and every column. The public theorem
+`RouteCover.jammed_by_movementBudget` derives strict decrease from actual
+`CanMove` events and tagged transport; it does not assume rank decrease as an
+unproved premise. `RouteCover.total_moves_le` counts moves through original car
+tags and the proved `carTrace_bijection`. A separate equality with the existing
+Eulerian `moveCount` function is not claimed.
+
+The mixed-winding argument that constructs these row/column witnesses remains
+a prose proof with Python certificate checks. The universal Lean capture result
+begins at the explicit `RouteCover` witnesses. This is a formalization of the
+blocking/capture mechanism already used in Angel–Holroyd–Martin's torus proof,
+with an explicit integer movement bound, not a novelty claim.
 
 ## Audit and trust boundary
 
@@ -76,6 +91,8 @@ mathematics remains:
   constructions in F.
 - Formalize eventual periodicity/classifier correctness and unrestricted
   Python-to-Lean source correspondence.
+- Construct `RouteCover` witnesses from a mixed occupied blocker cycle's winding,
+  and connect the Python certificate verifier to those Lean witnesses.
 
 No probabilistic critical density, asymptotic typical-case theorem, or
 quasicrystal spectral statement is asserted by this layer.

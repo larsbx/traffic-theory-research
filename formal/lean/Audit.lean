@@ -14,10 +14,17 @@ elab "audit_bml" : command => do
     ``BML.transport_bijection, ``BML.iterate_nonempty_iff,
     ``BML.torus_fixed_iff_blocked, ``BML.winding_length_lower_bound,
     ``BML.freeClasses_attains_two_thirds_iff,
-    ``BML.Witness.after_never_jams, ``BML.Witness.original_traced_car_moves_forever]
+    ``BML.Witness.after_never_jams, ``BML.Witness.original_traced_car_moves_forever,
+    ``BML.BlockingCore.persists, ``BML.BlockerCycle.persists,
+    ``BML.carTrace_bijection, ``BML.RouteCover.distance_roundTransport,
+    ``BML.RouteCover.rank_balance, ``BML.RouteCover.total_moves_le,
+    ``BML.RouteCover.jammed_by_movementBudget]
   for name in required do
-    if (env.find? name).isNone then
-      throwError "BML audit missing required theorem {name}"
+    match env.find? name with
+    | none => throwError "BML audit missing required theorem {name}"
+    | some info =>
+      unless info.isTheorem do
+        throwError "BML audit required declaration is not a theorem: {name}"
   let allowed : Array Name := #[``propext, ``Quot.sound, ``Classical.choice]
   for (name, info) in env.constants.toList do
     if (`BML).isPrefixOf name then

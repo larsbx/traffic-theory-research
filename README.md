@@ -21,6 +21,12 @@ connections to tiling and dynamical-systems theory.
   - under Austin–Benjamini's train rule, the least stuck configuration has W+H cars;
   - the square-density 2/3 observation is already in the 1992 literature, and
     a time-zero blocking-loop bound does not control eventual jamming.
+- [Freezing, nucleation, and BML gridlock](docs/research/2026-11-18-freezing-gridlock-nucleation.md)
+  (2026-11-18): separates formation of a persistent blocking core from capture
+  of the surrounding traffic. Lean proves capture from explicit core obstacles
+  on every row and column within `n_E*(W-1) + n_N*(H-1)` full rounds; Python
+  verifies mixed-cycle geometry and independently replays tagged cars. The
+  results do not determine a probabilistic jamming threshold.
 - [Formal coverage and validation](formal/README.md): the CLASSIC finite-torus
   `BML` proofs, identity-preserving transport and non-monotonicity witness, together
   with the complementary `Traffic` tiling/staircase proofs, actual Quint
@@ -32,6 +38,8 @@ connections to tiling and dynamical-systems theory.
 - `bml/exhaustive.py` — exact classification of every state (pointer doubling on the step map).
 - `bml/extremal.py` — constructions and characterisations.
 - `bml/certificates.py` — independent labeled orbits and blocker-cycle certificates.
+- `bml/capture.py` — checked blocker cycles, identity-aware capture certificates,
+  and separate formation/capture observations with explicit unresolved cutoffs.
 - `bml/analysis.py` — tables for all tori with WH ≤ 16, written to `data/exhaustive.json` (~6 min).
 - `bml/nonmonotone.py` — un-jamming pairs with car identities tracked.
 - `bml/montecarlo.py` — empirical jam curves (not a proof).
@@ -39,6 +47,7 @@ connections to tiling and dynamical-systems theory.
 ```sh
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
+python scripts/check_capture.py --report .artifacts/capture-replay.json
 python -m bml.analysis 16    # regenerate data/exhaustive.json
 ```
 
@@ -56,7 +65,8 @@ pattern can hide movement under that rule, so the CLASSIC G0 fixed-point result
 does not transfer.
 
 - **BML:** the finite-torus kernel, species transport bijections, local G0
-  equivalences, arithmetic components of G1/F, and the strong 4×2
+  equivalences, permanent cores and route-cover capture bounds, arithmetic
+  components of G1/F, and the strong 4×2
   non-monotonicity witness. Finite replays compare Lean with NumPy on 93,387
   states and Quint with NumPy on 3,720 states plus three witness rows; see the
   [BML evidence register](formal/README.md#finite-evidence-scopes).
