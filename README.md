@@ -5,6 +5,14 @@ connections to tiling and dynamical-systems theory.
 
 ## Research notes
 
+- [Certified bounds for eventual gridlock](docs/research/2026-11-18-certified-absorption-bounds.md)
+  (2026-11-18): universal Lean soundness for hit/safe/unresolved cutoff
+  certificates, exact initial-weight probability intervals, and actual
+  Lean/Quint/Python replay. The complementary
+  [relaxation obstructions](docs/research/2026-11-18-relaxation-obstructions.md)
+  prove a queue-delay mechanism, a logarithmic settling-time obstruction,
+  failed vacancy/defect shortcuts, and a conditional late-defect criterion.
+  The fixed-positive-density transition remains open.
 - [Open questions and proof roadmap](docs/research/2026-11-18-open-questions-and-proof-roadmap.md)
   (2026-11-18): the post-TRAIN review, including an explicit periodic N-car
   family, the equality/gcd/time-bound extensions, CLASSIC rigidity and packing,
@@ -72,6 +80,10 @@ connections to tiling and dynamical-systems theory.
   and separate formation/capture observations with explicit unresolved cutoffs.
 - `bml/probability.py` — exact finite iid basin probabilities, initial full-lane
   probabilities, and checked conserved-strip obstructions and probability bounds.
+- `bml/absorption.py` — verified finite traces and exact eventual-gridlock
+  intervals, with omitted initial probability retained as unresolved.
+- `bml/obstructions.py` — raw phase-aware defects and queue-delay bounds,
+  with actual-kernel controls for proposed fixed-density proof routes.
 - `bml/fixation.py` — independent labeled fixation counts and exact initial-iid
   Palm probabilities, including the car-weighted jam probability and ring error.
 - `bml/analysis.py` — tables for all tori with WH ≤ 16, written to `data/exhaustive.json` (~6 min).
