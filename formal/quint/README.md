@@ -232,6 +232,42 @@ differs from the phase/Wang TSV despite having the same number of fields.
 No TRAIN Wang encoding, individual-car identity replay, unrestricted
 cross-language refinement, or Apalache verification is claimed.
 
+### Sparse-square eventual-speed acceptance
+
+`train_flow_check.py` checks all 1,305 configurations with
+`2 * population < N` on N×N squares, N=1,…,5. The state counts are 1, 1, 19,
+33, and 1,251. Population conservation makes each finite domain closed under
+TRAIN transitions. The checker analyzes every terminal cycle and requires
+`eastMoves + cycleNorthMoves` to equal the population on every cycle edge.
+Checking only that a terminal cycle is not a jam would not establish speed one.
+
+```sh
+python3 formal/quint/train_flow_check.py --rows .artifacts/train-flow-quint.tsv --report .artifacts/train-flow-quint.json
+```
+
+The standalone checker compares actual Quint transitions with Python and
+requires ten additional tests from `train_flow_tests.qnt`, with none ignored.
+The shared TRAIN gate also compares the Lean output. All terminal cycles in
+the five square domains have full movement; their cycle counts are 1, 1, 7,
+9, and 206, and their maximum transients are 0, 0, 0, 0, and 5.
+
+Eight explicit orbit certificates contribute 53 transition rows: positive
+sparse examples on 6×6, 7×7, and 8×8, and five boundary/phase controls. The 5×7
+two-car counterexample has a 15-step terminal cycle with 29 moves in 30
+car-step opportunities, so its mean velocity is 29/30 and it does not attain
+speed one. The 4×4 equality-boundary example shows that an individual empty
+pair can disappear, although empty pairs are backward hereditary. A 2×2 jam
+and rotating 1×1 ring distinguish occupancy equality from actual movement.
+The exact initial codes, cycle lengths, and overlaps are recorded in
+[TRAIN.md](../TRAIN.md#eventual-speed-one-acceptance).
+
+Six adversarial controls reject a half-step clock, the independent north
+count used as a cycle count, fixed occupancy misclassified as full movement,
+rectangular overreach, a truncated recurrence certificate, and incomplete
+domain enumeration. The clock control evaluates an altered Quint file; the
+remaining controls test certificate/comparison rejection. This is bounded
+functional-graph evidence, separate from the complete all-size Lean theorem.
+
 ## Proof boundary
 
 The pure definitions describe arbitrary positive dimensions, but the commands
@@ -244,6 +280,7 @@ These Quint suites do not prove eventual classification for all configurations,
 G1/G2/Theorem F, a critical density, high-density random gridlock, infinite
 Fibonacci frequencies, trigonometric identities, or diffraction theorems.
 The separate Lean TRAIN library proves the complete rectangular zero-movement
-existence threshold; the Quint runs remain bounded evidence. The empty state
+existence threshold and eventual full speed on sparse squares; the Quint runs
+remain bounded evidence. The empty state
 has no movers but is not a nonempty jam. In TRAIN, fixed occupancy can coexist
 with moving cars, and the model's stuck predicate uses mover counts.

@@ -20,6 +20,8 @@ connections to tiling and dynamical-systems theory.
     added car reviving all seven original cars;
   - under Austin–Benjamini's train rule, the least stuck configuration has W+H
     cars when W,H≥2; singleton dimensions admit no nonempty jam;
+  - a separate TRAIN square-lattice result gives eventual speed one when
+    `2 * population < N`, with a complete Lean proof for the actual movement rule;
   - the square-density 2/3 observation is already in the 1992 literature, and
     a time-zero blocking-loop bound does not control eventual jamming.
 - [Freezing, nucleation, and BML gridlock](docs/research/2026-11-18-freezing-gridlock-nucleation.md)
@@ -85,6 +87,10 @@ fixed-point result does not transfer.
   a construction for every allowed count. Lean and Quint replay evidence is
   recorded separately from this universal Lean theorem; see the
   [TRAIN evidence register](formal/TRAIN.md).
+  It also proves that every N×N state with `2 * population < N` eventually
+  reaches full speed: all cars move in every later full cycle. The empty state
+  is included. This square theorem supplies no effective stabilization-time
+  bound and does not establish the proposed CLASSIC transfer.
 
 These are separately scoped proof and validation suites in one pinned Lean
 package. The replay domains are finite executable checks, and no general
@@ -104,7 +110,8 @@ The repository contains executable CLASSIC and TRAIN models, historical exhausti
 test suite. The full G1/G2/R/F extremal arguments are still prose proofs with
 bounded computational support; the Lean arithmetic components are not presented
 as formal proofs of those full results. The TRAIN all-count threshold T has a
-complete Lean proof. The formal register states the exact
+complete Lean proof, as does the TRAIN square speed-one result below N/2 cars.
+The formal register states the exact
 replay domains and distinguishes regenerated data from inherited tables.
 
 The initial research boundary is explicit: permanent blocking is a property of

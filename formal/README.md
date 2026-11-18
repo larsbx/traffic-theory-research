@@ -21,13 +21,19 @@ equivalence between a fixed point and no movement (G0) is not valid for TRAIN.
 The TRAIN library proves this distinction and states its threshold using
 actual zero movement.
 
+The sparse-square TRAIN speed-one theorem is also proved in full, including
+its actual-kernel bridge and numerical movement conclusion. Every N×N state
+with `2 * population < N` eventually has all cars moving in every full cycle,
+including the empty state.
+The CLASSIC transfer and rectangular generalizations are separate obligations.
+
 ## Separately scoped proof suites
 
 | Suite | Proved constructions and checks | Detailed entry point |
 | --- | --- | --- |
 | `BML` / `BML.qnt` | Finite-torus update semantics, species transport bijections, nonempty-jam boundaries, persistent cores and route-cover capture, G1/F arithmetic components, and a strong identity-aware non-monotonicity witness. Separate finite replays compare Lean and Quint with NumPy. | The register and commands below; [Lean package](lean/README.md). |
 | `Traffic` / `traffic.qnt` | General-grid freezing, exact 21-Wang-tile recoding, a constructed infinite staircase for any supplied direction word, finite Fibonacci count and algebraic-length identities, and winding conditional on modular closure. Six finite grids are compared directly between Lean and Quint. | [Traffic coverage and acceptance](traffic-layer.md); [Traffic inventory](coverage.json). |
-| `BML.Train` / `Train.qnt` | Queue and ring movement, transport bijections and numeric conservation, actual zero-movement characterization, and the full theorem that an n-car jam exists iff W+H≤n≤WH on every positive rectangle. | [TRAIN coverage and acceptance](TRAIN.md); [TRAIN inventory](train-coverage.json). |
+| `BML.Train` / `Train.qnt` | Queue and ring movement, transport and trace coverage, numeric conservation, the full rectangular jam-population theorem, and eventual full speed on every N×N square with fewer than N/2 cars. Quint and cross-language checks retain finite domains. | [TRAIN coverage and acceptance](TRAIN.md); [TRAIN inventory](train-coverage.json). |
 
 All suites use simultaneous half-steps and east-then-north full steps. The
 CLASSIC and TRAIN eligibility rules differ. Their types, predicates, and executable comparison contracts are

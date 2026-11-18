@@ -10,7 +10,7 @@ lemmas small enough to formalise one at a time.
 - Signatures are **specifications, not compiled code**. Adjust names freely,
   but keep the statements.
 - The open signatures below become Lean theorems only after `lake build` and the
-  axiom audit. B5 has been completed by the separate TRAIN library linked below.
+  axiom audit. B5 and B6 have been completed by the separate TRAIN library linked below.
 
 Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 `f = torusStep w h hw hh = step E N`, and `f^t = iterate f t`.
@@ -23,6 +23,7 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B3 | Lemma R: static ⟺ perpetual free flow | complete proof below | B0, B2, Kernel |
 | B4 | Theorem F: densest free flow | proof outline; the packing step needs care | B3 |
 | B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
+| B6 | TRAIN eventual speed one on sparse N×N squares | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `Train/Diagonals`, `Train/FreeFlow`, actual diagonal transport/release |
 
 ---
 
@@ -283,6 +284,63 @@ and exporter. The actual Lean, Quint, and Python evaluators are compared on
 explicit finite domains by `scripts/check_train.py`; this finite replay is
 separate from the universal Lean theorem. See [TRAIN.md](TRAIN.md) for the
 complete statements, construction, commands, and evidence boundaries.
+
+---
+
+## B6. Completed TRAIN speed-one proof on sparse squares
+
+This obligation is discharged by the compiled `Train/SpeedOne.lean` theorem,
+including the pure cyclic proof, actual diagonal-dynamics bridge, and numerical
+full-speed characterization.
+
+The result is [Austin–Benjamini Proposition 1, v3](https://arxiv.org/pdf/math/0607759v3)
+for the actual TRAIN rule: for N>0 and any N×N configuration s,
+
+\[
+2\operatorname{population}(s)<N
+\;\Longrightarrow\;
+\exists T\;\forall t\ge T:\;
+\operatorname{totalMoveCount}(\operatorname{torusStep}^{t}(s))
+=\operatorname{population}(s).
+\]
+
+The public theorems are `sparse_square_eventually_fullSpeed` and
+`sparse_square_moves_equal_population`, both in `BML.Train`. The empty board
+is included. The condition is strict and requires no species balance.
+
+The existing compiled pieces are:
+
+- `Train/FreeFlow.lean`: movement counts are bounded by population, and equality
+  means every car moves in its own phase. Conservation rewrites eventual full
+  movement as equality with the initial population.
+- `Train/Diagonals.lean`: `sparse_eventual_stable` accepts a finite list of labels
+  and corrected cyclic traces. Each trace stays or moves one predecessor step;
+  an occupied class followed by an empty one must retain some occupant.
+  Under `2 * labels.length < N`, it proves a common time after which every
+  trace stays fixed. The empty list is permitted.
+
+`Train/DiagonalDynamics.lean` discharges those hypotheses for the actual kernel.
+Initial labels are `occupiedPositions s`. A full-cycle transport follows each
+car and covers every current car. The corrected tag is `x+y−t mod N`; it is
+stable for a moving car and decreases for a blocked one. Release follows by
+considering whether the occupied diagonal contains an east car before the
+east phase. The numeric wrapper then converts stable traces into full movement.
+
+The cyclic proof uses adjacent empty pairs. Sparse occupancy guarantees a pair
+at each time; one-step transport and release imply that every pair at t+1 was
+already empty at t. A finite descending-family argument yields a permanent
+pair. Cutting the cycle at a permanent vacancy makes each blocked event
+decrease a natural-number rank. Attained minima and a finite maximum of
+individual eventual times give simultaneous eventual stability. No eventual
+periodicity or bounded test result is assumed.
+
+This proves the result for squares only and supplies no effective stabilization-time bound.
+The CLASSIC transfer remains open. Separate finite acceptance covers all
+1,305 sparse square states through N=5 and checks full actual movement on
+every terminal-cycle edge. Eight targeted orbit certificates add 53 transition
+rows; ten new Quint tests and six controls check the clock, counts, recurrence,
+enumeration, and square scope. See [TRAIN.md](TRAIN.md) for exact domains,
+commands, and source-bound acceptance status.
 
 ---
 
