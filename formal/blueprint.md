@@ -21,7 +21,7 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B1 | G2: no forced gridlock below full occupancy | complete proof below | B0, Kernel |
 | B2 | Coset identity ⟨(1,−1)⟩ = ker φ | complete proof below (Bézout) | — |
 | B3 | Lemma R: static ⟺ perpetual free flow | complete proof below | B0, B2, Kernel |
-| B4 | Theorem F: densest free flow | proof outline; the packing step needs care | B3 |
+| B4 | Theorem F: densest free flow | complete proof below; DP-checked to g = 6 | B3 |
 | B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
 
 ---
@@ -231,30 +231,96 @@ Each case needs only the easy direction (←) of B2 and B2.2.
 
 ---
 
-## B4. Theorem F: densest free flow (outline)
+## B4. Theorem F: densest free flow
 
-With g = gcd(w, h) and V(g) = ⌊2g/3⌋ (already proved: `freeClasses_eq_two_thirds`):
-- for g = 1: n_free = max(h⌊w/2⌋, w⌊h/2⌋);
-- for g ≥ 2: n_free = (w·h/g) · V(g).
+With g = gcd(w, h), M = w·h/g (the size of each class φ⁻¹(c)) and V(g) = ⌊2g/3⌋
+(already proved: `freeClasses_eq_two_thirds`):
 
-**Construction (≥).** Label the classes ℤ_g with k blocks `N E ·`, then blocks `E ·`, with
-k = ⌊g/3⌋ − ((⌊g/3⌋ − g) mod 2). Show `StaticFree` with decidable class arithmetic, then apply
-B3. The count is (w·h/g) × (number of non-blank labels), because each class has w·h/g cells.
-- Cells per class: the map p ↦ φ p is (w·h/g)-to-one. Show it via the bijection
-  (x, y) ↦ (x, x + y mod h), or count rows: each row meets each class in w/g cells.
+```lean
+theorem free_count_le (s) (hs : StaticFree s) :
+    carCount w h s ≤ if Nat.gcd w h = 1 then max (h * (w / 2)) (w * (h / 2))
+                     else (w * h / Nat.gcd w h) * ((2 * Nat.gcd w h) / 3)
 
-**Upper bound (≤).** This is the delicate step. Let A = φ(E cars) and B = φ(N cars). B3 gives
-B ∩ (A ∪ (A+1)) = ∅.
-1. Per row, the cells of a maximal A-run of length r form w/g horizontal segments of length r.
-   Conjunct 1 of `StaticFree` caps each segment at ⌈r/2⌉. Columns and B-runs are symmetric.
-2. Combinatorics on the cyclic word over {A, B, ·}: Σ over blocks Bˢ Aʳ · of
-   ⌈s/2⌉ + ⌈r/2⌉ ≤ V(g). Both prose proofs are in `docs/theorems.md` §5.
+theorem free_count_attained (n : Nat) (hn : n ≤ freeMax w h) :
+    ∃ s, StaticFree s ∧ carCount w h s = n
+```
 
-Suggested route: prove the word inequality as a standalone `Nat` lemma over `List (Fin 3)`,
-by strong induction on the block decomposition. Then prove the per-segment cap. Finally sum
-over rows and columns with PR #7's counting.
+Combined with B3, these give Theorem F.
 
----
+**Evidence beyond the exhaustive tables.** `bml.freeflow_dp.max_free_exact` computes the
+maximum independently: a max-plus transfer matrix over rows, under the Lemma R conditions only.
+It agrees with the formula on 3×3, 4×4, 3×6, 5×5 (g = 5), 6×6 (g = 6) and 8×4
+(`tests/test_blueprint.py`).
+
+### Upper bound (≤)
+
+Fix `StaticFree s`. Let A = {φ e : e an east car} and B = {φ q : q a north car}, as subsets of ℤ_g.
+
+**B4.1 (class constraints).** A ∩ B = ∅ and (A + 1) ∩ B = ∅. These are conjunct 3 of
+`StaticFree`, read on classes.
+
+**B4.2 (ring cap).** On a cyclic ring of length L, a 0/1 sequence with no two cyclically
+adjacent 1s has sum ≤ ⌊L/2⌋.
+- Proof by double counting: Σₓ (zₓ + zₓ₊₁) ≤ L, and the left side is 2·Σ z.
+- For L = 1 the single cell is its own neighbour, so the sum is 0.
+
+**B4.3 (segment cap).** On a linear segment of length r, a 0/1 sequence with no two adjacent
+1s has sum ≤ (r + 1)/2. Proof by induction on r, peeling two cells at a time.
+
+**B4.4 (g = 1).** Then φ is constant, so B4.1 forbids having both species. With only east cars,
+conjunct 1 is B4.2 on each row, so the count is ≤ h·⌊w/2⌋. With only north cars it is ≤ w·⌊h/2⌋.
+
+**B4.5 (one letter fills ℤ_g).** If A = ℤ_g, then B = ∅. Each row is a ring and B4.2 gives
+count ≤ h⌊w/2⌋ ≤ w·h/2 = M·g/2 ≤ M·⌊2g/3⌋. The last step is `omega` with cases g = 2, 3;
+it holds for every g ≥ 2. The case B = ℤ_g is symmetric.
+
+**B4.6 (rows read the class word).** Assume g ≥ 2 and neither A nor B is ℤ_g. Label each
+c ∈ ℤ_g with a letter: `A` if c ∈ A, `B` if c ∈ B, `·` otherwise (well defined by B4.1).
+Then the word has a `·`:
+- if A and B are both nonempty, some A is followed by a non-A, which must be `·` by B4.1;
+- if only one of them is nonempty, it is not all of ℤ_g.
+
+Rotate the word to start just after a `·`, so it ends in `·`. In row y, cell x has class
+(x + y) mod g. Read from the matching column, the row is that linear word repeated w/g times.
+
+**B4.7 (block decomposition).** A linear word ending in `·` with no `A` immediately followed by
+`B` splits uniquely into blocks Bˢ Aʳ ·, each of length ℓ = s + r + 1. Induct on the list, cutting
+after each `·`.
+
+**B4.8 (per-row and per-column caps).**
+- In each row, every block contributes at most ⌈r/2⌉ east cars, by B4.3 on its A-segment.
+  Summing over the w/g copies: east cars per row ≤ (w/g)·Σ_blocks ⌈r/2⌉.
+- Columns read the same word (class increases by 1 northwards). B4.3 with conjunct 2 gives
+  north cars per column ≤ (h/g)·Σ_blocks ⌈s/2⌉.
+- Summing rows and columns: carCount ≤ M·Σ_blocks (⌈s/2⌉ + ⌈r/2⌉).
+
+**B4.9 (block value).** ⌈s/2⌉ + ⌈r/2⌉ ≤ ⌊2ℓ/3⌋ for ℓ = s + r + 1.
+- ℓ = 1: the value is 0.
+- ℓ = 2: the value is ≤ 1.
+- ℓ ≥ 3: the value is ≤ (ℓ + 1)/2 ≤ ⌊2ℓ/3⌋.
+
+This is pure `omega` after writing ⌈k/2⌉ = (k + 1)/2. It is checked for ℓ < 40 in the tests.
+
+**B4.10 (superadditivity).** ⌊2a/3⌋ + ⌊2b/3⌋ ≤ ⌊2(a+b)/3⌋, by `omega`. Applied over the blocks:
+Σ_blocks ⌊2ℓ/3⌋ ≤ ⌊2g/3⌋ = V(g), since the block lengths sum to g.
+
+Chaining B4.8, B4.9 and B4.10 gives carCount ≤ M·V(g).
+
+### Construction (≥)
+
+- **g ≥ 2.** Take k = ⌊g/3⌋ − ((⌊g/3⌋ − g) mod 2), so that k ≡ g (mod 2) and 3k ≤ g. Label ℤ_g
+  with k blocks `N E ·`, then (g − 3k)/2 blocks `E ·`. Put an east car on every cell of an
+  `E` class and a north car on every cell of an `N` class.
+  - Check `StaticFree` class by class:
+    - conjunct 1: the class east of an `E` class is `·`;
+    - conjunct 2: the class north of an `N` class is `E`;
+    - conjunct 3: `E` and `N` classes are distinct, and the class after an `E` class is `·`.
+  - Count: 2k + (g − 3k)/2 = (g + k)/2 = V(g) labelled classes, each with M cells (B4.11).
+- **g = 1.** Alternate east cars in each row (h⌊w/2⌋) or north cars in each column (w⌊h/2⌋).
+- **Every smaller n.** Deleting cars preserves `StaticFree`, so delete from a maximal configuration.
+
+**B4.11 (class size).** |φ⁻¹(c)| = M. Each row meets each class in exactly w/g cells: the
+cells (x, y) with x ≡ c − y (mod g) form an arithmetic progression of step g in ℤ_w.
 
 ## B5. Theorem T: completed TRAIN formalization
 
