@@ -7,8 +7,10 @@ the executable correspondence table apply to explicitly bounded finite grids.
 
 This is the detailed register for the **Traffic suite**. Start at the
 [shared formal coverage register](README.md) for both suites. The separate
-`BML` library preserves the finite-torus transport and strong non-monotonicity
-proofs, arithmetic components of G1/F, and its Python/Quint replay evidence.
+`BML` library proves finite-torus numerical conservation, G1's exact minimum
+jam size through blocker-cycle extraction and winding, and strong
+non-monotonicity. It also supplies F arithmetic components and separate
+Python/Quint replay evidence.
 No general theorem identifying the `BML` and `Traffic` definitions is claimed.
 
 Both formal suites use **CLASSIC** old-state-vacancy movement. The Python
@@ -58,7 +60,7 @@ the PR head explicitly and uploads the evidence as an artifact.
 | Traffic/Torus.lean | Explicit nonempty cyclic coordinates and proofs that predecessor/successor are inverse, including singleton axes. | Width and height are successor naturals. |
 | Traffic/Geometry.lean | An actual bi-infinite staircase for any supplied direction word, exact support and injectivity, semantic freezing and persistence. | Does not construct a bi-infinite Fibonacci hull word or prove its density/frequency limits. |
 | Traffic/Geometry.lean | Finite Fibonacci substitution counts, Fibonacci word lengths, exact integer-pair arithmetic representing a + b*phi, and substitution scaling of formal projected displacement. | Algebraic identities, without a real embedding, orthogonal projection, or trigonometric analysis. |
-| Traffic/Geometry.lean | A finite lifted walk closed modulo the side lengths has east/north counts that are integer winding multiples; a nonempty walk has a positive winding count. | Modular closure is an explicit hypothesis. A finite dependency-cycle existence theorem and its bridge to this predicate are still open. |
+| Traffic/Geometry.lean | A finite lifted walk closed modulo the side lengths has east/north counts that are integer winding multiples; a nonempty walk has a positive winding count. | Modular closure is an explicit hypothesis. A dependency-cycle bridge to this Traffic predicate is still open; the separate BML library now extracts actual blocker cycles and proves their closure directly. |
 | Traffic/Export.lean | Executable finite frozen/Wang checks are equivalent to the semantic Lean predicates; enumeration covers every coordinate. | Exported transitions use Core.halfStep directly. Finite Lean–Quint agreement is checked separately. |
 
 The Traffic suite's required public theorem names are listed in
@@ -147,15 +149,17 @@ The following remain outside this layer:
 - Real frequency limits, zero areal density limits, orthogonal projection,
   trigonometric identities, and diffraction or spatial spectral theorems.
 - A species-conservation theorem in the `Traffic` library and an unbounded
-  Lean–Quint refinement. The separate `BML` library already proves species
-  transport bijections and nonemptiness preservation; relating its executable
-  `speciesCount` sum to those bijections remains a separate obligation.
-- A formal finite-graph cycle existence proof and its bridge to modular closure.
+  Lean–Quint refinement. The separate `BML` library proves transport bijections,
+  numerical `speciesCount` conservation, and nonemptiness preservation; no
+  general equivalence between the two libraries is assumed.
+- A dependency-cycle bridge for the `Traffic` modular-closure predicate. The
+  separate `BML` library proves finite closed-carrier cycle extraction and
+  derives winding from its actual blocker walk.
 - Complete Lean proofs of G1, G2, Lemma R, and Theorem F in
   [the extremal research note](../docs/theorems.md). `Traffic` supplies G0 and
-  winding under modular closure; `BML` also supplies G1/F arithmetic components
-  and the proved strong non-monotonicity witness. Neither suite completes the
-  general extremal arguments.
+  winding under modular closure; `BML` proves G1's lower bound, attainment at
+  the minimum, and exclusion of eventual gridlock below it. G1's all-count
+  sufficiency construction and the general G2/R/F results remain unformalized.
 - Reproduction of the published large-grid intermediate-state experiments.
 
 Published claims in the research note retain their literature attribution.

@@ -55,9 +55,12 @@ The formal results and replays below do not cover TRAIN; an unchanged occupancy
 pattern can hide movement under that rule, so the CLASSIC G0 fixed-point result
 does not transfer.
 
-- **BML:** the finite-torus kernel, species transport bijections, local G0
-  equivalences, arithmetic components of G1/F, and the strong 4×2
-  non-monotonicity witness. Finite replays compare Lean with NumPy on 93,387
+- **BML:** the finite-torus kernel, numerical species-count conservation, local
+  G0 equivalences, and the exact minimum jam size `min(W,H)`. Lean extracts a
+  simple occupied blocker cycle, proves its winding and car-count bounds, and
+  constructs a jam attaining the minimum. Conservation also proves that fewer
+  cars can never evolve into a jam. The suite includes arithmetic components
+  of F and the strong 4×2 non-monotonicity witness. Finite replays compare Lean with NumPy on 93,387
   states and Quint with NumPy on 3,720 states plus three witness rows; see the
   [BML evidence register](formal/README.md#finite-evidence-scopes).
 - **Traffic:** the exact 21-Wang-tile correspondence, an infinite blocked
@@ -81,10 +84,11 @@ analysis, direct mathematical derivations, and proposed research obligations.
 Direct derivations carry no claim of novelty.
 
 The repository contains an executable BML model, historical exhaustive tables
-(`data/exhaustive.json`), machine-checked local kernel theorems, and an automated
-test suite. The full G1/G2/R/F extremal arguments are still prose proofs with
-bounded computational support; the Lean arithmetic components are not presented
-as formal proofs of those full results. The formal register states the exact
+(`data/exhaustive.json`), machine-checked kernel and minimum-gridlock theorems,
+and an automated test suite. G1's lower bound and attainment at its minimum are
+proved in Lean for every positive rectangle. Its construction at every larger
+admissible car count, and the general G2/R/F arguments, remain prose proofs with
+bounded computational support. The formal register states the exact
 replay domains and distinguishes regenerated data from inherited tables.
 
 The initial research boundary is explicit: permanent blocking is a property of

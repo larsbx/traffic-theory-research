@@ -24,7 +24,7 @@ checks are recorded separately in [the theorem document](../docs/theorems.md).
 
 | Suite | Proved constructions and checks | Detailed entry point |
 | --- | --- | --- |
-| `BML` / `BML.qnt` | Finite-torus update semantics, species transport bijections, nonempty-jam boundaries, G1/F arithmetic components, and a strong identity-aware non-monotonicity witness. Separate finite replays compare Lean and Quint with NumPy. | The register and commands below; [Lean package](lean/README.md). |
+| `BML` / `BML.qnt` | Finite-torus update semantics, numerical species conservation, nonempty-jam boundaries, G1's exact minimum with a simple blocker-cycle proof, F arithmetic components, and a strong identity-aware non-monotonicity witness. The general theorems are in Lean; separate finite replays compare Lean and Quint with NumPy. | The register and commands below; [Lean package](lean/README.md). |
 | `Traffic` / `traffic.qnt` | General-grid freezing, exact 21-Wang-tile recoding, a constructed infinite staircase for any supplied direction word, finite Fibonacci count and algebraic-length identities, and winding conditional on modular closure. Six finite grids are compared directly between Lean and Quint. | [Traffic coverage and acceptance](traffic-layer.md); [Traffic inventory](coverage.json). |
 
 Both suites use old-state simultaneous eligibility and east-then-north full
@@ -48,10 +48,10 @@ scope are in [traffic-layer.md](traffic-layer.md).
 
 | Claim | Current evidence | Remaining obligation |
 |---|---|---|
-| Half-step semantics, no collisions or created cars | Universal Lean proofs of source/destination behavior and an explicit bijection on each species' cars; the other species stays in place. | Relate the executable numerical `speciesCount` sum to this bijection in a separate general theorem. |
+| Half-step semantics, no collisions or created cars | Universal Lean proofs of source/destination behavior and an explicit bijection on each species' cars. The occupied-position list has no duplicates; its length equals the executable east-plus-north `speciesCount` sum. Both numerical species counts, and hence total car count, are conserved under every half-step and full-step iterate. | No unrestricted cross-language refinement follows from these Lean counting theorems. |
 | G0 local equivalence | Lean proves full-step fixed ⇔ local blockage ⇔ no movers in either phase, on the actual finite-torus kernel. Frozen states persist through every iterate. | General eventual periodicity and correctness of the orbit classifier are still separate obligations; the cycle-average formulation is explained in prose. |
 | Full occupancy and the empty boundary | Lean proves full occupancy freezes; the empty state is fixed but is not a jam. Nonemptiness is invariant under evolution. | No missing local boundary lemma is claimed. |
-| G1 minimum gridlock | Prose blocker-cycle proof; executable constructions; Lean winding arithmetic: a nonzero closed nonnegative winding costs at least min(W,H). | Extract a simple blocker cycle in Lean, connect its displacements and distinct-car count, and prove the all-count constructions. |
+| G1 minimum gridlock | Lean extracts a simple occupied blocker cycle from every nonempty frozen torus, proves its actual displacements close modulo W,H, and obtains min(W,H) ≤ cycle length ≤ car count. Full-row/column constructions attain min(W,H). Numerical conservation proves that fewer cars never reach a jam at any time. | Formalize the construction at every exact count min(W,H) ≤ n ≤ WH. Minimum attainment alone does not prove this all-count sufficiency statement. Eventual positive velocity and classifier correctness remain separate. |
 | G2 sub-full non-gridlock construction | Prose proof, tested single-species constructions, and bounded classifier evidence. | Prove the all-count construction and its perpetual movement in Lean. |
 | R, free-flow rigidity and phase classes | Prose proof; static/dynamic equivalence tested on every state of every ordered rectangle with WH≤9 and random larger examples. | Prove ⟨(1,−1)⟩ = ker(x+y mod gcd(W,H)), and connect both directions of rigidity to the kernel. |
 | F, maximal free flow | Prose packing proof and constructions; Lean proves V(g)=⌊2g/3⌋ and 3V(g)=2g iff 3 divides g. | Formalize class packing, the upper bound, and the maximizing constructions. The g=1 branch remains separate. |
@@ -99,6 +99,7 @@ comparison domains.
 | Lean vs NumPy, intermediate/final state and E/N move counts | 93,387 states across all 23 ordered positive rectangles with WH≤9. |
 | Quint vs NumPy, same four outputs plus actual Quint internal invariants | 3,720 states across all 14 ordered positive rectangles with WH≤6, plus three 4×2 witness rows. |
 | Naive orbit oracle vs pointer-doubling classifier | All 23 ordered positive rectangles with WH≤9. |
+| Python blocker-cycle extraction and independent certificate checks | All 93,387 states on those 23 rectangles are examined; all 22,235 nonempty CLASSIC frozen states yield valid simple occupied cycles with the required winding and count bounds. This is a finite extractor regression, not refinement of Lean's existence proof. |
 | Lemma R's static predicate vs direct free-motion simulation | All states on those same 23 rectangles; additional randomized dimensions 2…8. |
 | Historical table reproduction | All 23 stored records with WH≤9, regenerated and compared in full. |
 | G1 and F constructions | Every positive W,H≤12; these tests do not make the all-size claims Lean theorems. |

@@ -34,14 +34,18 @@ bounded computational checks. [The formal coverage register](../formal/README.md
 the statements currently checked by Lean, the actual Quint replay bounds, and the remaining
 G1/G2/R/F obligations. A bounded table does not prove a universal statement.
 
-The `BML` library supplies the finite-torus kernel, species transport bijections,
-G1/F arithmetic components, and the strong non-monotonicity theorem below. The
+The `BML` library supplies the finite-torus kernel, numerical species-count
+conservation, G1's lower bound and minimum-attaining construction, F arithmetic
+components, and the strong non-monotonicity theorem below. Its G1 proof extracts
+an actual simple occupied blocker cycle, proves torus winding, and bounds the
+cycle length by the executable car count. Conservation then rules out a jam
+at any future time below `min(W,H)` cars. The
 [companion Traffic suite](../formal/traffic-layer.md) independently supplies the
 fixed-point/blocking equivalence, Wang recoding, and staircase constructions.
-Its finite-walk winding theorem assumes modular closure. Extracting an actual
-simple blocker cycle and linking its closure and distinct-car count to the
-arithmetic results remain obligations; no general bridge between the two Lean
-libraries is being assumed.
+Its finite-walk winding theorem assumes modular closure; the separate `BML`
+proof does not require an unproved bridge between the two Lean libraries.
+G1's all-count sufficiency construction and the general G2/R/F arguments remain
+outside the current Lean coverage.
 
 Both Lean libraries and both Quint models use **CLASSIC** old-state vacancy
 semantics. They do not formalize the TRAIN rule introduced in §5b. Under TRAIN,
@@ -120,6 +124,16 @@ the one in front, and the last by the full line (`extremal.gridlock_with`).
 positive asymptotic velocity. The empty state is FREE by convention. G1 is the exact
 threshold for gridlock *existence* and holds for every aspect ratio. It does not establish
 eventual free flow for all configurations below that threshold. ∎
+
+**Lean boundary.** `BML.jam_has_simple_blocker_cycle` and
+`BML.jam_carCount_lower_bound` prove the necessity argument for every positive
+W,H, including singleton dimensions. `BML.exists_minimum_jam` constructs a
+frozen row or column with exactly `min(W,H)` cars, so
+`BML.exists_jam_at_most_iff` proves the exact minimum jam budget.
+`BML.few_cars_never_jam` uses proved numerical conservation to rule out a jam
+at every iterate when the initial count is smaller. The construction at every
+exact larger admissible count, and the positive-asymptotic-velocity consequence
+via eventual periodicity, remain prose arguments with their stated finite tests.
 
 *Austin–Benjamini Prop 1 under this kernel (our derivation, not a verified import).*
 - Their proof tracks empty arcs of time-corrected NW–SE diagonals. It uses only two facts:
@@ -357,9 +371,9 @@ times, or taking an unproved union over unbounded time, does not close this gap.
 
 ## 9. Next targets
 
-1. **Continue the Lean proof layer.** G0 and the concrete recurrent witnesses now have
-   kernel-checked coverage. Complete extraction of a simple blocker cycle and its torus
-   winding, the all-count constructions of G1/G2, the coset identity G = ker φ, and the
+1. **Continue the Lean proof layer.** G0, numerical conservation, G1's blocker-cycle lower
+   bound and minimum attainment, and the concrete recurrent witnesses have kernel-checked
+   coverage. Next prove the all-count constructions of G1/G2, the coset identity G = ker φ, and the
    rigidity/optimization implications of R/F. See the precise [coverage register](../formal/README.md).
 2. **Control formation of blocking loops under μ_p.** Section 8 gives the initial counting
    bound and explains the missing dynamical estimate. Do not treat a finite-time simulation

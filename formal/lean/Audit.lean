@@ -12,6 +12,12 @@ elab "audit_bml" : command => do
   let required : Array Name := #[
     ``BML.step_eq_iff_frozen, ``BML.step_eq_iff_noMoves,
     ``BML.transport_bijection, ``BML.iterate_nonempty_iff,
+    ``BML.carCount_eq_speciesCount, ``BML.halfStep_speciesCount,
+    ``BML.iterate_torusStep_speciesCount, ``BML.iterate_torusStep_carCount,
+    ``BML.finite_closed_cycle,
+    ``BML.blocker_closed_winding, ``BML.jam_has_simple_blocker_cycle,
+    ``BML.jam_carCount_lower_bound, ``BML.few_cars_never_jam,
+    ``BML.exists_minimum_jam, ``BML.exists_jam_at_most_iff,
     ``BML.torus_fixed_iff_blocked, ``BML.winding_length_lower_bound,
     ``BML.freeClasses_attains_two_thirds_iff,
     ``BML.Witness.after_never_jams, ``BML.Witness.original_traced_car_moves_forever]

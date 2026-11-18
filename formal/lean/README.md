@@ -31,8 +31,13 @@ It does not embed Python-produced expected transitions.
 | Module | Results |
 |---|---|
 | `BML/Kernel.lean` | Moving sources empty and destinations fill; other species remain in place; a half-step is fixed iff its cars are blocked; a full east-then-north step is fixed iff both local blocking conditions hold; equivalence with no movement in either phase; frozen-state persistence, including after a transient; full occupancy freezes; the empty state is fixed but is not a jam. |
-| `BML/Transport.lean` | Explicit bijection between each species' cars before and after its phase: survival, injectivity, and surjectivity. Nonemptiness is preserved by a full step and every iterate. The finite cardinality consequence is justified by the bijection, while the executable `speciesCount` sum itself has no separate general equality theorem. |
+| `BML/Transport.lean` | Explicit bijection between each species' cars before and after its phase: survival, injectivity, and surjectivity. Nonemptiness is preserved by a full step and every iterate. |
 | `BML/Torus.lean` | Positive finite cyclic coordinates with proved inverse shifts; the general kernel is instantiated on `Fin WIDTH × Fin HEIGHT`; executable base-three encoding, decoding, and counts. |
+| `BML/Counting.lean` | The position enumeration is complete and has no duplicates. Filtered species lists agree with the executable `speciesCount` sums; the occupied-list length is their sum. Transport induces a list permutation, proving numerical species conservation under every half-step, and total-count conservation under every full-step iterate. |
+| `BML/FiniteCycle.lean` | Every endofunction on a nonempty finite closed carrier has a positive simple cycle bounded by the carrier's length. The proof uses pigeonhole reasoning and a minimal positive return time. |
+| `BML/Blocking.lean` | A frozen state's blocker map preserves occupancy. An actual blocker walk lifts to nonnegative east/north displacements and seam-crossing counts. Closure implies divisibility by the torus side lengths, hence the shorter-side lower bound. |
+| `BML/Extremal.lean` | Full east rows and full north columns are nonempty frozen states with exactly WIDTH and HEIGHT cars. Choosing the shorter line attains `min(WIDTH, HEIGHT)`. |
+| `BML/Gridlock.lean` | Every jam has a simple occupied blocker cycle of length between `min(WIDTH, HEIGHT)` and its actual car count. This proves the G1 lower bound, the exact minimum jam budget, and that fewer cars never reach a jam at any iterate. |
 | `BML/Arithmetic.lean` | Divisibility of positive winding lengths implies the `min(WIDTH, HEIGHT)` lower bound. The proposed class packing expression simplifies to `floor(2*g/3)` and attains exact `2/3` iff `3` divides `g`. These are arithmetic components of G1 and F. |
 | `BML/Witnesses.lean` | A stronger nonmonotonicity example on width 4, height 2. State `3858` reaches jam `2048` after three steps. Adding one north car at `(0,0)` yields `3860 ↔ 4340`, which never jams. The added car remains blocked forever. An explicitly tracked original north car moves at every step. |
 
@@ -43,6 +48,22 @@ already be fixed; the north condition follows.
 
 `Jam` explicitly requires a nonempty state. In particular, the empty state is not
 a counterexample to the classification convention that assigns it free flow.
+
+The minimum-gridlock proof connects three independently checked statements:
+the occupied-position list is closed under the blocker map; finite cycle
+extraction supplies distinct occupied vertices; and the actual east/north walk
+closes only after a positive winding of at least the shorter side. Thus
+
+```text
+min(WIDTH, HEIGHT) ≤ cycle length ≤ carCount
+carCount = speciesCount east + speciesCount north
+```
+
+`few_cars_never_jam` then uses numerical conservation to apply this bound at
+every future time. It does not assert eventual speed one or formalize the
+positive-asymptotic-velocity consequence. `exists_jam_at_most_iff` proves that
+a jam within a budget of `n` cars exists iff `min(WIDTH, HEIGHT) ≤ n`; the
+construction with every exact larger car count is still a separate obligation.
 
 The strong witness's `originalTrace` is an identity-following recurrence using
 `transport`, rather than a statement that some unlabeled car moves. The tracked
@@ -59,17 +80,17 @@ claims use induction.
 
 The replay executable provides finite comparison evidence against the Python
 and Quint implementations. Such comparisons are not an all-size source
-refinement proof. General correctness of the encoding/counting routines is not
-claimed merely because they compile.
+refinement proof. The numerical counting identities and conservation have
+general Lean proofs; unrestricted encoding correctness and cross-language
+source correspondence remain separate obligations.
 
 ## Remaining obligations
 
 This package does **not** prove the full list G0–F. The missing general
 mathematics remains:
 
-- Extract a simple blocker cycle from every nonempty frozen finite state, then
-  connect its torus winding and distinct-car count to G1; formalize all G1
-  constructions.
+- Extend G1's proved lower bound and minimum attainment to frozen constructions
+  at every exact count between the minimum and full occupancy.
 - Formalize the G2 non-gridlocking configurations for every sub-full car count.
 - Prove the subgroup/coset assertion and both directions of rigidity Lemma R.
 - Connect Lemma R to the cyclic class packing upper bound and all densest
