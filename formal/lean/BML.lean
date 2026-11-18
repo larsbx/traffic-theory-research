@@ -20,3 +20,4 @@ import BML.NonGridlock
 import BML.GridlockThresholds
 import BML.Capture
 import BML.Formation
+import BML.Fixation

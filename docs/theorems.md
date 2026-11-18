@@ -87,13 +87,32 @@ require care when proposing a single sharp threshold. Primary-source checks give
 | result | statement |
 |---|---|
 | [Angel–Holroyd–Martin][AHM], *Electron. Comm. Probab.* 10 (2005), Theorems 1–2 | On ℤ², for p sufficiently close to 1, every car moves only finitely often a.s. The finite-torus theorem also gives eventual gridlock with probability tending to 1 as both dimensions grow and their ratio converges in (0,∞). |
-| [Austin–Benjamini][AB], arXiv:math/0607759v3 (2006), Propositions 1, 6, 8 | Prop 1: eventual speed one below N/2 cars. Prop 6: a stuck configuration of m cars exists ⟺ m ≥ 2N. **Different update rule (resolved in §5b):** their written rule moves same-species queues together and rotates a full ring (the *train rule*, `bml.model.TRAIN`). That explains 2N against the CLASSIC kernel's N. Prop 6 is re-proved and extended to rectangles in §5b. The full TRAIN Prop 1 Lean proof is described in §5c. Its proposed CLASSIC transfer (§2) remains unproved. |
+| [Austin–Benjamini][AB], arXiv:math/0607759v3 (2006), Propositions 1, 6, 8 | Prop 1: eventual speed one below N/2 cars. Prop 6: a stuck configuration of m cars exists ⟺ m ≥ 2N. **Different update rule (resolved in §5b):** their written rule moves same-species queues together and rotates a full ring (the *train rule*, `bml.model.TRAIN`). That explains 2N against the CLASSIC kernel's N. Prop 6 is re-proved and extended to rectangles in §5b. The full TRAIN Prop 1 Lean proof is described in §5c. The separate CLASSIC transfer (§2 and blueprint B7) has a prose proof; its Lean formalization remains open. |
 | [Hertzberg Rabinovich–Biham–Katzav][HBK], arXiv:2601.01180v2 (2026) | Square lattices: free-flowing periodic states are the zero set of a distance D = D∥ + D⊥, and the zero set persists. The full text studies relaxation with numerical fits; it does not prove our fixed-positive-density probability target. |
 | [D'Souza][DS], *Phys. Rev. E* 71 (2005), 066112 | Numerical stable intermediate phases and dependence on lattice aspect ratio. |
 | [Yashina–Tatashev][YT], arXiv:2311.17120 (2023), Theorem 1 | For deterministic fixed directions and both species present, perpetual free motion requires gcd(W,H) ≥ 3; this overlaps a consequence of Lemma R. |
 
 The AHM paper starts with the opposite first species; interchanging coordinates and species
 gives the same iid law and the same fixation statement for our phase convention.
+
+The [tagged-fixation reduction](research/2026-11-18-tagged-fixation-and-gridlock.md)
+gives a further exact deterministic theorem for this CLASSIC kernel. Let `J`
+mean eventual nonempty global jam, `S` mean that some original car moves only
+finitely often, and `R` mean an initially full E-row or N-column. Then
+`S = J union R`, with a complete Lean proof. Write `q_L(p) = Pr_p(J)`.
+For `p > 0`, let `f_L(p)` be the probability that the original car at a specified
+site eventually stops, conditioned on that site being occupied. The separate
+prose probability argument proves
+
+\[
+|f_L(p)-q_L(p)|\le
+\frac{1}{2L}\sqrt{\frac{1-p}{p}}+L(p/2)^{L-1}.
+\]
+
+Thus the two probabilities have the same fixed-positive-density limits whenever
+those limits exist. This reduction does not establish their existence or a
+positive sharp critical density; full movement and infinite-volume fixation
+remain distinct questions.
 
 Below are exact **extremal existence thresholds** on each finite torus. They do not settle
 the complete deterministic question of which car counts force eventual free flow, or the
@@ -159,18 +178,21 @@ in ordering from `extremal.gridlock_with`; its actual compiled output is checked
 against Python CLASSIC dynamics for every admissible count on W,H≤12, without
 asserting equality between the two constructors.
 
-*Proposed CLASSIC transfer of Austin–Benjamini Prop 1 (not a verified import).*
+*CLASSIC transfer of Austin–Benjamini Prop 1: prose derivation, not a verified import.*
 
-The paper's written rule is TRAIN, and §5c treats that actual rule. The following
-argument is a proposed extension to CLASSIC; the TRAIN proof does not itself
-establish it.
+The paper's written rule is TRAIN, and §5c treats that actual rule. The separate
+CLASSIC argument is developed in
+[blueprint B7](../formal/blueprint.md#b7-classic-low-density-speed-one), for
+`2m < gcd(W,H)` on positive rectangles. Its prose proof and finite checks are
+distinct from the compiled TRAIN theorem; the CLASSIC argument is not yet
+formalized in Lean. The square case uses the following release idea:
 
 - Their proof tracks empty arcs of time-corrected NW–SE diagonals. It uses only two facts:
   cars advance at most one diagonal per step, and a diagonal with an empty diagonal above it
   always releases at least one car.
 - The second fact also holds here. Its E cars move first into the empty diagonal, unobstructed;
   if it has none, every N car moves.
-- So m < N/2 should force eventual speed one under this kernel too, which is stronger than the
+- The B7 prose argument gives eventual speed one when m < N/2, which is stronger than the
   corollary above on square tori.
 - Random tests up to 14×14 under both rules agree (`tests/test_train_rule.py`).
   This CLASSIC transfer still has no complete Lean proof.

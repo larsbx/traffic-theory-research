@@ -253,12 +253,13 @@ def sha256(data: bytes) -> str:
 
 
 def source_manifest() -> dict[str, str]:
+    # Audit imports umbrella BML and G1Export; include their local closure too.
     paths = [
         ROOT / "scripts/check_g2_constructions.py", ROOT / "bml/model.py",
         ROOT / "requirements-dev.txt", LEAN / "G2Export.lean", LEAN / "G2Audit.lean",
-        LEAN / "BML.lean", LEAN / "Audit.lean", LEAN / "lakefile.toml",
+        LEAN / "BML.lean", LEAN / "Audit.lean", LEAN / "G1Export.lean", LEAN / "lakefile.toml",
         LEAN / "lake-manifest.json", LEAN / "lean-toolchain",
-        LEAN / "Train/Counting.lean",
+        LEAN / "Train/Counting.lean", LEAN / "Train/Finite.lean",
     ]
     paths.extend(sorted((LEAN / "BML").glob("*.lean")))
     return {str(path.relative_to(ROOT)): sha256(path.read_bytes()) for path in sorted(paths)}

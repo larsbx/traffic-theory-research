@@ -40,7 +40,7 @@ speed-one theorem remain separate obligations.
 
 | Suite | Proved constructions and checks | Detailed entry point |
 | --- | --- | --- |
-| `BML` / `BML.qnt` | Finite-torus update semantics, species transport bijections, numerical species/lane invariants, full-lane reflection and north-free-strip invariance, nonempty-jam boundaries, full G1/G2, the feasible-population forced-gridlock boundary, the geometric coset identity B2, and Lemma R for the actual phases with a finite moving-window criterion and lcm return. Also persistent cores, route-cover capture, F arithmetic components, and a strong identity-aware non-monotonicity witness. General theorems are in Lean; separate finite replays compare actual implementations. | The register and commands below; [Lean package](lean/README.md). |
+| `BML` / `BML.qnt` | Finite-torus update semantics, species transport bijections, numerical species/lane invariants, full-lane reflection and north-free-strip invariance, nonempty-jam boundaries, full G1/G2, the feasible-population forced-gridlock boundary, the geometric coset identity B2, and Lemma R for the actual phases with a finite moving-window criterion and lcm return. Also persistent cores, route-cover capture, the tagged-fixation/jam/full-lane identity, F arithmetic components, and a strong identity-aware non-monotonicity witness. General theorems are in Lean; separate finite replays compare actual implementations. | The register and commands below; [Lean package](lean/README.md). |
 | `Traffic` / `traffic.qnt` | General-grid freezing, exact 21-Wang-tile recoding, a constructed infinite staircase for any supplied direction word, finite Fibonacci count and algebraic-length identities, and winding conditional on modular closure. Six finite grids are compared directly between Lean and Quint. | [Traffic coverage and acceptance](traffic-layer.md); [Traffic inventory](coverage.json). |
 | `BML.Train` / `Train.qnt` | Queue and ring movement, transport and trace coverage, numeric conservation, the full rectangular jam-population theorem, and eventual full speed on every N×N square with fewer than N/2 cars. Quint and cross-language checks retain finite domains. | [TRAIN coverage and acceptance](TRAIN.md); [TRAIN inventory](train-coverage.json). |
 
@@ -80,6 +80,7 @@ other suites.
 | Persistent occupied cores | `BlockingCore.persists` proves preservation under the actual two-phase kernel; `BlockerCycle.persists` derives a core from a supplied occupied closed walk. | The Capture closed walk may revisit sites. G1 separately extracts a simple occupied blocker cycle; the two certificate interfaces have not been identified by a general theorem. |
 | One-round staircase formation | `BML/Formation.lean` proves the exact local initial-site predicate for adjacent E/N targets, simultaneous formation from a supplied geometry, and construction of the resulting successor-closed core. The [formation note](../docs/research/2026-11-18-fixed-density-formation.md) integrates the independent initial cells into an exact transfer trace. | Probability integration, torus winding/cover instantiation, early-formation bounds, and large-size limits remain prose proofs. This is not a positive critical-density theorem. |
 | Capture from a core meeting every row and column | `RouteCover.jammed_by_movementBudget` proves a nonempty jam by `M = n_E*(W-1) + n_N*(H-1)` full rounds from explicit core obstacles on every row/column. `total_moves_le` bounds every finite prefix of actual tagged moves; rank decrease is derived from kernel transport. | Construct the row/column witnesses from mixed winding in Lean. Tagged movement has a proved car bijection but no separate equality with the Eulerian `moveCount` sum. No probability of forming a core is proved. |
+| Tagged fixation and global gridlock | `BML/Fixation.lean` proves `hasEventuallyStoppedCar_iff_jam_or_full_lane` for every positive rectangle, using actual original-car traces. A permanently stopped car produces a future nonempty `BlockingCore`; a core without full lanes supplies `RouteCover` directly, without cycle extraction. Outside eventual jam and initial full lanes, every tag moves and every site is empty arbitrarily late. | The Palm probability identities, covariance bound, and limiting comparison in the [fixation note](../docs/research/2026-11-18-tagged-fixation-and-gridlock.md) have prose proofs. No fixed-density transition or infinite-volume limit interchange is proved. No new Quint fixation theorem is asserted. |
 | Mixed-cycle capture certificates | Python validates distinct vertices, directions, edges, winding, and row/column coverage, then independently replays identities against the production kernel. The census checks 34,344 states on six tori, including all 831 mixed-core cases. Quint supplies three additional bounded persistence/capture/monochromatic controls. | These finite checks are not an unrestricted Python/Lean/Quint certificate refinement. A monochromatic core alone need not capture all cars. |
 | G1 exact gridlock populations | Lean proves `(∃ s, Jam s ∧ carCount s = n) ↔ min(W,H) ≤ n ∧ n ≤ WH`. Necessity uses a simple occupied blocker cycle and its actual winding; sufficiency uses executable row/column prefix constructions with proved exact counts. Conservation proves the same existence interval for orbits reaching a jam, and excludes every future jam below the minimum. | G1 is complete for CLASSIC. Eventual positive velocity, classifier correctness, and unrestricted refinement of the distinct Python constructor remain separate. |
 | G2 sub-full non-gridlock construction | Lean proves that executable `nonGridlockWith W H n` has exactly n cars and never reaches a jam for every positive W,H and n<WH. A single-species mixed lane is preserved by the actual synchronous kernel and has a mover at every iterate; zero cars use the empty-state boundary. | G2 is complete for CLASSIC. Never reaching total gridlock does not assert eventual free flow or movement of every car. |
@@ -104,6 +105,7 @@ python -m pytest -q
 python scripts/check_capture.py --report .artifacts/capture-replay.json
 python scripts/check_probability.py --report .artifacts/probability-replay.json
 python scripts/check_formation.py --report .artifacts/formation-replay.json
+python scripts/check_fixation.py --report .artifacts/fixation-replay.json
 npm ci --ignore-scripts --prefix formal/quint
 cd formal/lean
 lake build
@@ -183,6 +185,15 @@ prose proofs in the [probability note](../docs/research/2026-11-18-probabilistic
 justify the asymptotic statements. Configurations conditioned on exact car
 counts and iid initial states have separate probability weights. None of the
 probability statements applies to TRAIN by default.
+
+`scripts/check_fixation.py` separately enumerates the seven probability domains
+using recurrent **labeled** orbits. It derives each stopped-tag set from both
+identity positions and recorded movements, compares the resulting jam event
+with the production classifier, and checks `S = J union R` pointwise. Exact
+initial-iid weights then verify the Palm score identity and covariance bound.
+Its report records source hashes, domain sizes, and corrupted-witness controls.
+These finite calculations support the probability code; the universal
+deterministic identity is proved separately in `BML/Fixation.lean`.
 
 Quint mutation controls execute actual altered specifications and require
 rejection for reversed phase order, asynchronous scanning, and invalid cell

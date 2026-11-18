@@ -49,6 +49,13 @@ connections to tiling and dynamical-systems theory.
   complete 4x4 one-step census quantify the failure of evolved independence.
   Lean checks the deterministic preimage and formed core; positivity of a
   critical density remains open.
+- [Tagged fixation and global gridlock](docs/research/2026-11-18-tagged-fixation-and-gridlock.md)
+  (2026-11-18): proves that some car eventually stops exactly when the system
+  eventually jams or initially contains a full monochromatic lane. It connects
+  global jam probability to the fixation probability of the car initially at a
+  specified occupied site, with an explicit error tending to zero at every
+  fixed positive density. The deterministic theorem, exact finite labeled
+  evidence, and prose probability argument have separately recorded scopes.
 - [Formal coverage and validation](formal/README.md): the CLASSIC finite-torus
   `BML` proofs, identity-preserving transport and non-monotonicity witness, together
   with the complementary `Traffic` tiling/staircase proofs, the complete
@@ -65,6 +72,8 @@ connections to tiling and dynamical-systems theory.
   and separate formation/capture observations with explicit unresolved cutoffs.
 - `bml/probability.py` — exact finite iid basin probabilities, initial full-lane
   probabilities, and checked conserved-strip obstructions and probability bounds.
+- `bml/fixation.py` — independent labeled fixation counts and exact initial-iid
+  Palm probabilities, including the car-weighted jam probability and ring error.
 - `bml/analysis.py` — tables for all tori with WH ≤ 16, written to `data/exhaustive.json` (~6 min).
 - `bml/nonmonotone.py` — un-jamming pairs with car identities tracked.
 - `bml/montecarlo.py` — empirical jam curves (not a proof).
@@ -74,6 +83,7 @@ python -m pip install -r requirements-dev.txt
 python -m pytest -q
 python scripts/check_capture.py --report .artifacts/capture-replay.json
 python scripts/check_probability.py --report .artifacts/probability-replay.json
+python scripts/check_fixation.py --report .artifacts/fixation-replay.json
 python -m bml.analysis 16    # regenerate data/exhaustive.json
 ```
 
@@ -107,9 +117,10 @@ fixed-point result does not transfer.
   every car moves in every round starting at time zero. Checking the first
   `lcm(W,H)` rounds suffices, and each such configuration returns after that
   many rounds, possibly with a smaller least period. The suite also proves
-  permanent cores and route-cover capture bounds, arithmetic components of F,
-  and the strong 4×2 non-monotonicity witness. Finite replays compare Lean with
-  NumPy on 93,387
+  permanent cores and route-cover capture bounds. Some original car eventually
+  stops exactly when the state eventually jams or initially has a full E-row
+  or N-column. Arithmetic components of F and the strong 4×2 non-monotonicity
+  witness are also proved. Finite replays compare Lean with NumPy on 93,387
   states and Quint with NumPy on 3,720 states plus three witness rows; see the
   [BML evidence register](formal/README.md#finite-evidence-scopes).
 - **Traffic:** the exact 21-Wang-tile correspondence, an infinite blocked
@@ -128,7 +139,9 @@ fixed-point result does not transfer.
   It also proves that every N×N state with `2 * population < N` eventually
   reaches full speed: all cars move in every later full cycle. The empty state
   is included. This square theorem supplies no effective stabilization-time
-  bound and does not establish the proposed CLASSIC transfer.
+  bound. The CLASSIC counterpart has a separate prose proof in
+  [blueprint B7](formal/blueprint.md#b7-classic-low-density-speed-one),
+  with its Lean formalization still open.
 
 These are separately scoped proof and validation suites in one pinned Lean
 package. The replay domains are finite executable checks, and no general

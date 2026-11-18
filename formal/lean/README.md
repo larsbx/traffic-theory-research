@@ -47,6 +47,7 @@ It does not embed Python-produced expected transitions.
 | `BML/Transport.lean` | Explicit bijection between each species' cars before and after its phase: survival, injectivity, and surjectivity. Nonemptiness is preserved by a full step and every iterate. Numerical CLASSIC conservation is derived in `BML/Counting.lean` and `BML/Lanes.lean`; the TRAIN library retains its own separate conservation proofs. |
 | `BML/Capture.lean` | Successor-closed occupied cores persist. A supplied occupied closed walk yields a core (distinct sites are not required by this Lean declaration). Full-round tagged transport is bijective. Explicit core obstacles on every row and column give a kernel-derived cyclic-distance rank, a bound `M = n_E*(W-1) + n_N*(H-1)` on every finite prefix of tagged moves, and a nonempty jam by full round M. |
 | `BML/Formation.lean` | Exact local initial predicate for an E site and adjacent N site after one round, conditional on the next N target being E after the east phase; simultaneous formation from initial predicates and a supplied successor geometry; construction of the formed occupied core. All are deterministic actual-kernel results. The transfer probability and torus winding/cover instantiation remain separate prose arguments. |
+| `BML/Fixation.lean` | Eventual constancy of an original `carTrace` is equivalent to finitely many actual moves. An eventually permanent car has an eventually permanent successor, with the north proof using the post-east checkpoint. All permanent sites form a nonempty core at a common future time. A core that misses a row forces a full E-row; a missed column forces a full N-column. Consequently, some original car fixes iff eventual nonempty jam or an initial full monochromatic lane occurs. All cars fix iff the state is empty or eventually jams. Outside both exceptional events, every original car moves and every site becomes empty arbitrarily late. |
 | `BML/Torus.lean` | Positive finite cyclic coordinates with proved inverse shifts; the general kernel is instantiated on `Fin WIDTH × Fin HEIGHT`; executable base-three encoding, decoding, and counts. |
 | `BML/Counting.lean` | The position enumeration is complete and has no duplicates. Filtered species lists agree with the executable `speciesCount` sums; the occupied-list length is their sum. Transport induces a list permutation, proving numerical species conservation under every half-step, and total-count conservation under every full-step iterate. |
 | `BML/Enumeration.lean` | Explicit row-major and reverse row/column bijections, with quotient/remainder inverses. A configuration occupying exactly a prefix of n ranks has actual car count n. |
@@ -241,15 +242,47 @@ unproved premise. `RouteCover.total_moves_le` counts moves through original car
 tags and the proved `carTrace_bijection`. A separate equality with the existing
 Eulerian `moveCount` function is not claimed.
 
-The mixed-winding argument that constructs these row/column witnesses remains
-a prose proof with Python certificate checks. The universal Lean capture result
-begins at the explicit `RouteCover` witnesses. This is a formalization of the
-blocking/capture mechanism already used in Angel–Holroyd–Martin's torus proof,
-with an explicit integer movement bound, not a novelty claim.
+`Fixation.lean` now also constructs `RouteCover` from any nonempty closed core
+when there is no full E-row or full N-column. Its proof minimizes cyclic distance
+to a hypothetically missed lane, then propagates along a finite cyclic lane.
+It does not assume a supplied winding cycle or use the independently compiled
+G1 theorem `jam_has_simple_blocker_cycle` in `Gridlock.lean`. The G1 simple-cycle
+certificate and Capture's closed-walk/core interfaces remain separate; no
+general identification of those certificates is claimed. Direct construction
+from a mixed occupied blocker cycle without the no-full-lane hypothesis
+remains a prose argument with Python certificate checks. The capture mechanism is already used in
+Angel–Holroyd–Martin's torus proof; no novelty claim is made.
+
+The new event identity is
+`hasEventuallyStoppedCar_iff_jam_or_full_lane`. `HasEventuallyStoppedCar`
+quantifies over a species and an initially present car, and requires its actual
+`carTrace` to become constant after some round. The theorem
+`tagEventuallyStopped_iff_finitely_many_moves` connects this definition to the
+actual `RoundCanMove` events, including singleton dimensions. `EventuallyJammed`
+requires the existing nonempty `Jam`; `HasFullMonochromaticLane` refers to the
+initial state. Thus the identity has no empty-configuration exception hidden
+in its definitions. The separate theorem
+`allCarsEventuallyStopped_iff_empty_or_jam` explicitly includes the empty state,
+where universal fixation is vacuous. `eventuallyJammed_every_tag_stops` follows
+every initially present tag and supplies the deterministic implication needed
+for stopped-car counts.
+
+The successor proof distinguishes full-round and post-east checkpoints. At
+full-round checkpoints continued occupancy permits at most an E-to-N species
+change; after the east phase it permits at most an N-to-E change. A finite
+common stabilization time yields the future core. The existing movement budget
+applies from that core's appearance; this argument provides no effective bound
+on its formation time. `every_tag_moves_arbitrarily_late` proves infinitely many
+actual moves outside eventual jam and the initial full-lane event. It does not
+assert eventual speed one. `every_site_empty_arbitrarily_late` proves the
+corresponding repeated vacancy statement.
 
 `Lanes.lean` uses the finite-list cardinality helpers in `Train/Counting.lean`.
 Those helpers import only `BML.Torus` and assume no TRAIN movement semantics;
-the new conservation proofs use CLASSIC `transport` and `halfStep`. The
+the conservation proofs use CLASSIC `transport` and `halfStep`.
+`Fixation.lean` also imports finite cyclic predicate propagation from
+`Train/Finite.lean`, which likewise imports only `BML.Torus`; no TRAIN kernel or
+transition result is used. The
 probability laws and limiting arguments in the
 [probability note](../../docs/research/2026-11-18-probabilistic-gridlock-bounds.md)
 remain prose mathematics. Numerical conservation does not establish those
@@ -335,8 +368,10 @@ mathematics remains:
   constructions in F.
 - Formalize eventual periodicity/classifier correctness and unrestricted
   Python-to-Lean source correspondence.
-- Construct `RouteCover` witnesses from a mixed occupied blocker cycle's winding,
-  and connect the Python certificate verifier to those Lean witnesses.
+- Construct `RouteCover` witnesses directly from a mixed occupied blocker cycle
+  without a separate no-full-lane hypothesis, and connect the Python certificate
+  verifier to those Lean witnesses. The new closed-core theorem already covers
+  every nonempty core in the absence of full monochromatic lanes.
 
 No probabilistic critical density, asymptotic typical-case theorem, or
 quasicrystal spectral statement is asserted by this layer.
