@@ -361,6 +361,12 @@ The CLASSIC `Audit.lean` and `TrafficAudit.lean` remain independent audits.
 
 ## Sources and remaining boundaries
 
+The [open questions and proof roadmap](../docs/research/2026-11-18-open-questions-and-proof-roadmap.md)
+records the periodic N-car family with velocity N/(N+1), a proposed equality
+extension, the rectangular gcd adapter, and the distinction between blocking
+counts and elapsed settling time. These additions are prose arguments and
+finite evidence, not new merged TRAIN theorems.
+
 Austin and Benjamini's written movement rule and Proposition 6 give the square
 threshold 2N. The W+H statement here extends their lower-bound argument to
 rectangles and supplies a fully checked construction at every allowed count.

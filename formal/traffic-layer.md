@@ -149,9 +149,10 @@ The following remain outside this layer:
 - Real frequency limits, zero areal density limits, orthogonal projection,
   trigonometric identities, and diffraction or spatial spectral theorems.
 - A species-conservation theorem in the `Traffic` library and an unbounded
-  Lean–Quint refinement. The separate `BML` library already proves species
-  transport bijections and nonemptiness preservation; relating its executable
-  `speciesCount` sum to those bijections remains a separate obligation.
+  Lean–Quint refinement. The separate `BML` library proves species transport
+  bijections and nonemptiness preservation; `BML/Lanes.lean` now also connects
+  those bijections to executable `speciesCount` and lane-count conservation.
+  These results do not supply a general `BML`–`Traffic` equivalence.
 - A formal finite-graph cycle existence proof and its bridge to modular closure.
 - Complete Lean proofs of G1, G2, Lemma R, and Theorem F in
   [the extremal research note](../docs/theorems.md). `Traffic` supplies G0 and

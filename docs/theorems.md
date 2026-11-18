@@ -560,6 +560,13 @@ commute.
 
 ## 9. Next targets
 
+The [dated open questions and proof roadmap](research/2026-11-18-open-questions-and-proof-roadmap.md)
+updates this list after the TRAIN and lane-invariant merges. It records PR #7's
+pending G1/G2 and coset proofs, PR #12's CLASSIC sparse-flow blueprint, the new
+TRAIN periodic-family argument, and the remaining probability, projection and
+verification questions. Its references include the full [HBK] v2 study and
+distinguish its free-state characterization from an iid attraction theorem.
+
 1. **Continue the CLASSIC Lean proof layer.** G0 and the concrete recurrent witnesses have
    kernel-checked coverage; the separate TRAIN threshold T is fully proved. Complete
    extraction of a simple CLASSIC blocker cycle and its torus

@@ -8,6 +8,11 @@ the empty fixed state is classified as free flow.
 The formal kernel, finite correspondence checks, and prose mathematics have
 different scopes. This register records those distinctions explicitly.
 
+The dated [open questions and proof roadmap](../docs/research/2026-11-18-open-questions-and-proof-roadmap.md)
+records the post-TRAIN review, proposed extensions, probability and spatial-order
+questions, and proof work awaiting integration from open PRs. The register below
+describes the merged layer; open-branch claims retain their separate status.
+
 ## Update-rule boundary
 
 The `BML` and `Traffic` suites, in Lean and Quint, implement **CLASSIC**: a destination
