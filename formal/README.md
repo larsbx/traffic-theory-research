@@ -1,14 +1,50 @@
-# Finite BML formal coverage
+# Formal coverage and validation
 
-This layer implements the same positive W×H torus and synchronous **east then
-north** updates as `bml/model.py`. Move eligibility is read from the complete
+The `BML` suite implements the same positive W×H torus and synchronous **east
+then north** updates as the `bml.model.CLASSIC` rule. Move eligibility is read from the complete
 pre-half-step state. Width or height one is allowed. A jam must be nonempty;
 the empty fixed state is classified as free flow.
 
 The formal kernel, finite correspondence checks, and prose mathematics have
 different scopes. This register records those distinctions explicitly.
 
-## Coverage register
+## Update-rule boundary
+
+Both `BML` and `Traffic`, in Lean and Quint, implement **CLASSIC**: a destination
+must be vacant in the state read at the start of that species' half-step.
+The separate Python **TRAIN** implementation moves same-species queues together
+and rotates full single-species rings. None of the formal coverage or replay
+receipts on this page establishes a TRAIN theorem or correspondence result.
+In particular, a rotating full ring has an unchanged occupancy pattern with
+moving cars, so the CLASSIC equivalence between a fixed point and no movement
+(G0) is not valid for TRAIN. The prose TRAIN result and its bounded Python
+checks are recorded separately in [the theorem document](../docs/theorems.md).
+
+## Two complementary proof suites
+
+| Suite | Proved constructions and checks | Detailed entry point |
+| --- | --- | --- |
+| `BML` / `BML.qnt` | Finite-torus update semantics, species transport bijections, nonempty-jam boundaries, G1/F arithmetic components, and a strong identity-aware non-monotonicity witness. Separate finite replays compare Lean and Quint with NumPy. | The register and commands below; [Lean package](lean/README.md). |
+| `Traffic` / `traffic.qnt` | General-grid freezing, exact 21-Wang-tile recoding, a constructed infinite staircase for any supplied direction word, finite Fibonacci count and algebraic-length identities, and winding conditional on modular closure. Six finite grids are compared directly between Lean and Quint. | [Traffic coverage and acceptance](traffic-layer.md); [Traffic inventory](coverage.json). |
+
+Both suites use old-state simultaneous eligibility and east-then-north full
+steps. Their types, predicates, and executable comparison contracts are
+separate. No general `BML`–`Traffic` equivalence or unbounded cross-language
+refinement theorem is asserted. Their finite replay counts must not be added
+and described as a single common domain or theorem.
+
+The shared dependency-free Lean package pins Lean 4.34.1. `lake build` builds
+`BML`, `bml_replay`, `Traffic`, and `traffic_export`. `Audit.lean` remains the BML
+audit; `TrafficAudit.lean` checks the Traffic declarations and exporter.
+`formal/coverage.json` is the Traffic suite's inventory, not a replacement for
+the BML audit's required theorem list.
+
+The rest of this page retains the **BML finite-torus coverage register**.
+Run `python3 scripts/check_formal.py` for the separate Traffic acceptance gate,
+after installing the same locked Quint dependency; its instructions and full
+scope are in [traffic-layer.md](traffic-layer.md).
+
+## BML finite-torus coverage register
 
 | Claim | Current evidence | Remaining obligation |
 |---|---|---|
@@ -24,9 +60,9 @@ different scopes. This register records those distinctions explicitly.
 | Python/Lean/Quint correspondence | Actual implementations are evaluated and compared on the finite domains below, including both half-steps and separate move counts. | A finite replay is not unrestricted source refinement or proof of the classifier algorithm. |
 | Critical density and probabilistic switch | Published background and empirical context only. | No critical-density value, positive-density low-density phase, or dynamical loop-formation bound is proved. |
 
-## Reproduce
+## Reproduce the BML suite
 
-Use Python 3.12, Node.js 22, and the Lean toolchain pinned in
+For the BML suite, use Python 3.12, Node.js 22, and the Lean toolchain pinned in
 [`lean/lean-toolchain`](lean/lean-toolchain). From the repository root:
 
 ```sh
@@ -55,6 +91,9 @@ cross-language replay. This is not an Apalache result or sampled model checking.
 
 ## Finite evidence scopes
 
+All Lean/Quint replay rows in this table use CLASSIC; TRAIN is not in these
+comparison domains.
+
 | Check | Exhaustive scope |
 |---|---|
 | Lean vs NumPy, intermediate/final state and E/N move counts | 93,387 states across all 23 ordered positive rectangles with WH≤9. |
@@ -78,7 +117,7 @@ extremal formulas; it **does not claim to have rerun** the entire 16-cell
 enumeration. The 32×32 Monte Carlo output also remains inherited empirical
 context, not a new critical-density experiment.
 
-## Hosted acceptance
+## BML hosted acceptance
 
 [`finite-bml.yml`](../.github/workflows/finite-bml.yml) runs three jobs:
 Python/orbit certificates, Lean build/audit/replay, and Quint tests/replay/mutation
@@ -90,3 +129,8 @@ consult the run attached to the revision being reviewed.
 See [the Lean package](lean/README.md), [the Quint package](quint/README.md), and
 [the corrected theorem document](../docs/theorems.md) for implementation and
 mathematical details.
+
+The separate [Traffic workflow](../.github/workflows/formal.yml) runs
+`scripts/check_formal.py` and uploads its own source-bound evidence. Each suite's
+run must be inspected at the revision under review; a successful run of one is
+not a receipt for the other's checks.
