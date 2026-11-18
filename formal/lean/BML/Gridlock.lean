@@ -1,13 +1,15 @@
 import BML.Blocking
+import BML.AllCounts
 import BML.Counting
 import BML.Extremal
 import BML.FiniteCycle
 
 /-!
-The CLASSIC G1 lower bound on every positive finite torus. The finite carrier
-is the actual list of occupied positions, not an assumed number of cars.
-Cycle extraction, torus winding, and numerical count conservation are composed
-here to rule out eventual gridlock below the shorter side's length.
+The complete CLASSIC G1 exact-population theorem on every positive finite
+torus. The finite carrier is the actual list of occupied positions. Cycle
+extraction and torus winding prove the lower bound; explicit all-count
+constructions attain every population through full occupancy. Numerical
+conservation also gives the exact population interval for eventual gridlock.
 -/
 namespace BML
 
@@ -62,8 +64,8 @@ theorem few_cars_never_jam (w h : Nat) (hw : 0 < w) (hh : 0 < h)
   rw [iterate_torusStep_carCount] at hbound
   omega
 
-/-- Exact minimum jam size, expressed as a budget. This does not replace the
-separate construction of a jam with every exact count above the minimum. -/
+/-- Exact minimum jam size, expressed as a budget. The exact-count version is
+`jam_carCount_iff` below. -/
 theorem exists_jam_at_most_iff (w h : Nat) (hw : 0 < w) (hh : 0 < h) (n : Nat) :
     (∃ s : Config (Position w h),
       Jam (eastDirection w h hw) (northDirection w h hh) s ∧ carCount w h s ≤ n) ↔
@@ -74,5 +76,34 @@ theorem exists_jam_at_most_iff (w h : Nat) (hw : 0 < w) (hh : 0 < h) (n : Nat) :
   · intro hn
     obtain ⟨s, hj, hcount⟩ := exists_minimum_jam w h hw hh
     exact ⟨s, hj, by rw [hcount]; exact hn⟩
+
+/-- Full G1: every exact population from the shorter side through the area is
+realized by a nonempty frozen configuration, and no other population is. -/
+theorem jam_carCount_iff (w h : Nat) (hw : 0 < w) (hh : 0 < h) (n : Nat) :
+    (∃ s : Config (Position w h),
+      Jam (eastDirection w h hw) (northDirection w h hh) s ∧ carCount w h s = n) ↔
+      min w h ≤ n ∧ n ≤ w * h := by
+  constructor
+  · rintro ⟨s, hj, rfl⟩
+    exact ⟨jam_carCount_lower_bound w h hw hh s hj, carCount_le_area w h s⟩
+  · rintro ⟨hmin, hmax⟩
+    exact exists_jam_with_count w h n hw hh hmin hmax
+
+/-- The same exact-population threshold for existence of an orbit reaching a
+jam. Necessity uses count conservation; sufficiency starts at a constructed jam. -/
+theorem exists_eventual_jam_with_count_iff
+    (w h : Nat) (hw : 0 < w) (hh : 0 < h) (n : Nat) :
+    (∃ s : Config (Position w h), carCount w h s = n ∧
+      ∃ t, Jam (eastDirection w h hw) (northDirection w h hh)
+        (iterate (torusStep w h hw hh) t s)) ↔
+      min w h ≤ n ∧ n ≤ w * h := by
+  constructor
+  · rintro ⟨s, hcount, t, hj⟩
+    have hmin := jam_carCount_lower_bound w h hw hh _ hj
+    rw [iterate_torusStep_carCount, hcount] at hmin
+    exact ⟨hmin, by simpa only [hcount] using carCount_le_area w h s⟩
+  · intro hn
+    obtain ⟨s, hj, hcount⟩ := (jam_carCount_iff w h hw hh n).mpr hn
+    exact ⟨s, hcount, 0, hj⟩
 
 end BML

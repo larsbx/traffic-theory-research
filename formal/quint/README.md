@@ -1,16 +1,18 @@
 # Executable Quint BML models
 
-This directory preserves two complementary suites, using the same pinned
-Quint 0.33.1 interpreter and the same simultaneous finite-torus dynamics.
-`BML.qnt` provides the east-then-north replay against the NumPy kernel.
+This directory contains three separately scoped suites using the same pinned
+Quint 0.33.1 interpreter and simultaneous finite-torus half-steps.
+`BML.qnt` provides the CLASSIC east-then-north replay against the NumPy kernel.
 `traffic.qnt` provides explicit half-step phases and the 21-tile Wang encoding,
-with a separate replay against Lean. The distinct filenames also work on
+with a separate CLASSIC replay against Lean. `Train.qnt` implements TRAIN
+queue movement and full-ring rotation. The distinct filenames also work on
 filesystems that do not distinguish upper and lower case.
 
 | Suite | Entry points | Deterministic coverage |
 |---|---|---|
-| Finite BML replay | `BML.qnt`, `check.py`, `evaluate.py` | Seven Quint tests; every state of all 14 ordered positive rectangles with at most six cells, plus three `4x2` witness rows; three executed mutation controls. |
+| Finite BML replay | `BML.qnt`, `check.py`, `evaluate.py` | Ten Quint tests; every state of all 14 ordered positive rectangles with at most six cells, plus three `4x2` witness rows; three executed mutation controls. |
 | Phase and Wang layer | `traffic.qnt`, `bml_tests.qnt`, `bml_model.qnt`, `bml_export.qnt`, `export.cjs` | 25 pure tests and four state-transition tests; 1,560 boards on six tori, with both phases for 3,120 half-step cases. |
+| TRAIN movement | `Train.qnt`, `train_tests.qnt`, `train_model.qnt`, `train_check.py`, `train_evaluate.py` | 19 pure tests and five stateful tests; 3,720 boards on 14 rectangles, 74 larger targeted boards, 96 constructor boards, and five executed mutation controls. |
 
 All acceptance commands use Quint's TypeScript backend. No Rust backend
 download or Apalache installation is needed.
@@ -27,10 +29,10 @@ npm test --prefix formal/quint
 python formal/quint/check.py --max-cells 6
 ```
 
-The `typecheck` command checks both suites. `npm test` runs the 25 pure and four
+The `typecheck` command checks the two CLASSIC suites. `npm test` runs the 25 pure and four
 state-transition tests for the phase and Wang layer. `check.py` parses and
-typechecks `BML.qnt`, runs its seven deterministic tests, and then performs the
-NumPy replay and mutation controls. To run only those seven tests:
+typechecks `BML.qnt`, runs its ten deterministic tests, and then performs the
+NumPy replay and mutation controls. To run only those ten tests:
 
 ```sh
 npm run test:replay-model --prefix formal/quint
@@ -44,7 +46,8 @@ npm run simulate --prefix formal/quint
 ```
 
 The package and lockfile pin `@informalsystems/quint` to `0.33.1`.
-See [the formal-layer README](../README.md) for the combined acceptance gate.
+TRAIN has separate `typecheck:train` and `test:train` commands, documented
+below. See [the formal register](../README.md) for the separate acceptance gates.
 
 ## Shared conventions
 
@@ -52,11 +55,12 @@ See [the formal-layer README](../README.md) for the combined acceptance gate.
 - Cell `(x,y)` has index `x + width*y`; y increases northward.
 - The cell at index i contributes `cell * 3^i` to the board's ternary code.
 - East and north each move synchronously. Every eligibility decision reads the
-  input board of that half-step, including destinations vacated by other cars.
-- Dimensions are positive. On one-cell-wide or one-cell-high tori, a car whose
-  destination is its own cell is blocked.
-- `BML.qnt` applies east first, then north. `traffic.qnt` accepts phase 1 for
-  east or phase 2 for north and can start in either phase.
+  input board of that half-step. CLASSIC requires an initially vacant target;
+  TRAIN also moves queues together and rotates homogeneous rings.
+- Dimensions are positive. In the CLASSIC suites a car whose target is its own
+  cell is blocked. TRAIN counts that car as moving around its singleton ring.
+- `BML.qnt` and `Train.qnt` apply east first, then north. `traffic.qnt` accepts
+  phase 1 for east or phase 2 for north and can start in either phase.
 - The stateful `bml_model.qnt` toggles phase after every half-step, including an
   unchanged board. Its 3x2 initialization nondeterministically chooses any of
   the 729 boards and either initial phase; subsequent steps are deterministic.
@@ -91,6 +95,20 @@ observable by the gate.
 A third modified Quint model preserves the five encoded result fields while
 introducing illegal digits (`[1,1]`, `[4,0]`, and `[7,-1]` all encode as `4`).
 The invariant flag must reject this model before its output is accepted.
+
+### Blocking-core capture controls
+
+The three added deterministic controls check a successor-closed occupied core,
+its preservation through both phases, and capture by the explicit movement
+budget. On the 3×3 witness `5738`, the six-site core winds in both directions;
+two further car moves lead to a jam after two full rounds (the general budget
+is 16). A full east row with a circulating car on another row is a negative
+control for treating every permanent core as a global capture certificate.
+Invalid core indices, an empty core, and a broken successor chain are rejected.
+
+`captureCheck` executes the actual `transition` for at most the stated budget;
+these are bounded controls. The universal theorem from explicit core obstacles
+on all rows and columns is proved separately in `BML/Capture.lean`.
 
 ### Replay interface
 
@@ -163,6 +181,57 @@ Dimensions appear in the order listed above, then input code increases from
 zero, with phase 1 before phase 2. The output has exactly 3,120 rows. This
 ten-column TSV is distinct from the five-column full-cycle CSV replay protocol.
 
+## TRAIN queue and ring movement
+
+`Train.qnt` implements the queue propagation and full-ring rotation rule
+separately from the two CLASSIC models. The named tests include moving queues,
+opposite-species blockers, wraparound, full rings and singleton rings, long
+propagation, independent movement counts, phase order, and occupancy fixed
+points with positive movement. `train_model.qnt` initializes an arbitrary 3×2
+board and either phase, then tests conservation and phase alternation through
+both quiet and moving steps.
+
+```sh
+npm --prefix formal/quint run typecheck:train
+npm --prefix formal/quint run test:train
+python3 formal/quint/train_check.py --max-cells 6 --rows .artifacts/train-quint.tsv --report .artifacts/train-quint-replay.json
+python3 scripts/check_train.py --report .artifacts/train-acceptance.json
+```
+
+The standalone checker compares Quint with Python TRAIN on all 3,720 boards
+with WH≤6, 74 larger targeted boards, and 96 constructor boards with
+2≤W,H≤8 and WH≤16. It requires all 24 named tests and rejects five actual
+mutants: CLASSIC substitution, omitted ring movement, truncated queue
+propagation, reversed phases, and illegal cell digits hidden by equal encoded
+outputs. Its internal invariant inspects the actual lists before serialization.
+
+The shared TRAIN gate adds Lean and checks all ten exported fields across the
+three implementations on those domains. It also compares Lean and Python
+constructors at every admissible count for all 2≤W,H≤8, a total of 784 boards.
+The 96-board Quint constructor domain is a subset of that 784-board domain.
+These scopes and source-bound receipts are separate from the universal Lean
+threshold proof described in [TRAIN.md](../TRAIN.md).
+
+### TRAIN replay protocol
+
+```sh
+python3 formal/quint/train_evaluate.py 2 3
+```
+
+The output is headerless ten-column TSV:
+
+```text
+width,height,input,east,north,full,eastMoves,northMoves,cycleNorthMoves,stuck
+```
+
+The north half-step and `northMoves` use the original board. The full step and
+`cycleNorthMoves` use the east result. The stuck flag is one exactly when both
+species have zero movers; it does not require a nonempty board. This protocol
+differs from the phase/Wang TSV despite having the same number of fields.
+
+No TRAIN Wang encoding, individual-car identity replay, unrestricted
+cross-language refinement, or Apalache verification is claimed.
+
 ## Proof boundary
 
 The pure definitions describe arbitrary positive dimensions, but the commands
@@ -171,8 +240,10 @@ deterministic tests use explicit finite quantification and fixed witnesses;
 `--max-samples=1` does not make those tests a random search. No Apalache
 verification or unbounded source-refinement theorem is claimed.
 
-These suites do not prove eventual classification for all configurations,
+These Quint suites do not prove eventual classification for all configurations,
 G1/G2/Theorem F, a critical density, high-density random gridlock, infinite
 Fibonacci frequencies, trigonometric identities, or diffraction theorems.
-The empty state is fixed and vacuously free; neither module confuses its
-fixed-point property with the nonempty gridlock classification.
+The separate Lean libraries prove complete CLASSIC G1 and the rectangular TRAIN
+zero-movement existence threshold; the Quint runs remain bounded evidence. The empty state
+has no movers but is not a nonempty jam. In TRAIN, fixed occupancy can coexist
+with moving cars, and the model's stuck predicate uses mover counts.

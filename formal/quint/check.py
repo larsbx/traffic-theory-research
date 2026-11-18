@@ -147,7 +147,7 @@ def main() -> None:
         "rectangles": scopes,
         "exhaustive_states": sum(scope["states"] for scope in scopes),
         "additional_witness_rows": len(witness),
-        "deterministic_quint_tests": 7,
+        "deterministic_quint_tests": 10,
         "internal_invariant_evaluations": sum(scope["states"] for scope in scopes) + len(witness),
         "rejected_mutations": mutations,
         "scope": "finite exhaustive correspondence only; no unbounded or probabilistic theorem",

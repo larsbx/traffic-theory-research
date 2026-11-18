@@ -8,7 +8,10 @@
     "test": "quint test bml_tests.qnt --backend=typescript --max-samples=1 --seed=20261118 && quint test bml_model.qnt --backend=typescript --max-samples=1 --seed=20261118",
     "test:replay-model": "quint test BML.qnt --backend=typescript --max-samples=1 --seed=20261118",
     "simulate": "quint run bml_model.qnt --backend=typescript --invariant=safety --max-samples=100 --max-steps=20 --seed=20261118",
-    "export": "node export.cjs"
+    "export": "node export.cjs",
+    "typecheck:train": "quint typecheck Train.qnt && quint typecheck train_tests.qnt && quint typecheck train_model.qnt",
+    "test:train": "quint test train_tests.qnt --backend=typescript --max-samples=1 --seed=20261118 && quint test train_model.qnt --backend=typescript --max-samples=1 --seed=20261118",
+    "check:train": "python3 train_check.py --max-cells 6"
   },
   "dependencies": {
     "@informalsystems/quint": "0.33.1"

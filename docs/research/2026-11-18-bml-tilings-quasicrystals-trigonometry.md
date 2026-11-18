@@ -56,11 +56,14 @@ empty at the start of that half-step. In particular, a car cannot move into a si
 merely because its occupant will move during the same half-step. The model was
 introduced by Biham, Middleton, and Levine in 1992 [1].
 
-This is the repository's **CLASSIC** rule. The separate Python **TRAIN** rule
+This is the repository's **CLASSIC** rule. The separate **TRAIN** rule
 moves queues together and can rotate a fully occupied single-species ring.
 The blocking, fixed-point, and Wang statements in this note and its linked
-Lean/Quint coverage use CLASSIC. They do not assert those conclusions for TRAIN;
-see the separate [rule comparison](../theorems.md).
+Traffic Lean/Quint coverage use CLASSIC. The [TRAIN formal layer](../../formal/TRAIN.md)
+proves a separate W+H zero-movement existence threshold and its queue/ring
+semantics. Occupied directed targets alone do not exclude rotating TRAIN rings,
+so the 21 Wang types here are insufficient to characterize TRAIN jams.
+See the separate [rule comparison](../theorems.md).
 
 Here, "completely frozen" means that neither species makes any move in either
 half-step. A full traffic cycle consists of both species' half-steps. This avoids
@@ -536,7 +539,7 @@ domains and finite checking bounds.
 | Wang recoding | Formalize the 21 types and inverse local encoding/decoding. | Lean proves exact enumeration and inverse recoding on a general grid; concrete cyclic grids instantiate it. |
 | Fibonacci path | Formalize a bi-infinite hull word, occupied successors, and projection. | Lean constructs a frozen staircase for any supplied bi-infinite direction word and proves finite Fibonacci count/algebraic identities. A Fibonacci hull element, real projection, frequency and density limits remain open. |
 | Finite demonstration | Choose boundary conditions that do not silently block a truncated endpoint. | Quint specifies finite tori and tests truncated-path and update-order controls; Lean–Quint agreement is checked on six small grid sizes. |
-| Traffic geometry | Reproduce selected Fibonacci-rectangle and square-grid cases. | Large-grid experiments remain open; Traffic proves winding under modular closure. BML separately extracts actual blocker cycles, proves their winding and count bounds, and constructs the exact minimum jam on every positive rectangle. |
+| Traffic geometry | Reproduce selected Fibonacci-rectangle and square-grid cases. | Large-grid experiments remain open; Traffic proves winding under modular closure. BML separately extracts actual blocker cycles, proves their winding and count bounds, and constructs a jam at every exact admissible count on every positive rectangle, completing G1. |
 | Spatial order | Specify an observable and a family or hull of limiting traffic patterns. | Recurrence/substitution/model-set identification and controlled correlation limits remain open. |
 | Spectral conclusion | Establish the appropriate spatial spectrum for that specified system. | A separate spectral proof or verified bridge to an applicable published theorem remains open. |
 

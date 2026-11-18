@@ -92,7 +92,7 @@
   },
   "not_claimed": [
     "Unbounded Lean-Quint refinement or a general equivalence theorem between the BML and Traffic libraries",
-    "G1 constructions at every exact admissible count, and full Lean proofs of G2, Lemma R, and Theorem F; BML separately proves G1 necessity, minimum attainment, and exclusion of eventual gridlock below the minimum",
+    "Full Lean proofs of G2, Lemma R, and Theorem F; BML separately proves complete G1, including every exact admissible count and exclusion of eventual gridlock below the minimum",
     "General species-conservation theorem in Traffic; BML separately proves numerical speciesCount conservation via its transport bijections",
     "Existence of a bi-infinite Fibonacci hull element and its frequency limits",
     "Real orthogonal projection, trigonometric identities, or density limits",
@@ -100,6 +100,6 @@
     "Probabilistic high-density gridlock or percolation",
     "Pure point diffraction or spatial dynamical spectrum",
     "Quint Apalache verification or exhaustive unbounded temporal verification",
-    "TRAIN-rule semantics, G0 equivalence, or Lean/Quint correspondence; both formal suites cover CLASSIC old-state-vacancy movement only"
+    "TRAIN-rule results are tracked separately in formal/train-coverage.json; this Traffic inventory and its finite correspondence domain cover CLASSIC old-state-vacancy movement only"
   ]
 }

@@ -1,5 +1,6 @@
 import Lean
 import BML
+import G1Export
 
 open Lean Elab Command
 
@@ -18,15 +19,31 @@ elab "audit_bml" : command => do
     ``BML.blocker_closed_winding, ``BML.jam_has_simple_blocker_cycle,
     ``BML.jam_carCount_lower_bound, ``BML.few_cars_never_jam,
     ``BML.exists_minimum_jam, ``BML.exists_jam_at_most_iff,
+    ``BML.carCount_of_rank, ``BML.gridlockWith_is_jam,
+    ``BML.gridlockWith_carCount, ``BML.exists_jam_with_count,
+    ``BML.jam_carCount_iff, ``BML.exists_eventual_jam_with_count_iff,
     ``BML.torus_fixed_iff_blocked, ``BML.winding_length_lower_bound,
     ``BML.freeClasses_attains_two_thirds_iff,
-    ``BML.Witness.after_never_jams, ``BML.Witness.original_traced_car_moves_forever]
+    ``BML.Witness.after_never_jams, ``BML.Witness.original_traced_car_moves_forever,
+    ``BML.BlockingCore.persists, ``BML.BlockerCycle.persists,
+    ``BML.carTrace_bijection, ``BML.RouteCover.distance_roundTransport,
+    ``BML.RouteCover.rank_balance, ``BML.RouteCover.total_moves_le,
+    ``BML.RouteCover.jammed_by_movementBudget]
   for name in required do
+    match env.find? name with
+    | none => throwError "BML audit missing required theorem {name}"
+    | some info =>
+      unless info.isTheorem do
+        throwError "BML audit required declaration is not a theorem: {name}"
+  let requiredExecutables : Array Name := #[
+    ``BML.G1Export.boardDigits, ``BML.G1Export.emitConstruction,
+    ``BML.G1Export.exportThrough, ``main]
+  for name in requiredExecutables do
     if (env.find? name).isNone then
-      throwError "BML audit missing required theorem {name}"
+      throwError "BML audit missing G1 exporter declaration {name}"
   let allowed : Array Name := #[``propext, ``Quot.sound, ``Classical.choice]
   for (name, info) in env.constants.toList do
-    if (`BML).isPrefixOf name then
+    if (`BML).isPrefixOf name || name == ``main then
       declarations := declarations + 1
       if info.isTheorem then theorems := theorems + 1
       let axioms ← collectAxioms name

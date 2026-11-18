@@ -1,6 +1,6 @@
 name = "bml"
 version = "0.1.0"
-defaultTargets = ["BML", "bml_replay", "Traffic", "traffic_export"]
+defaultTargets = ["BML", "bml_replay", "g1_export", "Traffic", "traffic_export", "Train", "train_replay"]
 
 [[lean_lib]]
 name = "BML"
@@ -9,9 +9,20 @@ name = "BML"
 name = "bml_replay"
 root = "Main"
 
+[[lean_exe]]
+name = "g1_export"
+root = "G1Export"
+
 [[lean_lib]]
 name = "Traffic"
 
 [[lean_exe]]
 name = "traffic_export"
 root = "Traffic.Export"
+
+[[lean_lib]]
+name = "Train"
+
+[[lean_exe]]
+name = "train_replay"
+root = "Train.Export"
