@@ -3,9 +3,12 @@
 Date: 2026-11-18
 
 Status: research note recording published results and explicit derivations from
-the discussion that motivated this repository. The derivations below are ordinary
-mathematical arguments, with no novelty claim. They are not machine-checked proofs
-or evidence that random traffic generates quasicrystals.
+the discussion that motivated this repository. The arguments below are exposition,
+with no novelty claim. A selected subset now has a
+[Traffic Lean and Quint formalization](../../formal/traffic-layer.md); its coverage matrix
+distinguishes kernel-checked statements, bounded executable evidence, and the
+remaining mathematical obligations. Neither this note nor that layer establishes
+that random traffic generates quasicrystals.
 
 ## 1. Relationship and evidence map
 
@@ -52,6 +55,12 @@ one lattice unit in their direction. A move succeeds only if the destination is
 empty at the start of that half-step. In particular, a car cannot move into a site
 merely because its occupant will move during the same half-step. The model was
 introduced by Biham, Middleton, and Levine in 1992 [1].
+
+This is the repository's **CLASSIC** rule. The separate Python **TRAIN** rule
+moves queues together and can rotate a fully occupied single-species ring.
+The blocking, fixed-point, and Wang statements in this note and its linked
+Lean/Quint coverage use CLASSIC. They do not assert those conclusions for TRAIN;
+see the separate [rule comparison](../theorems.md).
 
 Here, "completely frozen" means that neither species makes any move in either
 half-step. A full traffic cycle consists of both species' half-steps. This avoids
@@ -514,19 +523,22 @@ the construction chose the Fibonacci substitution. The generic blocking rule
 provides no Pisot expansion, recognizability, coincidence condition, or pure
 point spatial spectrum.
 
-## 8. Proposed research and proof obligations
+## 8. Research and proof obligations
 
-These are proposals, not completed implementation or acceptance claims.
+The following table tracks the original proposal against the initial
+[Traffic formalization layer](../../formal/traffic-layer.md). Its acceptance gate records the
+source revision and hashes; formal status is limited to the stated theorem
+domains and finite checking bounds.
 
-| Obligation | Concrete target | Evidence still needed |
+| Obligation | Concrete target | Current boundary |
 | --- | --- | --- |
-| Static blocking | Formalize the two forbidden-pair characterization. | Machine-checked definitions of both half-steps and proof of equivalence. |
-| Wang recoding | Formalize the 21 types and inverse local encoding/decoding. | Proof of bijectivity, translation compatibility, and torus boundaries. |
-| Fibonacci path | Formalize a bi-infinite hull word, occupied successors, and projection. | Proof of freezing, zero areal density, and the standard geometric tiling after rescaling. |
-| Finite demonstration | Choose boundary conditions that do not silently block a truncated endpoint. | Explicit boundary specification and reproducible finite checks; these do not replace the infinite proof. |
-| Traffic geometry | Reproduce selected Fibonacci-rectangle and square-grid cases. | Grid dimensions, update convention, seeds, densities, periods, stopping rule, and exact code revision. |
-| Spatial order | Specify an observable and a family or hull of limiting traffic patterns. | Recurrence/substitution/model-set identification and controlled correlation limits. |
-| Spectral conclusion | Establish the appropriate spatial spectrum for that specified system. | A separate spectral proof or an explicit verified bridge to an applicable published theorem. |
+| Static blocking | Formalize the two forbidden-pair characterization. | Lean proves equivalence with the actual simultaneous updates, including complete-cycle fixed points and persistence. |
+| Wang recoding | Formalize the 21 types and inverse local encoding/decoding. | Lean proves exact enumeration and inverse recoding on a general grid; concrete cyclic grids instantiate it. |
+| Fibonacci path | Formalize a bi-infinite hull word, occupied successors, and projection. | Lean constructs a frozen staircase for any supplied bi-infinite direction word and proves finite Fibonacci count/algebraic identities. A Fibonacci hull element, real projection, frequency and density limits remain open. |
+| Finite demonstration | Choose boundary conditions that do not silently block a truncated endpoint. | Quint specifies finite tori and tests truncated-path and update-order controls; Lean–Quint agreement is checked on six small grid sizes. |
+| Traffic geometry | Reproduce selected Fibonacci-rectangle and square-grid cases. | Large-grid experiments remain open; the Traffic layer proves winding under modular closure, while BML also supplies arithmetic components of the separate extremal results. |
+| Spatial order | Specify an observable and a family or hull of limiting traffic patterns. | Recurrence/substitution/model-set identification and controlled correlation limits remain open. |
+| Spectral conclusion | Establish the appropriate spatial spectrum for that specified system. | A separate spectral proof or verified bridge to an applicable published theorem remains open. |
 
 For the constructed Fibonacci staircase, ordinary arguments establish blocking
 and projection, and published Fibonacci theory supplies the spectral result.

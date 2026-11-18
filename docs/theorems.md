@@ -12,6 +12,9 @@ into a cell that the latter vacates during the same half-step. This is Model I i
 n_E and n_N. Notation: n = n_E + n_N. Extrema below range over **all species allocations**;
 they do not impose equal numbers of E and N cars.
 
+Throughout the CLASSIC discussion below, these are `bml.model.CLASSIC`
+updates. Section 5b explicitly changes the rule to `bml.model.TRAIN`.
+
 Every orbit is eventually periodic, and its terminal cycle is one of three kinds:
 
 | kind | definition |
@@ -30,6 +33,22 @@ terminal cycle. This equivalence concerns **existence**, not every initial confi
 bounded computational checks. [The formal coverage register](../formal/README.md) identifies
 the statements currently checked by Lean, the actual Quint replay bounds, and the remaining
 G1/G2/R/F obligations. A bounded table does not prove a universal statement.
+
+The `BML` library supplies the finite-torus kernel, species transport bijections,
+G1/F arithmetic components, and the strong non-monotonicity theorem below. The
+[companion Traffic suite](../formal/traffic-layer.md) independently supplies the
+fixed-point/blocking equivalence, Wang recoding, and staircase constructions.
+Its finite-walk winding theorem assumes modular closure. Extracting an actual
+simple blocker cycle and linking its closure and distinct-car count to the
+arithmetic results remain obligations; no general bridge between the two Lean
+libraries is being assumed.
+
+Both Lean libraries and both Quint models use **CLASSIC** old-state vacancy
+semantics. They do not formalize the TRAIN rule introduced in §5b. Under TRAIN,
+a full single-species ring rotates while its occupancy pattern is unchanged;
+therefore an occupancy fixed point need not be motionless, and G0's fixed-point
+criterion cannot be transferred to TRAIN. Theorem T and the additional 3×4
+non-monotonicity witness retain their stated prose/Python evidence boundaries.
 
 ## 0. The open problem, stated precisely
 
