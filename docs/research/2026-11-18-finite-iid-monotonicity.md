@@ -49,7 +49,8 @@ ones that revive every original car. The identity measures how much creation out
 
 ## 3. Theorem (finite, exact)
 
-> On every torus with W·H ≤ 16 (all 50 ordered shapes), b_n is nondecreasing in n.
+> On every torus with W·H ≤ 16 (all 50 ordered shapes), and on 2×9 (18 cells), b_n is
+> nondecreasing in n.
 > Hence q(p) = P_p(J) is nondecreasing on [0, 1]. The same holds for the event
 > "never reaches free flow" (jam or intermediate recurrent motion).
 
@@ -60,6 +61,10 @@ ones that revive every original car. The identity measures how much creation out
   [formal register](../../formal/README.md#finite-evidence-scopes) had marked as not rerun.
 - The creating and destroying addition counts per level are in `data/jam-additions.json`.
   The identity of §2 holds exactly at every level of every shape.
+- 2×9 (3¹⁸ ≈ 3.9·10⁸ states, about 8 minutes) was classified exactly. Its per-level jam and
+  intermediate counts are in `data/exhaustive-2x9.json`, and both fractions are nondecreasing.
+  Thin tori are the closest cases at 16 cells (§3, Margins), so 2×9 is the most informative
+  single extension that fits in memory.
 - `tests/test_iid.py` checks the Bernstein form and q′, the certificate for J and for "not F",
   and the identity, all in exact rational arithmetic.
 

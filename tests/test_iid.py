@@ -57,3 +57,14 @@ def test_addition_identity(r):
         pairs = comb(N, n) * 2 ** n * 2 * (N - n)
         assert b[n + 1] - b[n] == Fraction(a["create"][n] - a["destroy"][n], pairs)
         assert a["create"][n] >= a["destroy"][n]
+
+
+def test_monotonicity_extends_to_2x9():
+    """Exact per-level counts on 2×9 (3^18 states, from bml.exhaustive.classify_all):
+    both fractions remain nondecreasing at 18 cells."""
+    d = json.loads((ROOT / "data" / "exhaustive-2x9.json").read_text())
+    N = 18
+    jam = dict(enumerate(d["jam"]))
+    not_free = {n: j + m for n, (j, m) in enumerate(zip(d["jam"], d["mixed"]))}
+    assert sum(comb(N, n) * 2 ** n for n in range(N + 1)) == 3 ** N
+    assert jam[N] == 2 ** N and certified_nondecreasing(jam, N) and certified_nondecreasing(not_free, N)
