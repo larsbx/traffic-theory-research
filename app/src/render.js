@@ -1,4 +1,4 @@
-// Pixel renderer: Pac-Man maze walls from the lane raster, cars as ghost-coloured sprites.
+// Pixel renderer: arcade-maze walls from the lane raster, cars as ghost-coloured sprites.
 // Model y points north; screen rows run south, so row = H − 1 − y.
 import { isStalled, greenAxis } from './sim.js';
 
@@ -35,26 +35,9 @@ export const drawMaze = (net, px) => {
   return cv;
 };
 
-const PAC = (() => { // 7×7 disc mask
-  const pts = [];
-  for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) if (dx * dx + dy * dy <= 10) pts.push([dx, dy]);
-  return pts;
-})();
-const MOUTH = { right: 0, up: -Math.PI / 2, left: Math.PI, down: Math.PI / 2 };
-
-const drawPac = (g, cx, cy, dir, open, color) => {
-  g.fillStyle = color;
-  const a = MOUTH[dir ?? 'right'];
-  for (const [dx, dy] of PAC) {
-    const ang = Math.atan2(dy, dx) - a;
-    if (open && (dx || dy) && Math.abs(Math.atan2(Math.sin(ang), Math.cos(ang))) < Math.PI / 4) continue;
-    g.fillRect(cx + dx, cy + dy, 1, 1);
-  }
-};
-
-/** One frame. view = { net, px, maze, sim, frozen, opts, player?, fx, now, lab? } */
+/** One frame. view = { net, px, maze, sim, frozen, opts, fx, now, lab? } */
 export const drawFrame = (g, view) => {
-  const { net, px, maze, sim, frozen, opts, player, fx, now, lab } = view;
+  const { net, px, maze, sim, frozen, opts, fx, now, lab } = view;
   g.drawImage(maze, 0, 0);
   const H = net.H, W = net.W;
   const blink = Math.floor(now / 160) % 2 === 0;
@@ -87,12 +70,6 @@ export const drawFrame = (g, view) => {
     }
   }
   g.globalAlpha = 1;
-
-  if (player) {
-    const [x, y] = scr(player.cell);
-    const flicker = player.safe && blink;
-    if (!flicker) drawPac(g, x + 1, y + 1, player.dir, Math.floor(now / 120) % 2 === 0, COLORS.pac);
-  }
 
   g.font = '8px "Press Start 2P", monospace';
   g.textAlign = 'center';

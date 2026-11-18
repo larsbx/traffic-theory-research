@@ -31,6 +31,14 @@ export const TRAIN = 'train';
 export const DEFAULTS = Object.freeze({ rule: CLASSIC, slow: 0, crossTurns: true, straight: 4, respawnDelay: 0, green: 1, box: false });
 export const AHEAD = 6; // longest committed path through a junction box
 
+/** Named traffic laws, from realistic to bare BML. */
+export const LAWS = Object.freeze([
+  { name: 'CITY CODE', green: 6, box: true, crossTurns: false },
+  { name: 'FREE TURNS', green: 6, box: true, crossTurns: true },
+  { name: 'BLOCK THE BOX', green: 6, box: false, crossTurns: true },
+  { name: 'BML LIGHTS', green: 1, box: false, crossTurns: true },
+]);
+
 /** Axis currently allowed to enter junctions at half-step t. */
 export const greenAxis = (t, green) => Math.floor(t / green) & 1;
 

@@ -27,32 +27,19 @@ button { background: var(--void); color: var(--ink); border: 2px solid var(--maz
 button:hover { border-color: var(--pac); color: var(--pac); }
 button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--pac); outline-offset: 2px; }
 button:disabled { opacity: .4; cursor: progress; }
-body[data-mode="arcade"] [data-mode="arcade"], body[data-mode="sandbox"] [data-mode="sandbox"], body[data-mode="lab"] [data-mode="lab"] { background: var(--maze); color: var(--ink); }
-.hud { display: flex; flex-wrap: wrap; gap: 6px 22px; font: 10px/1.6 var(--arcade); }
-.hud span { color: var(--dim); margin-right: 6px; }
-.hud b { color: var(--ink); font-weight: 400; font-variant-numeric: tabular-nums; }
-#h-lives { color: var(--pac); }
-#h-trips[data-ok="true"] { color: var(--cool); }
+body[data-mode="city"] [data-mode="city"], body[data-mode="lab"] [data-mode="lab"] { background: var(--maze); color: var(--ink); }
 #stage { position: relative; background: var(--void); border: 3px double var(--maze); padding: 6px; display: grid; place-items: center; min-width: 0; }
 canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; max-width: 100%; touch-action: none; }
-#banner { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 14px; pointer-events: none; }
-#banner > * { pointer-events: auto; }
-#banner-title { font: clamp(16px, 4vw, 34px)/1.2 var(--arcade); color: var(--pac); text-shadow: 4px 4px 0 var(--maze), 0 0 18px rgba(255,210,63,.35); margin: 0; }
-#banner-sub { font: clamp(8px, 1.5vw, 11px)/2 var(--arcade); color: var(--ink); white-space: pre-line; background: rgba(5,5,16,.78); padding: 4px 10px; margin: 0; }
-#start { justify-self: center; }
-@media (prefers-reduced-motion: no-preference) { #banner-sub { animation: blink 1.2s steps(2) infinite; } }
-@keyframes blink { 50% { opacity: .35; } }
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 2px; font: 9px/1.5 var(--arcade); }
 .stats div { background: var(--panel); padding: 8px 10px; display: grid; gap: 6px; }
 .stats span { color: var(--dim); letter-spacing: 1px; }
 .stats b { font-weight: 400; font-size: 13px; font-variant-numeric: tabular-nums; }
 .stats div[data-alert="true"] b { color: var(--hot); }
 #place { font: 10px/1.6 var(--arcade); color: var(--peach); margin: 0; }
-.dpad { display: none; grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(2, 48px); gap: 6px; justify-content: center; }
-.dpad button { font-size: 16px; }
-.dpad [data-dir="up"] { grid-column: 2; } .dpad [data-dir="left"] { grid-column: 1; grid-row: 2; }
-.dpad [data-dir="down"] { grid-column: 2; grid-row: 2; } .dpad [data-dir="right"] { grid-column: 3; grid-row: 2; }
-@media (pointer: coarse) { .dpad:not([hidden]) { display: grid; } }
+.bar { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; justify-content: space-between; }
+.bar-ctl { display: flex; gap: 10px; align-items: center; font: 9px var(--arcade); color: var(--dim); }
+.bar-ctl input { accent-color: var(--pac); width: 140px; }
+.bar-ctl output { color: var(--cool); min-width: 4em; }
 .panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
 .panel { background: var(--panel); border-left: 3px solid var(--maze); padding: 14px 16px; display: grid; gap: 12px; align-content: start; min-width: 0; }
 .panel h2 { font: 11px/1.4 var(--arcade); color: var(--pac); margin: 0; letter-spacing: 1px; }
@@ -90,33 +77,22 @@ footer a { color: var(--dim); }
   <header>
     <h1>GRIDLOCK CITY<small>BML TRAFFIC ON REAL STREETS</small></h1>
     <nav>
-      <button type="button" data-mode="arcade">ARCADE</button>
-      <button type="button" data-mode="sandbox">SANDBOX</button>
+      <button type="button" data-mode="city">CITY</button>
       <button type="button" data-mode="lab">BML LAB</button>
-      <button type="button" id="mute">SOUND ON</button>
     </nav>
   </header>
 
-  <div class="hud" data-show="arcade">
-    <div><span>SCORE</span><b id="h-score">000000</b></div>
-    <div><span>HI</span><b id="h-high">000000</b></div>
-    <div><span>LEVEL</span><b id="h-level">1</b></div>
-    <div><span>TRUCKS</span><b id="h-lives"></b></div>
-    <div><span>TIME</span><b id="h-time">75</b></div>
-    <div><span>TRIPS</span><b id="h-trips">0/0</b></div>
-    <div><span>LAW</span><b id="h-law"></b></div>
-  </div>
-
   <div id="stage">
     <canvas id="screen" aria-label="City traffic simulation"></canvas>
-    <div id="banner">
-      <p id="banner-title">GRIDLOCK CITY</p>
-      <p id="banner-sub">PRESS START</p>
-      <button type="button" id="start" data-show="title">START</button>
-    </div>
   </div>
 
-  <p id="place"></p>
+  <div class="bar">
+    <p id="place"></p>
+    <div class="bar-ctl">
+      <button type="button" id="pause">PAUSE</button>
+      <label for="speed">SPEED</label><input id="speed" type="range" min="1" max="60" step="1"><output id="speed-v"></output>
+    </div>
+  </div>
   <div class="stats">
     <div><span>DENSITY ρ</span><b id="s-rho">0</b></div>
     <div><span>MEAN SPEED</span><b id="s-v">0</b></div>
@@ -128,28 +104,20 @@ footer a { color: var(--dim); }
     <div><span>GREEN</span><b id="s-signal">E–W</b></div>
   </div>
 
-  <div class="dpad" data-show="arcade" aria-label="Steering">
-    <button type="button" data-dir="up" aria-label="Up">▲</button>
-    <button type="button" data-dir="left" aria-label="Left">◀</button>
-    <button type="button" data-dir="down" aria-label="Down">▼</button>
-    <button type="button" data-dir="right" aria-label="Right">▶</button>
-  </div>
-
   <div class="panels">
-    <section class="panel" data-show="title arcade">
-      <h2>HOW TO PLAY</h2>
-      <p>You drive the tow truck. Each level is a real neighbourhood with a trip quota. Clear breakdowns and break jam loops before the city locks up. A moving car that drives into you wrecks a truck.</p>
+    <section class="panel" data-show="city">
+      <h2>LEGEND</h2>
       <ul class="legend">
-        <li><i style="background:var(--pac)"></i>Tow truck: <kbd>←↑↓→</kbd> or <kbd>WASD</kbd>, swipe on phones</li>
-        <li><i style="background:var(--hazard)"></i>Breakdown: tow for 300</li>
-        <li><i style="background:#f4f2ff;outline:3px solid var(--maze);outline-offset:-3px"></i>Jam loop (proved stuck forever): tow for 500</li>
-        <li><i style="background:#2a2aff"></i>Captured behind a loop: tow for 100</li>
-        <li><i style="background:var(--hot)"></i>Moving traffic: avoid it</li>
+        <li><i style="background:var(--hot)"></i>Moving car (colour by id; dim while waiting)</li>
+        <li><i style="background:#2a2aff"></i>Frozen: proved never to move again</li>
+        <li><i style="background:#f4f2ff;outline:3px solid #2a2aff;outline-offset:-3px"></i>Jam loop core (flashing): a β-cycle</li>
+        <li><i style="background:var(--hazard)"></i>Broken-down car</li>
+        <li><i style="background:var(--peach)"></i><i style="background:var(--cool)"></i>Junction dots: green for E–W or N–S</li>
       </ul>
-      <p><kbd>SPACE</kbd> start · <kbd>P</kbd> pause · <kbd>M</kbd> sound · <kbd>ESC</kbd> title. Every six levels the city repeals one traffic law.</p>
+      <p>White dot on a car: the side it will move to next. <kbd>SPACE</kbd> pauses.</p>
     </section>
 
-    <section class="panel" data-show="sandbox">
+    <section class="panel" data-show="city">
       <h2>CITY CONTROLS</h2>
       <div class="row"><label for="c-place">Place</label><select id="c-place"></select><span></span></div>
       <div class="row"><label for="presets-law">Traffic law</label><select id="presets-law"></select><span></span></div>
@@ -157,7 +125,6 @@ footer a { color: var(--dim); }
       <div class="row"><label for="c-green">Green time</label><input id="c-green" type="range" min="1" max="16" step="1"><output id="c-green-v"></output></div>
       <div class="row"><label for="c-rho">Cars per lane cell</label><input id="c-rho" type="range" min="0.02" max="0.8" step="0.02"><output id="c-rho-v"></output></div>
       <div class="row"><label for="c-slow">Dawdle p</label><input id="c-slow" type="range" min="0" max="0.5" step="0.05"><output id="c-slow-v"></output></div>
-      <div class="row"><label for="c-speed">Sim speed</label><input id="c-speed" type="range" min="2" max="60" step="1"><output id="c-speed-v"></output></div>
       <div class="checks">
         <label><input id="c-box" type="checkbox"> Don’t block the box</label>
         <label><input id="c-cross" type="checkbox"> Turns across traffic</label>
@@ -174,7 +141,7 @@ footer a { color: var(--dim); }
       <p id="find-msg"></p>
     </section>
 
-    <section class="panel" data-show="sandbox">
+    <section class="panel" data-show="city">
       <h2>FUNDAMENTAL DIAGRAM</h2>
       <canvas id="diagram" width="240" height="120" aria-label="Flow against density"></canvas>
       <p>Yellow: flow J = ρ × mean speed after 300 half-steps at each density on this map and law (press MEASURE). Red: right now. The curve flattens where the map's entries saturate, the open-boundary limit known from exclusion processes.</p>
@@ -215,7 +182,7 @@ footer a { color: var(--dim); }
     </section>
     <section>
       <h3>NUCLEATION AND CAPTURE</h3>
-      <p>Following the repository’s freezing note, forming a permanent core and capturing the rest of the traffic are separate events. In a closed city, every car that keeps driving at random eventually reaches a permanent core. So one jam loop, left alone, takes the whole map. That is why a level ends at 60% frozen, and why breaking loops early matters.</p>
+      <p>Following the repository’s freezing note, forming a permanent core and capturing the rest of the traffic are separate events. In a closed city, every car that keeps driving at random eventually reaches a permanent core, so one jam loop takes the whole map. Watch FROZEN climb after a JAM LOOP appears: nucleation is rare and sudden, capture is steady.</p>
     </section>
     <section>
       <h3>SOURCES</h3>

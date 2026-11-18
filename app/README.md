@@ -1,24 +1,23 @@
 # Gridlock City
 
-A retro arcade game and traffic laboratory that runs this repository's BML dynamics on real
-street maps. Streets come from OpenStreetMap and render as a Pac-Man-style maze. Cars are
-ghost-coloured sprites, and you drive a tow truck. A car becomes "edible" only once the engine
-has **proved** that it can never move again.
+A retro pixel-art traffic simulator that runs this repository's BML dynamics on real street
+maps. Streets come from OpenStreetMap and render as a low-resolution arcade maze, with cars as
+ghost-coloured sprites. Cars the engine has **proved** can never move again turn blue, and the
+jam-loop cores that hold them flash.
 
 ```sh
 cd app
 npm ci
-npm test          # 21 tests: rasterizer, engine, certificates, Python equivalence, game rules
+npm test          # rasterizer, engine, certificates, Python equivalence
 npm run build     # → dist/index.html (open it in a browser) and dist/artifact.html
 npm run bake      # refresh data/presets.json from the OpenStreetMap API
 PYTHONPATH=. python app/scripts/bml_fixture.py   # (from the repo root) regenerate the Python orbits
 ```
 
 Modes:
-- **Arcade:** six real places, a trip quota, breakdowns and jam loops to tow. Every six levels
-  the city repeals one traffic law.
-- **Sandbox:** any preset, or any place you type (live Overpass / OSM API). Exposes every law,
-  the update rule, density and dawdling, plus a measured fundamental diagram J(ρ).
+- **City:** six real places, or any place you type (live Overpass / OSM API). Exposes the named
+  traffic laws, the update rule, signal green time, density, dawdling and breakdowns, plus a
+  measured fundamental diagram J(ρ).
 - **BML lab:** the plain torus, with live readouts of the theorems in
   [`docs/theorems.md`](../docs/theorems.md).
 
@@ -61,7 +60,7 @@ torus girth is min(W, H), which is tested. `test/sim.test.js` checks the proposi
 empirically: no certified car ever moves again, across six maps × both rules × box rule ×
 signals, with dawdling and breakdowns.
 
-## What the game shows (headless runs during development; the sandbox reproduces them)
+## What the simulator shows (headless runs during development; the City mode reproduces them)
 
 - Pure BML on real maps locks in seconds. Its every-tick phase flip fills each crossing's 2×2
   box from both axes. Signals plus the box rule plus a ban on cross-traffic turns keep all six
@@ -71,10 +70,9 @@ signals, with dawdling and breakdowns.
   (Étoile, Bank, Shibuya) jam once the laws are repealed.
 - Following [freezing and capture](../docs/research/2026-11-18-freezing-gridlock-nucleation.md),
   forming a core is separate from capturing traffic, and in a closed city one core is
-  absorbing. That is why the arcade's game-over threshold is a frozen share, and why towing
-  early pays.
+  absorbing: FROZEN keeps climbing after the first JAM LOOP appears.
 - Flow saturates at high ρ because entries limit the inflow: the open-boundary (TASEP)
-  phenomenon. The sandbox reports on-street density and the entry queue separately for that
+  phenomenon. The simulator reports on-street density and the entry queue separately for that
   reason.
 
 ## Scope
