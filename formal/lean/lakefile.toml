@@ -1,0 +1,10 @@
+name = "trafficTheory"
+version = "0.1.0"
+defaultTargets = ["Traffic"]
+
+[[lean_lib]]
+name = "Traffic"
+
+[[lean_exe]]
+name = "traffic_export"
+root = "Traffic.Export"

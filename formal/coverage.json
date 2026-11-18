@@ -1,0 +1,104 @@
+{
+  "schema": "traffic.formal.coverage.v1",
+  "lean_version": "4.34.1",
+  "quint_version": "0.33.1",
+  "allowed_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "required_theorems": [
+    "Traffic.mover_leaves",
+    "Traffic.mover_arrives",
+    "Traffic.halfStep_eq_iff_no_moves",
+    "Traffic.frozen_iff_targets",
+    "Traffic.fullStep_fixed_iff_frozen",
+    "Traffic.frozen_evolve",
+    "Traffic.full_occupancy_frozen",
+    "Traffic.Wang.exactly_twenty_one",
+    "Traffic.Wang.encode_valid_iff_frozen",
+    "Traffic.Wang.valid_iff_unique_frozen_encoding",
+    "Traffic.Wang.encode_pullback",
+    "Traffic.cyclicNext_prev",
+    "Traffic.cyclicPrev_next",
+    "Traffic.Geometry.staircaseConfiguration_support",
+    "Traffic.Geometry.staircase_frozen",
+    "Traffic.Geometry.staircase_evolve",
+    "Traffic.Geometry.fibonacciWord_counts",
+    "Traffic.Geometry.fibonacciWord_length",
+    "Traffic.Geometry.substitution_inflates_length",
+    "Traffic.Geometry.substituted_walk_projection",
+    "Traffic.Geometry.nonempty_torus_winding",
+    "Traffic.Export.frozenCheck_iff",
+    "Traffic.Export.validTilesCheck_iff"
+  ],
+  "finite_comparison": {
+    "dimensions": [[1, 1], [1, 2], [2, 1], [2, 2], [3, 2], [2, 3]],
+    "boards": 1560,
+    "phase_cases": 3120,
+    "columns": [
+      "width", "height", "input_code", "phase", "output_code", "next_phase",
+      "frozen", "valid_tiles", "decoded_code", "allowed_tile_count"
+    ],
+    "cell_encoding": {"empty": 0, "east": 1, "north": 2},
+    "phase_encoding": {"east": 1, "north": 2},
+    "site_index": "x + width * y",
+    "board_encoding": "sum(cell[i] * 3^i)"
+  },
+  "quint": {
+    "backend": "typescript",
+    "pure_tests": 25,
+    "stateful_tests": 4,
+    "test_suites": {
+      "pure": {
+        "module": "bml_tests.qnt",
+        "required_tests": [
+          "emptyFrozenTest",
+          "allOccupiedFrozenTest",
+          "eastWrapTest",
+          "northWrapTest",
+          "inactiveSpeciesTest",
+          "blockedQueueSnapshotTest",
+          "noSequentialCascadeTest",
+          "vacantTargetRequirementTest",
+          "truncatedPathIsNotFrozenTest",
+          "truncatedPathEndpointMovesTest",
+          "quietPhaseDoesNotMeanFrozenTest",
+          "phaseOrderMattersTest",
+          "wangHas21TypesTest",
+          "eastVacancyTileRejectedTest",
+          "northVacancyTileRejectedTest",
+          "eastNonemptyTileAcceptedTest",
+          "mismatchedWangEdgeRejectedTest",
+          "wangDecodeEncodeFrozenTest",
+          "exhaustive2x2Test",
+          "exhaustive3x2Test",
+          "exhaustive2x3Test",
+          "exhaustive1x1Test",
+          "exhaustive1x2Test",
+          "exhaustive2x1Test",
+          "transitionTableCoverageTest"
+        ]
+      },
+      "stateful": {
+        "module": "bml_model.qnt",
+        "required_tests": [
+          "frozenPhaseToggleTest",
+          "emptyPhaseToggleTest",
+          "bothPhasesUpdateTest",
+          "frozenPersistsAcrossCycleTest"
+        ]
+      }
+    },
+    "simulation_seed": 20261118,
+    "simulation_samples": 100,
+    "simulation_max_half_steps": 20
+  },
+  "not_claimed": [
+    "Unbounded Lean-Quint refinement",
+    "Finite-torus extremal theorems G1, G2, Lemma R, and Theorem F in docs/theorems.md",
+    "Lean proof of species-count conservation",
+    "Existence of a bi-infinite Fibonacci hull element and its frequency limits",
+    "Real orthogonal projection, trigonometric identities, or density limits",
+    "Derivation of modular closure from an actual finite traffic dependency cycle",
+    "Probabilistic high-density gridlock or percolation",
+    "Pure point diffraction or spatial dynamical spectrum",
+    "Quint Apalache verification or exhaustive unbounded temporal verification"
+  ]
+}

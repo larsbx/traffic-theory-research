@@ -13,8 +13,8 @@ connections to tiling and dynamical-systems theory.
   threshold problem, plus exact worst-case thresholds on every finite torus:
   - gridlock exists ⟺ n ≥ min(W,H);
   - gridlock is never forced below full density;
-  - free flow is rigid, and the densest free flow is (WH/g)·⌊(g+⌊g/3⌋)/2⌋ with
-    g = gcd(W,H), density → 2/3 on L×L;
+  - free flow is rigid, with exact finite-torus capacity formulas and density
+    tending to 2/3 on L×L;
   - adding one car can un-jam a configuration (non-monotonicity).
 
 ## Code
@@ -37,9 +37,26 @@ The notes distinguish published theorems, published numerical or geometric
 analysis, direct mathematical derivations, and proposed research obligations.
 Direct derivations carry no claim of novelty.
 
-The repository contains an executable BML model, exhaustive classification
-receipts (`data/exhaustive.json`) and an automated test suite. It does not yet
-contain machine-checked proofs.
+The repository contains a Python BML model, exhaustive classification receipts
+(`data/exhaustive.json`), automated tests, and the scoped Lean and Quint layer
+below. The extremal claims in `docs/theorems.md` beyond the G0 fixed-point
+characterization remain outside the Lean proofs.
+
+## Formalization
+
+The [Lean and Quint layer](formal/README.md) supplies:
+
+- Lean 4.34.1 proofs connecting actual simultaneous traffic updates to freezing,
+  the exact 21-Wang-tile correspondence, infinite blocking staircases, finite
+  Fibonacci counts and algebraic scaling, and conditional winding arithmetic.
+- An executable Quint 0.33.1 torus model, 29 deterministic tests, and explicitly
+  bounded exhaustive checks over six grid sizes.
+- A common acceptance gate comparing every one of 3,120 finite board/phase
+  cases between Lean and Quint, with a compiled theorem/axiom audit and
+  source-bound CI evidence.
+
+Run instructions, exact theorem coverage, and limits are in the formalization
+README and its machine-readable coverage manifest.
 
 The initial research boundary is explicit: permanent blocking is a property of
 traffic time evolution; quasiperiodicity and pure point spatial spectrum concern

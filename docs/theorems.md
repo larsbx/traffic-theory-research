@@ -8,6 +8,13 @@ an **E half-step** followed by an **N half-step**:
 
 The step map f is deterministic and conserves n_E and n_N. Notation: n = n_E + n_N.
 
+**Formalization status.** The [Lean and Quint layer](../formal/README.md) proves
+G0's full-cycle fixed-point characterization using actual simultaneous updates
+(`Traffic.fullStep_fixed_iff_frozen` and `Traffic.frozen_iff_targets`). It also
+proves the winding arithmetic under an explicit modular-closure hypothesis.
+G1, G2, Lemma R, and Theorem F below remain informal arguments and executable
+checks; the current Lean layer does not prove those results or conservation.
+
 Every orbit is eventually periodic, and its terminal cycle is one of three kinds:
 
 | kind | definition |
@@ -184,8 +191,8 @@ and T, so this does not estimate p_c.
 
 ## 8. Next targets
 
-1. **Formalise** G0, G1, G2, Lemma R and F in Lean. The blocker-cycle argument and the
-   coset lemma G = ker φ are the substance.
+1. **Extend the formal layer** from G0 to G1, G2, Lemma R and F in Lean. The
+   blocker-cycle existence/closure bridge and the coset lemma G = ker φ remain.
 2. **Quantitative G1 under μ_p.** Bound P(a closed E/N blocking loop exists at time 0 or later).
    Loops need ≥ L cars on one monotone cycle, which suggests a first-moment/Peierls bound for small p.
    This is the gap that Austin–Benjamini closes only below N/2 cars.
