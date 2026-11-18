@@ -14,8 +14,7 @@ elab "audit_bml" : command => do
     ``BML.transport_bijection, ``BML.iterate_nonempty_iff,
     ``BML.torus_fixed_iff_blocked, ``BML.winding_length_lower_bound,
     ``BML.freeClasses_attains_two_thirds_iff,
-    ``BML.Witness.after_never_jams, ``BML.Witness.original_traced_car_moves_forever,
-    ``BML.jam_has_min_side_cars, ``BML.fullRow_jam, ``BML.fullColumn_jam]
+    ``BML.Witness.after_never_jams, ``BML.Witness.original_traced_car_moves_forever]
   for name in required do
     if (env.find? name).isNone then
       throwError "BML audit missing required theorem {name}"

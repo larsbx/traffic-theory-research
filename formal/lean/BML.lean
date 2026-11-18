@@ -3,4 +3,3 @@ import BML.Torus
 import BML.Witnesses
 import BML.Arithmetic
 import BML.Transport
-import BML.G1
