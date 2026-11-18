@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Press+Start+2P&display=swap">
 <style>
-/* Layout: one arcade cabinet column — marquee, screen, readouts, then the operator's manual below. */
+/* Layout: one arcade cabinet column — marquee, screen, readouts, then a footer of links that open explanation windows. */
 :root {
   --void: #050510; --panel: #0c0c26; --maze: #2b3bff; --ink: #e8e6ff; --dim: #9896c8;
   --pac: #ffd23f; --hot: #ff3b3b; --cool: #4de3ff; --peach: #ffb8ae; --hazard: #ff8c1a;
@@ -61,16 +61,24 @@ dl#lab-readout dd { margin: 0; }
 .legend { display: grid; gap: 6px; font-size: 13px; margin: 0; padding: 0; list-style: none; }
 .legend i { display: inline-block; width: 12px; height: 12px; margin-right: 8px; vertical-align: -1px; }
 kbd { font: 9px var(--arcade); border: 1px solid var(--dim); padding: 2px 5px; }
-.manual { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px 28px; margin-top: 18px; }
-.manual h2 { grid-column: 1 / -1; font: 14px/1.4 var(--arcade); color: var(--pac); margin: 8px 0 0; }
-.manual section { min-width: 0; max-width: 68ch; }
-.manual h3 { font: 10px/1.6 var(--arcade); color: var(--cool); margin: 0 0 6px; letter-spacing: 1px; }
-.manual p { margin: 0 0 10px; }
-.manual code, .math { font-family: var(--mono); color: var(--peach); }
-.manual a { color: var(--cool); }
-.sources { font-size: 13px; color: var(--dim); padding-left: 1.2em; margin: 0; }
-footer { font-size: 12px; color: var(--dim); }
-footer a { color: var(--dim); }
+footer { border-top: 3px double var(--maze); padding-top: 14px; margin-top: 10px; display: grid; gap: 12px; }
+.links { display: flex; flex-wrap: wrap; gap: 6px 18px; position: relative; }
+.links summary { list-style: none; cursor: pointer; font: 9px/2 var(--arcade); color: var(--cool); letter-spacing: 1px; text-decoration: underline; text-underline-offset: 4px; }
+.links summary::-webkit-details-marker { display: none; }
+.links summary::after { content: " +"; color: var(--dim); }
+.links details[open] summary { color: var(--pac); }
+.links details[open] summary::after { content: " −"; }
+.links summary:focus-visible { outline: 2px solid var(--pac); outline-offset: 2px; }
+/* An open link becomes a window spanning the footer, above the credit line. */
+.window { position: absolute; left: 0; right: 0; bottom: calc(100% + 10px); background: var(--panel); border: 3px double var(--maze);
+  box-shadow: 6px 6px 0 #000; padding: 14px 18px; max-height: min(60vh, 520px); overflow: auto; z-index: 5; }
+.window h3 { font: 10px/1.6 var(--arcade); color: var(--pac); margin: 0 0 8px; letter-spacing: 1px; }
+.window p, .window ol { margin: 0; max-width: 72ch; }
+.window code, .math { font-family: var(--mono); color: var(--peach); }
+.window a { color: var(--cool); }
+.sources { font-size: 13px; color: var(--dim); padding-left: 1.2em; }
+.credit { font-size: 12px; color: var(--dim); margin: 0; }
+.credit a { color: var(--dim); }
 </style>
 
 <div class="cab">
@@ -144,12 +152,10 @@ footer a { color: var(--dim); }
     <section class="panel" data-show="city">
       <h2>FUNDAMENTAL DIAGRAM</h2>
       <canvas id="diagram" width="240" height="120" aria-label="Flow against density"></canvas>
-      <p>Yellow: flow J = ρ × mean speed after 300 half-steps at each density on this map and law (press MEASURE). Red: right now. The curve flattens where the map's entries saturate, the open-boundary limit known from exclusion processes.</p>
     </section>
 
     <section class="panel" data-show="lab">
       <h2>BML LAB</h2>
-      <p>The original Biham–Middleton–Levine torus. Cyan cars move east and pink cars move north, alternately. This is the rule the city generalises, and the repository's theorems apply here exactly.</p>
       <div class="row"><label for="l-w">Width W</label><input id="l-w" type="number" min="1" max="96"><span></span></div>
       <div class="row"><label for="l-h">Height H</label><input id="l-h" type="number" min="1" max="64"><span></span></div>
       <div class="row"><label for="l-p">Density p</label><input id="l-p" type="range" min="0.02" max="0.9" step="0.02"><output id="l-p-v"></output></div>
@@ -162,31 +168,62 @@ footer a { color: var(--dim); }
     </section>
   </div>
 
-  <article class="manual">
-    <h2>OPERATOR’S MANUAL</h2>
-    <section>
-      <h3>STREETS TO LANES</h3>
-      <p>Each map is a 720 × 480 m window of OpenStreetMap, cut into 96 × 64 cells of 7.5 m, one car length. One-way streets become one lane. Two-way streets become two, on the side the country drives on. Lanes are offset by <span class="math">(s/2)(|cos θ|+|sin θ|)</span> so the staircases of diagonal streets cannot interlock. Any loop shorter than 12 cells that is not a real crossing box is a rasterising artefact and is removed.</p>
-    </section>
-    <section>
-      <h3>THE RULE: BML ON A MAP</h3>
-      <p>Every move is one cell, horizontal or vertical. Half-steps alternate: horizontal movers, then vertical movers. That is the east-then-north update of Biham, Middleton and Levine (1992), and a two-phase signal at every junction. On a torus whose cars only go east or north, the engine reproduces <code>bml.model.step</code> exactly. The tests replay 80 Python orbits under both rules. <b>CLASSIC</b> moves a car only into a cell that was empty before the half-step. <b>TRAIN</b> lets a queue move together and a full ring rotate, as in Austin–Benjamini.</p>
-    </section>
-    <section>
-      <h3>TRAFFIC LAWS</h3>
-      <p>Pure BML flips the phase every tick, so both axes fill a crossing and its 2 × 2 box locks. The city adds the laws real cities use. Signals admit a junction only to the axis with green for <span class="math">G</span> half-steps; <span class="math">G = 1</span> is exactly BML. Don’t-block-the-box lets a car enter a junction only if its whole path through it is clear. Turns across oncoming traffic can be banned. Cars dawdle with probability <span class="math">p</span>, as in Nagel–Schreckenberg.</p>
-    </section>
-    <section>
-      <h3>WHY THE GHOSTS ARE CERTAIN</h3>
-      <p>Let <span class="math">β(k)</span> be the car blocking car <span class="math">k</span>. Cars choose their route only after they move, so a cycle of β never moves again under CLASSIC. Under TRAIN the same holds unless the cycle is a straight ring. Every car whose β-path reaches such a cycle is frozen too. This is the map form of Lemma G0. A test checks that no certified car ever moves again, across both rules, every law, dawdling and breakdowns. A jam loop is a directed cycle of lanes, so it needs at least <b>girth</b> cars, the Theorem G1 bound min(W,H) in city form. Grids like Midtown have a girth of 50+ cells, so they almost never lock.</p>
-    </section>
-    <section>
-      <h3>NUCLEATION AND CAPTURE</h3>
-      <p>Following the repository’s freezing note, forming a permanent core and capturing the rest of the traffic are separate events. In a closed city, every car that keeps driving at random eventually reaches a permanent core, so one jam loop takes the whole map. Watch FROZEN climb after a JAM LOOP appears: nucleation is rare and sudden, capture is steady.</p>
-    </section>
-    <section>
-      <h3>SOURCES</h3>
-      <ol class="sources">
+  <footer>
+    <nav class="links" aria-label="How it works">
+    <details name="info">
+      <summary>Streets to lanes</summary>
+      <div class="window">
+        <h3>STREETS TO LANES</h3>
+        <p>Each map is a 720 × 480 m window of OpenStreetMap, cut into 96 × 64 cells of 7.5 m, one car length. One-way streets become one lane. Two-way streets become two, on the side the country drives on. Lanes are offset by <span class="math">(s/2)(|cos θ|+|sin θ|)</span> so the staircases of diagonal streets cannot interlock. Any loop shorter than 12 cells that is not a real crossing box is a rasterising artefact and is removed.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>The rule: BML on a map</summary>
+      <div class="window">
+        <h3>THE RULE: BML ON A MAP</h3>
+        <p>Every move is one cell, horizontal or vertical. Half-steps alternate: horizontal movers, then vertical movers. That is the east-then-north update of Biham, Middleton and Levine (1992), and a two-phase signal at every junction. On a torus whose cars only go east or north, the engine reproduces <code>bml.model.step</code> exactly. The tests replay 80 Python orbits under both rules. <b>CLASSIC</b> moves a car only into a cell that was empty before the half-step. <b>TRAIN</b> lets a queue move together and a full ring rotate, as in Austin–Benjamini.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>Traffic laws</summary>
+      <div class="window">
+        <h3>TRAFFIC LAWS</h3>
+        <p>Pure BML flips the phase every tick, so both axes fill a crossing and its 2 × 2 box locks. The city adds the laws real cities use. Signals admit a junction only to the axis with green for <span class="math">G</span> half-steps; <span class="math">G = 1</span> is exactly BML. Don’t-block-the-box lets a car enter a junction only if its whole path through it is clear. Turns across oncoming traffic can be banned. Cars dawdle with probability <span class="math">p</span>, as in Nagel–Schreckenberg.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>BML lab</summary>
+      <div class="window">
+        <h3>BML LAB</h3>
+        <p>The original Biham–Middleton–Levine torus. Cyan cars move east and pink cars move north, alternately. This is the rule the city generalises, and the repository's theorems apply here exactly.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>Why frozen cars are certain</summary>
+      <div class="window">
+        <h3>WHY FROZEN CARS ARE CERTAIN</h3>
+        <p>Let <span class="math">β(k)</span> be the car blocking car <span class="math">k</span>. Cars choose their route only after they move, so a cycle of β never moves again under CLASSIC. Under TRAIN the same holds unless the cycle is a straight ring. Every car whose β-path reaches such a cycle is frozen too. This is the map form of Lemma G0. A test checks that no certified car ever moves again, across both rules, every law, dawdling and breakdowns. A jam loop is a directed cycle of lanes, so it needs at least <b>girth</b> cars, the Theorem G1 bound min(W,H) in city form. Grids like Midtown have a girth of 50+ cells, so they almost never lock.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>Nucleation and capture</summary>
+      <div class="window">
+        <h3>NUCLEATION AND CAPTURE</h3>
+        <p>Following the repository’s freezing note, forming a permanent core and capturing the rest of the traffic are separate events. In a closed city, every car that keeps driving at random eventually reaches a permanent core, so one jam loop takes the whole map. Watch FROZEN climb after a JAM LOOP appears: nucleation is rare and sudden, capture is steady.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>Fundamental diagram</summary>
+      <div class="window">
+        <h3>FUNDAMENTAL DIAGRAM</h3>
+        <p>Yellow: flow J = ρ × mean speed after 300 half-steps at each density on this map and law (press MEASURE). Red: right now. The curve flattens where the map's entries saturate, the open-boundary limit known from exclusion processes.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>Sources</summary>
+      <div class="window">
+        <h3>SOURCES</h3>
+        <ol class="sources">
         <li>O. Biham, A. A. Middleton, D. Levine, <i>Phys. Rev. A</i> 46, R6124 (1992).</li>
         <li>O. Angel, A. E. Holroyd, J. B. Martin, <i>Electron. Commun. Probab.</i> 10 (2005).</li>
         <li>T. Austin, I. Benjamini, <a href="https://arxiv.org/abs/math/0607759" target="_blank" rel="noopener">arXiv:math/0607759</a> (2006).</li>
@@ -195,8 +232,10 @@ footer a { color: var(--dim); }
         <li>R. M. D’Souza, <i>Phys. Rev. E</i> 71, 066112 (2005).</li>
         <li><a href="https://github.com/larsbx/traffic-theory-research/blob/main/docs/theorems.md" target="_blank" rel="noopener">traffic-theory-research: theorems G0–F, T</a> and <a href="https://github.com/larsbx/traffic-theory-research/blob/main/docs/research/2026-11-18-freezing-gridlock-nucleation.md" target="_blank" rel="noopener">freezing and capture</a>.</li>
       </ol>
-    </section>
-  </article>
-  <footer>Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>, ODbL 1.0.</footer>
+      </div>
+    </details>
+    </nav>
+    <p class="credit">Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>, ODbL 1.0.</p>
+  </footer>
 </div>
 <!-- APP -->

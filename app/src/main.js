@@ -261,3 +261,8 @@ fit();
 
 setMode('city');
 requestAnimationFrame(frame);
+
+// Footer windows: Escape or a click outside closes the open one (details[name] keeps one open).
+const closeWindows = () => document.querySelectorAll('.links details[open]').forEach((d) => { d.open = false; });
+addEventListener('keydown', (e) => { if (e.key === 'Escape') closeWindows(); });
+addEventListener('click', (e) => { if (!e.target.closest('.links')) closeWindows(); });
