@@ -18,7 +18,15 @@ elab "audit_bml" : command => do
     ``BML.BlockingCore.persists, ``BML.BlockerCycle.persists,
     ``BML.carTrace_bijection, ``BML.RouteCover.distance_roundTransport,
     ``BML.RouteCover.rank_balance, ``BML.RouteCover.total_moves_le,
-    ``BML.RouteCover.jammed_by_movementBudget]
+    ``BML.RouteCover.jammed_by_movementBudget,
+    ``BML.speciesCount_halfStep, ``BML.speciesCount_iterate,
+    ``BML.eastRowCount_iterate, ``BML.northColumnCount_iterate,
+    ``BML.fullEastRow_no_moves, ``BML.fullNorthColumn_no_moves,
+    ``BML.fullEastRow_iterate_iff, ``BML.fullNorthColumn_iterate_iff,
+    ``BML.hasFullMonochromaticLane_iterate_iff,
+    ``BML.fullEastRow_excludes_fullNorthColumn,
+    ``BML.northFreeColumn_iterate_iff, ``BML.northFreeStrip_iterate_iff,
+    ``BML.eastRowsBelow_iterate_iff]
   for name in required do
     match env.find? name with
     | none => throwError "BML audit missing required theorem {name}"

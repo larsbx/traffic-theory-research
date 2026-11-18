@@ -40,7 +40,8 @@ It does not embed Python-produced expected transitions.
 | Module | Results |
 |---|---|
 | `BML/Kernel.lean` | Moving sources empty and destinations fill; other species remain in place; a half-step is fixed iff its cars are blocked; a full east-then-north step is fixed iff both local blocking conditions hold; equivalence with no movement in either phase; frozen-state persistence, including after a transient; full occupancy freezes; the empty state is fixed but is not a jam. |
-| `BML/Transport.lean` | Explicit bijection between each species' cars before and after its phase: survival, injectivity, and surjectivity. Nonemptiness is preserved by a full step and every iterate. The finite cardinality consequence is justified by the bijection; this CLASSIC module has no separate general equality theorem for the executable `speciesCount` sum. The TRAIN library supplies its own numeric conservation proofs. |
+| `BML/Transport.lean` | Explicit bijection between each species' cars before and after its phase: survival, injectivity, and surjectivity. Nonemptiness is preserved by a full step and every iterate. `BML/Lanes.lean` now connects the transport bijection to numerical CLASSIC count conservation; the TRAIN library retains its own separate conservation proofs. |
+| `BML/Lanes.lean` | Actual CLASSIC numerical species-count, east-row-count, and north-column-count conservation through half-steps, full steps, and iterates. Full E-rows and full N-columns persist and reflect backward, cannot coexist, and have no hidden movement. Specified north-free columns, cyclic strips, and row-count bounds are invariant through every iterate. |
 | `BML/Capture.lean` | Successor-closed occupied cores persist. A supplied occupied closed walk yields a core (distinct sites are not required by this Lean declaration). Full-round tagged transport is bijective. Explicit core obstacles on every row and column give a kernel-derived cyclic-distance rank, a bound `M = n_E*(W-1) + n_N*(H-1)` on every finite prefix of tagged moves, and a nonempty jam by full round M. |
 | `BML/Torus.lean` | Positive finite cyclic coordinates with proved inverse shifts; the general kernel is instantiated on `Fin WIDTH × Fin HEIGHT`; executable base-three encoding, decoding, and counts. |
 | `BML/Arithmetic.lean` | Divisibility of positive winding lengths implies the `min(WIDTH, HEIGHT)` lower bound. The proposed class packing expression simplifies to `floor(2*g/3)` and attains exact `2/3` iff `3` divides `g`. These are arithmetic components of G1 and F. |
@@ -71,6 +72,22 @@ a prose proof with Python certificate checks. The universal Lean capture result
 begins at the explicit `RouteCover` witnesses. This is a formalization of the
 blocking/capture mechanism already used in Angel–Holroyd–Martin's torus proof,
 with an explicit integer movement bound, not a novelty claim.
+
+`Lanes.lean` uses the finite-list cardinality helpers in `Train/Counting.lean`.
+Those helpers import only `BML.Torus` and assume no TRAIN movement semantics;
+the new conservation proofs use CLASSIC `transport` and `halfStep`. The
+probability laws and limiting arguments in the
+[probability note](../../docs/research/2026-11-18-probabilistic-gridlock-bounds.md)
+remain prose mathematics. Numerical conservation does not establish those
+asymptotics or a probabilistic critical density.
+
+The public invariant results include `speciesCount_iterate`,
+`eastRowCount_iterate`, `northColumnCount_iterate`,
+`fullEastRow_iterate_iff`, `fullNorthColumn_iterate_iff`,
+`hasFullMonochromaticLane_iterate_iff`, `northFreeStrip_iterate_iff`, and
+`eastRowsBelow_iterate_iff`. `NorthFreeStrip` permits arbitrary lengths for its
+deterministic invariant; any use of distinct columns in a probability argument
+must separately require that the length not exceed the width.
 
 ## Audit and trust boundary
 

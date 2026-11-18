@@ -70,7 +70,7 @@ require care when proposing a single sharp threshold. Primary-source checks give
 |---|---|
 | [Angel–Holroyd–Martin][AHM], *Electron. Comm. Probab.* 10 (2005), Theorems 1–2 | On ℤ², for p sufficiently close to 1, every car moves only finitely often a.s. The finite-torus theorem also gives eventual gridlock with probability tending to 1 as both dimensions grow and their ratio converges in (0,∞). |
 | [Austin–Benjamini][AB], arXiv:math/0607759v3 (2006), Propositions 1, 6, 8 | Prop 1: eventual speed one below N/2 cars. Prop 6: a stuck configuration of m cars exists ⟺ m ≥ 2N. **Different update rule (resolved in §5b):** their written rule moves a maximal queue of same-species cars together whenever its head is unblocked, so a full ring rotates (the *train rule*, `bml.model.TRAIN`). That explains 2N against this kernel's N. Prop 6 is re-proved and extended to rectangles under the train rule in §5b. Prop 1's argument appears to transfer to this kernel (§2); it is not imported as verified. |
-| [Hertzberg Rabinovich–Biham–Katzav][HBK], arXiv:2601.01180 (2026) | Square lattices: free-flowing periodic states are the zero set of a distance D = D∥ + D⊥ (same-type and cross-type parts). Likely equivalent to Lemma R; only the abstract was checked. |
+| [Hertzberg Rabinovich–Biham–Katzav][HBK], arXiv:2601.01180v2 (2026) | Square lattices: free-flowing periodic states are the zero set of a distance D = D∥ + D⊥, and the zero set persists. The full text studies relaxation with numerical fits; it does not prove our fixed-positive-density probability target. |
 | [D'Souza][DS], *Phys. Rev. E* 71 (2005), 066112 | Numerical stable intermediate phases and dependence on lattice aspect ratio. |
 | [Yashina–Tatashev][YT], arXiv:2311.17120 (2023), Theorem 1 | For deterministic fixed directions and both species present, perpetual free motion requires gcd(W,H) ≥ 3; this overlaps a consequence of Lemma R. |
 
@@ -430,6 +430,54 @@ The remaining probability problem is the formation of a suitable structure.
 The theorem supplies a capture bound after a certificate appears; it does not
 locate a critical density or establish that a mixed cycle is necessary for
 all possible global jams.
+
+## 8c. Probability reductions and a shrinking no-gridlock window
+
+Let J be eventual nonempty global gridlock, M eventual appearance of a mixed
+direct blocker cycle, and R the presence of a full eastbound row or northbound
+column initially. Conservation of species counts in each lane and the cycle
+argument give the exact deterministic identity
+
+`M = J intersect R-complement`.
+
+The [probability note](research/2026-11-18-probabilistic-gridlock-bounds.md)
+proves this identity, including why a full monochromatic lane prevents a mixed
+cycle. Under the iid law on an L×L torus,
+
+\[
+0\le \Pr_p(J)-\Pr_p(M)\le2L(p/2)^L\le2L\,2^{-L}.
+\]
+
+Thus the two eventual probabilities have the same limiting behavior, uniformly
+over density sequences. Their common fixed-positive-density threshold remains
+unproved.
+
+The note also proves a conserved-strip obstruction. If k consecutive columns
+have no N cars, every row has fewer than k E cars, and no column is full N,
+then no future nonempty jam is possible. An exact finite iid bound yields
+
+\[
+p_LL\le(2-\varepsilon)\log\log L
+\quad\Longrightarrow\quad
+\Pr_{p_L}(J)\longrightarrow0
+\qquad(0<\varepsilon<2).
+\]
+
+This is a shrinking-density no-gridlock theorem in prose. It does not prove
+eventual perfect free flow or a nonjamming interval at fixed positive density.
+In fact, for every fixed p>0 the probability of even one N-free column tends
+to zero, so the strip method cannot be extended to fixed p merely by improving
+its tail estimates.
+
+`BML/Lanes.lean` proves the underlying CLASSIC numerical species and lane-count
+invariants, full-lane persistence and backward reflection, and invariance of
+north-free cyclic strips. `bml.probability` supplies exact rational finite probabilities and
+checked strip certificates; its census compares independently detected eventual
+mixed cycles with the orbit classifier. The probability laws and analytic
+limits are not claimed as Lean theorems. The note additionally proves both
+jam/free-flow representatives in typical conserved lane classes and a
+finite-time isolation bound showing that the size and time limits need not
+commute.
 
 ## 9. Next targets
 

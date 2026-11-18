@@ -354,5 +354,9 @@ complete statements, construction, commands, and evidence boundaries.
 
 ## Not in this blueprint
 
-The probabilistic switch (loop formation under μ_p) has no proof to blueprint yet;
-see `docs/theorems.md` §8.
+The fixed-positive-density probabilistic switch (loop formation under μ_p) has
+no proof to blueprint yet. The
+[probability note](../docs/research/2026-11-18-probabilistic-gridlock-bounds.md)
+separately proves the mixed-cycle reduction, a shrinking-density no-gridlock
+window, and finite-time bounds in prose; see `docs/theorems.md` §§8–8c. Those
+results do not establish a positive critical density.
