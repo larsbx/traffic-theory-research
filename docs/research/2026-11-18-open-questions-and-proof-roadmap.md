@@ -525,6 +525,14 @@ it does not add a new theorem, a general refinement, or a full-suite test run.
 
 ## 8. Priorities and concrete completion criteria
 
+The later [certified-gridlock increment](2026-11-18-certified-absorption-bounds.md)
+advances the probability and verification priorities below with universal
+cutoff-certificate soundness and exact unresolved-mass accounting. Its
+[relaxation analysis](2026-11-18-relaxation-obstructions.md) adds a proved
+queue obstruction and a conditional expected-defect route. The historical PR
+snapshot above is retained; the increment starts after the merges of PRs #12
+and #14 and still leaves the positive-density target open.
+
 | Priority | Work | Completion criterion |
 | --- | --- | --- |
 | 1 | Integrate PR #7's G1/G2 and coset proofs while retaining PR #13 lanes and the completed TRAIN layer. | A combined revision with the required Lean audits and appropriate acceptance receipts; update the formal register to reflect what actually merged. |

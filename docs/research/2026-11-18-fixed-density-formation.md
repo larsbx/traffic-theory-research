@@ -27,6 +27,13 @@ rules out an autonomous capture seed supported on a fixed finite block.
 These results do **not** prove `p_->0`, a positive critical density, or a sharp
 transition. The one-round lower bound below tends to zero with size.
 
+**Follow-up:** [certified eventual-gridlock bounds](2026-11-18-certified-absorption-bounds.md)
+now instantiate the safe-certificate route with universal Lean soundness and
+exact finite initial-weight intervals. The
+[relaxation obstructions](2026-11-18-relaxation-obstructions.md) show why fixed
+burn-in, a vacant winding cut, and pointwise HBK defect descent do not close
+the argument; they give a separate conditional late expected-defect criterion.
+
 **Evidence boundary.** `BML/Formation.lean` proves the local preimage equivalence
 for the actual kernel, simultaneous staircase formation, and construction of
 an occupied successor-closed core. Probability integration, winding geometry,
