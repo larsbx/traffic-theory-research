@@ -1,0 +1,34 @@
+{
+  "schema": "bml.finite-witnesses.v1",
+  "encoding": "row-major, x-fast, base-3; 0=empty, 1=east, 2=north",
+  "update": "synchronous east half-step, then synchronous north half-step",
+  "nonmonotonicity": {
+    "width": 4,
+    "height": 2,
+    "original": [[0, 2, 2, 1], [2, 0, 2, 1]],
+    "original_code": 3858,
+    "added": [[2, 2, 2, 1], [2, 0, 2, 1]],
+    "added_code": 3860,
+    "addition_cell": 0,
+    "addition_species": 2,
+    "addition_label": 8,
+    "original_transient": 3,
+    "original_period": 1,
+    "added_transient": 0,
+    "added_period": 2,
+    "original_car_moving_forever": 1,
+    "moves_per_added_cycle": 2,
+    "added_car_moves_per_cycle": 0
+  },
+  "loop_formation": {
+    "width": 3,
+    "height": 2,
+    "initial": [[2, 2, 1], [1, 1, 0]],
+    "initial_code": 125,
+    "initial_blocker_cycle": false,
+    "transient": 4,
+    "period": 1,
+    "final": [[1, 2, 0], [2, 1, 1]],
+    "final_blocker_cycle": true
+  }
+}

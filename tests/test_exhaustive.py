@@ -5,7 +5,7 @@ import pytest
 from bml.model import step, counts
 from bml.exhaustive import decode, encode, JAM, FREE, MIXED, classify_all
 
-SHAPES = [(1, 1), (1, 3), (2, 2), (2, 3), (3, 2), (3, 3)]
+SHAPES = [(h, w) for h in range(1, 10) for w in range(1, 10) if h * w <= 9]
 
 
 def naive_class(s):

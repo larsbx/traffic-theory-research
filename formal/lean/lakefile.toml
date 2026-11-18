@@ -1,0 +1,10 @@
+name = "bml"
+version = "0.1.0"
+defaultTargets = ["BML", "bml_replay"]
+
+[[lean_lib]]
+name = "BML"
+
+[[lean_exe]]
+name = "bml_replay"
+root = "Main"
