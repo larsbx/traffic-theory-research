@@ -5,6 +5,11 @@ connections to tiling and dynamical-systems theory.
 
 ## Research notes
 
+- [Open questions and proof roadmap](docs/research/2026-11-18-open-questions-and-proof-roadmap.md)
+  (2026-11-18): the post-TRAIN review, including an explicit periodic N-car
+  family, the equality/gcd/time-bound extensions, CLASSIC rigidity and packing,
+  probability and Fibonacci/spectral gaps, and current merged versus open-PR
+  proof status. Prose arguments and finite checks are labeled separately from Lean.
 - [BML gridlock, tilings, quasicrystals, and trigonometry](docs/research/2026-11-18-bml-tilings-quasicrystals-trigonometry.md)
   (2026-11-18): the rigorous high-density theorem, an exact encoding of frozen
   configurations by 21 Wang tiles, a Fibonacci blocking staircase and its
