@@ -73,6 +73,7 @@ other suites.
 | G0 local equivalence | Lean proves full-step fixed ⇔ local blockage ⇔ no movers in either phase, on the actual finite-torus kernel. Frozen states persist through every iterate. | General eventual periodicity and correctness of the orbit classifier are still separate obligations; the cycle-average formulation is explained in prose. |
 | Certified eventual-gridlock intervals | `BML/Absorption.lean` proves actual-kernel hit/safe soundness at every cutoff, all-time avoidance from nonjam recurrence, finite Nat-weight lower/upper bounds, nested intervals, and exactness at zero unresolved mass. Its data-valued board evaluator is proved equivalent to the original update. Actual Quint and Python counterparts are evaluated on explicit finite domains. | Initial iid normalization and analytic limits retain the scope in the [certificate note](../docs/research/2026-11-18-certified-absorption-bounds.md). No size-uniform unresolved-mass estimate, unrestricted source refinement or pointer-doubling correctness theorem is claimed. |
 | Relaxation obstructions | `BML/Delay.lean` proves an initial run of T+2 east cars blocks its original rear car through round T, regardless of exterior traffic. It also proves a specific winding vacant cut disappears into a nonempty jam after one round. | The [logarithmic iid consequence and late-defect criterion](../docs/research/2026-11-18-relaxation-obstructions.md) have prose proofs. HBK defect coercivity, probability integration and late expected-defect decay are not Lean theorems. |
+| Protected queues and early gridlock | `BML/GuardedQueue.lean` proves that a run of T+1 east cars followed by a hole, with T east guards in the row below, makes the original rear tag first move in round T. Its shrinking-queue induction uses the actual two-phase kernel and permits arbitrary exterior traffic. Any nonempty jam occurs strictly after T. | The [exact cyclic avoidance polynomial and logarithmic gridlock-time bound](../docs/research/2026-11-18-protected-queue-gridlock-delay.md) have prose proofs and exact finite Python checks. The companion bounded-local jam-completion construction is a prose theorem. These are not Lean probability theorems or bounds on the eventual jam probability. |
 | Full occupancy and the empty boundary | Lean proves full occupancy freezes; the empty state is fixed but is not a jam. Nonemptiness is invariant under evolution. | No missing local boundary lemma is claimed. |
 | Persistent occupied cores | `BlockingCore.persists` proves preservation under the actual two-phase kernel; `BlockerCycle.persists` derives a core from a supplied occupied closed walk. | The Lean closed walk may revisit sites. Extraction of a simple cycle from an arbitrary frozen state remains separate. |
 | One-round staircase formation | `BML/Formation.lean` proves the exact local initial-site predicate for adjacent E/N targets, simultaneous formation from a supplied geometry, and construction of the resulting successor-closed core. The [formation note](../docs/research/2026-11-18-fixed-density-formation.md) integrates the independent initial cells into an exact transfer trace. | Probability integration, torus winding/cover instantiation, early-formation bounds, and large-size limits remain prose proofs. This is not a positive critical-density theorem. |
@@ -102,6 +103,7 @@ python scripts/check_formation.py --report .artifacts/formation-replay.json
 python scripts/check_fixation.py --report .artifacts/fixation-replay.json
 python scripts/check_profiles.py --report .artifacts/profiles-replay.json
 python scripts/check_capacity.py --report .artifacts/capacity-replay.json
+python scripts/check_guarded_queue.py --report .artifacts/guarded-queue-replay.json
 npm ci --ignore-scripts --prefix formal/quint
 cd formal/lean
 lake build
@@ -142,6 +144,7 @@ domains and receipts are in [TRAIN.md](TRAIN.md#finite-executable-evidence).
 | Specified winding staircase after one round | All 43,046,721 initial states on 4×4: the local preimage predicate is compared pointwise with the full-round kernel, and car-count coefficients are integrated under exact initial iid weights. This is a one-step event census, not an eventual-basin census on 4×4. |
 | Disjoint-strip capacity and exact marginal laws | All 565,785 states on the seven probability domains above; 8,821,224 predicates cover every strip width and cyclic partition offset. All 525 marginal evaluations match direct initial-state weights. The certificate union adds 696 states beyond all cyclic north-empty single-strip certificates in the same orientation. Separate 8×8 controls check both orientations; those controls and optimized 8×8/12×12 bounds are not basin censuses on the larger squares. |
 | Prescribed lane-profile jam witnesses | Every admissible ordered positive profile pair on square sides 2–5: 16,492 pairs, each checked for exact counts, actual zero movement, and an independent labeled fixed point. Nine larger profiles are targeted controls. The separate initial-law census contains every state on sides 1–3 (19,767 states), with 15 exact density evaluations and 75 shared-cell probability-mass checks. |
+| Protected queues with arbitrary exteriors | Every W,H≥2 with WH≤12, every 0≤T≤W−2, every exterior and every torus translation: 275,526 canonical boards, 3,263,850 translated tagged cases and 299,673 canonical tagged rounds compared with both production half-steps. The public verifier is separately called on 508 representatives. Initial-law checks cover all 2,278,206 states on those 12 tori, 6,208,974 finite-time predicates and 130 exact rational comparisons. These finite checks support the independent universal Lean theorem and prose probability derivation. |
 
 `scripts/check_capture.py` writes source-bound capture counts and separately
 identified production-classifier phase totals. `trace_capture` records the first
@@ -177,6 +180,13 @@ initial-law certificate bounds. Its probability output concerns acceptance of
 sound profile-only certificates, not the actual eventual-gridlock event.
 `scripts/check_capacity.py` checks the stronger conserved obstruction against
 the complete finite basin classifier and integrates each marginal law directly.
+`scripts/check_guarded_queue.py` independently replays every small guarded
+pattern with every exterior and translation, checks both actual half-steps,
+and integrates selected-pattern avoidance and early gridlock under exact
+initial weights. It separately rejects guard omission, identity swaps and
+incorrect movement counts, and refutes multiplying vertically overlapping
+patterns or resetting the evolved law to iid. Its receipt binds source hashes
+before and after execution; it does not infer an eventual basin from a cutoff.
 The corresponding notes keep these finite checks separate from universal
 Lean construction theorems and prose probability arguments.
 

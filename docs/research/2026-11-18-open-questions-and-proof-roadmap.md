@@ -31,6 +31,17 @@ empty-strip estimates, and Theorem 6a of the probability note sharpens the
 sparse window to \(p_LL\le2\log\log L-4\log\log\log L-2\).
 These advances leave the fixed-density, long-time formation problem open.
 
+**Spatial and dynamical follow-up:** the
+[protected-queue note](2026-11-18-protected-queue-gridlock-delay.md) now proves
+in Lean that an original car first moves at a prescribed round despite an
+arbitrary exterior. Exact cyclic avoidance probabilities strengthen the
+fixed-density lower bound on gridlock time to order `log L`. Its separate
+prose completion theorem shows that no observation confined to one bounded
+rectangle can universally certify all-time nonjamming: every such local
+pattern extends to an eventually jammed state on a sufficiently large square.
+Finite-time survival remains compatible with a permanent capture core already
+present elsewhere. Neither result controls the eventual iid basin probability.
+
 | Status at this snapshot | Consequence for this roadmap |
 | --- | --- |
 | [PR #9](https://github.com/larsbx/traffic-theory-research/pull/9) and [PR #11](https://github.com/larsbx/traffic-theory-research/pull/11) merged | The complete rectangular TRAIN jam theorem and strict sparse-square eventual-speed-one theorem are already in Lean. |
@@ -411,9 +422,10 @@ Other distinct questions must stay separate:
   profiles in a range, but one representative says nothing quantitative about
   its share of the profile's initial states.
 - What are the relaxation-time distribution and the appropriate order of
-  size and time limits? The merged finite-time isolation argument proves delay,
-  including noncommutation of limits in the high-density regime; it does not
-  prove eternal avoidance of gridlock.
+  size and time limits? The finite-time isolation and protected-queue arguments
+  prove delay, now logarithmic in side length at every fixed `0<p<1`, including
+  noncommutation of limits in the high-density regime; they do not prove
+  eternal avoidance of gridlock.
 - Is the iid averaged jam probability monotone in density in the relevant
   setting? (Finite sizes W·H ≤ 16 and 2×9: yes, exactly. The
   fixed-count version fails on 2×11; see the

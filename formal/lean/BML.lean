@@ -8,5 +8,6 @@ import BML.Lanes
 import BML.Formation
 import BML.Absorption
 import BML.Delay
+import BML.GuardedQueue
 import BML.Fixation
 import BML.Profiles

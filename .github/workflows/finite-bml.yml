@@ -44,6 +44,8 @@ jobs:
         run: python scripts/check_profiles.py --report .artifacts/profiles-replay.json | tee .artifacts/profiles-replay.log
       - name: Verify disjoint-strip capacity and exact marginal probability laws
         run: python scripts/check_capacity.py --report .artifacts/capacity-replay.json | tee .artifacts/capacity-replay.log
+      - name: Verify guarded queues against every small exterior and exact cyclic probabilities
+        run: python scripts/check_guarded_queue.py --report .artifacts/guarded-queue-replay.json | tee .artifacts/guarded-queue-replay.log
       - name: Verify exact one-round capture preimages on all 4x4 states
         run: python scripts/check_formation.py --report .artifacts/formation-replay.json | tee .artifacts/formation-replay.log
       - name: Verify tagged fixation and exact Palm probability identities

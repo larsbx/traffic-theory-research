@@ -465,6 +465,14 @@ transition.
 
 ## 5. Finite-time isolation and limits that do not commute
 
+The later [protected-queue theorem](2026-11-18-protected-queue-gridlock-delay.md)
+strengthens the growing-time conclusion in this section from order
+`sqrt(log L)` to order `log L` at every fixed `0<p<1`. It uses only `2T+1`
+prescribed east cars and one hole, has an actual-kernel Lean proof of the
+original car's first movement, and accounts exactly for overlapping cyclic
+patterns. The isolation bound below remains a valid alternative finite bound;
+both results allow eventual gridlock after the certified delay.
+
 ### Proposition 9: an explicit bound on early global gridlock
 
 Let \(T\ge0\) be an integer with \(T+2\le L\). Define

@@ -5,6 +5,14 @@ connections to tiling and dynamical-systems theory.
 
 ## Research notes
 
+- [Protected queues delay global gridlock](docs/research/2026-11-18-protected-queue-gridlock-delay.md)
+  (2026-11-18): a universal Lean proof shows that a short guarded east queue
+  forces its original rear car to make its first move at a prescribed round,
+  regardless of the exterior. Exact cyclic-pattern probabilities give a
+  logarithmic lower bound on gridlock time with high probability at every
+  fixed `0<p<1`. A separate prose construction shows that every bounded local
+  pattern has an eventually jammed completion on sufficiently large squares.
+  Neither statement establishes a positive critical density.
 - [Certified bounds for eventual gridlock](docs/research/2026-11-18-certified-absorption-bounds.md)
   (2026-11-18): universal Lean soundness for hit/safe/unresolved cutoff
   certificates, exact initial-weight probability intervals, and actual
@@ -97,6 +105,8 @@ connections to tiling and dynamical-systems theory.
   intervals, with omitted initial probability retained as unresolved.
 - `bml/obstructions.py` — raw phase-aware defects and queue-delay bounds,
   with actual-kernel controls for proposed fixed-density proof routes.
+- `bml/guarded_queue.py` — exterior-independent delayed movement certificates
+  and exact cyclic-pattern upper bounds on early global gridlock.
 - `bml/fixation.py` — independent labeled fixation counts and exact initial-iid
   Palm probabilities, including the car-weighted jam probability and ring error.
 - `bml/profiles.py` — explicit jams with prescribed lane counts and exact upper
@@ -115,6 +125,7 @@ python scripts/check_probability.py --report .artifacts/probability-replay.json
 python scripts/check_fixation.py --report .artifacts/fixation-replay.json
 python scripts/check_profiles.py --report .artifacts/profiles-replay.json
 python scripts/check_capacity.py --report .artifacts/capacity-replay.json
+python scripts/check_guarded_queue.py --report .artifacts/guarded-queue-replay.json
 python -m bml.analysis 16    # regenerate data/exhaustive.json
 ```
 
@@ -136,7 +147,8 @@ fixed-point result does not transfer.
   and route-cover capture bounds, the exact tagged-fixation/full-lane/jam
   reduction for the actual kernel, exact jammed representatives of positive
   bounded lane profiles and their deterministic certificate limitation, arithmetic
-  components of G1/F, and the strong 4×2
+  components of G1/F, guarded-queue first movement and exclusion of early
+  gridlock, and the strong 4×2
   non-monotonicity witness. Finite replays compare Lean with NumPy on 93,387
   states and Quint with NumPy on 3,720 states plus three witness rows; see the
   [BML evidence register](formal/README.md#finite-evidence-scopes).
