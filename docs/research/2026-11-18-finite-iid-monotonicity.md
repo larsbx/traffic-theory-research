@@ -5,8 +5,9 @@ asks whether the iid-averaged jam probability q_L(p) is monotone in the density 
 [probability note](2026-11-18-probabilistic-gridlock-bounds.md#6-non-monotonicity-configurations-and-probabilities-are-different)
 disproves monotonicity configuration by configuration, and for the mixed-cycle event M. It
 leaves q_L itself open. This note settles the finite-size question exactly for every torus
-with W·H ≤ 16 and reports Monte Carlo evidence beyond that. It makes no asymptotic claim and
-no novelty claim.
+with W·H ≤ 16 and for 2×9: q is nondecreasing there. It also shows exactly that the stronger
+fixed-count statement fails on 2×12 and 2×14. It makes no asymptotic claim and no novelty
+claim.
 
 CLASSIC rule throughout. The iid law μ_p puts E, N or nothing in each cell with probabilities
 p/2, p/2 and 1 − p. J is eventual nonempty gridlock; F is eventual free flow.
@@ -77,21 +78,60 @@ never occur.
 The tests check the ratio ≤ 1 on every shape and level. The quoted extremes come from
 `data/jam-additions.json`.
 
-## 4. Beyond 16 cells: Monte Carlo (evidence only)
+## 4. Beyond 16 cells: the fraction monotonicity fails on thin tori
 
-_Pending: filled in from the paired estimator in §2 (random x and a random addition), with
-jam detected as reaching a fixed point within T steps and rechecked at 2T._
+**Monte Carlo (evidence).** The paired estimator of §2 samples a uniform n-car configuration
+x and a uniform single-car addition y. Jam is detected as reaching a fixed point within T
+steps and rechecked at 2T; no sample changed between T and 2T. The results:
+- **Squares and wide rectangles:** no significant negative difference. The smallest z-scores
+  over all levels were 6×6: +2.65, 3×9: +0.38, and 5×5: −0.58 (1 creating against 2
+  destroying additions).
+- **Thin 2×W tori**, with 400k pairs per level: odd levels are comfortably positive, but even
+  levels approach ties and then reverse.
+
+| torus | n = 4 | n = 6 | n = 8 |
+|---|---|---|---|
+| 2×10 | +7.33 | +0.83 | +9.58 |
+| 2×12 | +2.24 | **−2.85** | −0.20 |
+| 2×14 | +0.61 | **−4.83** | **−3.65** |
+
+(z-scores of creating minus destroying additions)
+
+**Exact counterexample.** `bml.levels` computes a single level's jam count exactly. It uses
+translation invariance, jam_n = (N/n)·#{jamming configurations with a car at cell 0}, and
+classifies each configuration by Floyd cycle detection: a configuration jams iff the cycle its
+orbit reaches is a fixed point. There is no time horizon. The counter reproduces the
+exhaustive counts on 2×8, 3×4, 4×3 and 3×3 (`tests/test_iid.py`).
+
+| torus | b₆ | b₇ |
+|---|---|---|
+| 2×12 | 45685/2153536 ≈ 0.021214 | 38251/1845888 ≈ 0.020722 |
+| 2×14 | 4729/287040 ≈ 0.016475 | 147133/9472320 ≈ 0.015533 |
+
+So **b₇ < b₆ on 2×12 and 2×14**. For a uniformly random configuration, the jam probability is
+not monotone in the car count in general. The counts are in
+`data/level-counterexample.json`, and §3's theorem is sharp in this sense: it holds up to 16
+cells and on 2×9, and fails by 24 cells.
+
+**Still open at these sizes.** Whether the iid probability q(p) is nondecreasing. A dip in b
+makes one Bernstein coefficient of q′ negative, but q′ can stay positive everywhere. Deciding
+it exactly needs every level of 2×12, which is 3²⁴ ≈ 2.8·10¹¹ states, beyond the exhaustive
+method.
 
 ## 5. What this does and does not show
 
-- It answers the roadmap's monotonicity question for these finite sizes only. Nothing here
+- It answers the roadmap's monotonicity question for W·H ≤ 16 and 2×9 only. The stronger
+  fixed-count monotonicity fails on 2×12 (§4), so no proof can establish it in general. Nothing here
   implies monotonicity of q_L for large L, or the existence of a threshold.
 - Configurationwise non-monotonicity (§4 of theorems.md, and the 13→14-car square
   counterexample in the probability note) is fully compatible with monotone averages. The
   identity of §2 is the bookkeeping that reconciles the two.
 - The mixed-cycle probability m_3(p) decreases near p = 1 (probability note, §6), while q_3
   is increasing. The difference is the full-lane event R, which is in J but not in M.
-- A proof strategy suggested by §2: show that jam-creating additions dominate
-  jam-destroying ones level by level, for instance with an injection from destroying
-  additions into creating ones. No such injection is known. Since the margin reaches 0.81 on
-  2×8, it cannot be a crude one.
+- §2 suggested proving monotonicity by showing that jam-creating additions dominate
+  jam-destroying ones level by level. §4 shows that this is false on 2×12, so that route
+  cannot prove monotonicity of q in general. A proof for q would have to use the averaging
+  over n built into the iid law.
+- The parity effect on 2×W (dips at even n) suggests even-length east lanes matter:
+  two-row tori with an even number of east cars per lane may favour moving configurations.
+  This is a conjecture from the data, not a result.

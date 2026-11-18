@@ -68,3 +68,20 @@ def test_monotonicity_extends_to_2x9():
     not_free = {n: j + m for n, (j, m) in enumerate(zip(d["jam"], d["mixed"]))}
     assert sum(comb(N, n) * 2 ** n for n in range(N + 1)) == 3 ** N
     assert jam[N] == 2 ** N and certified_nondecreasing(jam, N) and certified_nondecreasing(not_free, N)
+
+
+@pytest.mark.parametrize("h,w,n", [(2, 8, 4), (2, 8, 5), (3, 4, 6), (4, 3, 7), (3, 3, 5)])
+def test_rooted_level_counter_matches_exhaustive(h, w, n):
+    from bml.levels import level_jam_count
+    r = next(r for r in TABLES if (r["h"], r["w"]) == (h, w))
+    assert level_jam_count(h, w, n) == r["table"][str(n)]["jam"]
+
+
+def test_monotonicity_fails_on_2x12():
+    """Exact counterexample beyond the exhaustive sizes (data from bml.levels, ~3 min to recompute):
+    on 2×12, b_7 < b_6. Jam probability is NOT monotone in the car count in general."""
+    d = json.loads((ROOT / "data" / "level-counterexample.json").read_text())
+    for rec in d:
+        N = rec["h"] * rec["w"]
+        b = {int(n): Fraction(j, comb(N, int(n)) * 2 ** int(n)) for n, j in rec["jam_by_level"].items()}
+        assert b[7] < b[6]
