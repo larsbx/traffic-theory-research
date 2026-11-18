@@ -40,7 +40,7 @@ def test_max_free_config_attains_bound(h, w):
     assert statically_free(s) and dynamically_free(s)
 
 
-@pytest.mark.parametrize("h,w", [(h, w) for h in range(1, 4) for w in range(1, 4) if h * w <= 9])
+@pytest.mark.parametrize("h,w", [(h, w) for h in range(1, 10) for w in range(1, 10) if h * w <= 9])
 def test_lemma_R_static_iff_dynamic_exhaustive(h, w):
     for s in decode(np.arange(3 ** (h * w), dtype=np.int64), h, w):
         assert statically_free(s) == dynamically_free(s)
