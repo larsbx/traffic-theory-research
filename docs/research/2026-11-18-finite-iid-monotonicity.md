@@ -131,7 +131,9 @@ method.
   counterexample in the probability note) is fully compatible with monotone averages. The
   identity of §2 is the bookkeeping that reconciles the two.
 - The mixed-cycle probability m_3(p) decreases near p = 1 (probability note, §6), while q_3
-  is increasing. The difference is the full-lane event R, which is in J but not in M.
+  is increasing. With M = J ∩ Rᶜ, the gap q_3 − m_3 is P_p(J ∩ R), the probability of jams that
+  start with a full lane. It is not P_p(R): R is not contained in J. A full east row plus one
+  lone east car elsewhere circulates forever.
 - §2 suggested proving monotonicity by showing that jam-creating additions dominate
   jam-destroying ones level by level. §4 shows that this is false on 2×11, so that route
   cannot prove monotonicity of q in general. A proof for q would have to use the averaging

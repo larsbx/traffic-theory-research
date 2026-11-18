@@ -22,7 +22,10 @@ from bml.model import step
 
 
 def jams(batch: np.ndarray) -> np.ndarray:
-    """Exact eventual-jam flags for a batch of configurations (Floyd tortoise and hare)."""
+    """Exact eventual-jam flags for a batch of configurations (Floyd tortoise and hare).
+
+    J is eventual *nonempty* gridlock: the empty configuration is a fixed point but is FREE,
+    matching bml.exhaustive.classify_all."""
     slow, fast = batch, step(batch)[0]
     result = np.zeros(len(batch), bool)
     alive = np.arange(len(batch))
@@ -30,7 +33,8 @@ def jams(batch: np.ndarray) -> np.ndarray:
         slow, fast = step(slow)[0], step(step(fast)[0])[0]
         met = (slow == fast).all(axis=(1, 2))
         if met.any():
-            result[alive[met]] = (step(slow[met])[0] == slow[met]).all(axis=(1, 2))
+            fixed = (step(slow[met])[0] == slow[met]).all(axis=(1, 2))
+            result[alive[met]] = fixed & (slow[met] != 0).any(axis=(1, 2))
             slow, fast, alive = slow[~met], fast[~met], alive[~met]
     return result
 

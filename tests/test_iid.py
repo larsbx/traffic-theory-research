@@ -90,3 +90,14 @@ def test_fixed_count_monotonicity_fails_on_thin_tori():
         assert b(*hw)[7] < b(*hw)[6]
     b10 = b(2, 10)
     assert b10[5] <= b10[6] <= b10[7] <= b10[8]
+
+
+@pytest.mark.parametrize("h,w", [(2, 2), (2, 3), (3, 3)])
+def test_jams_agrees_with_classifier_on_every_state(h, w):
+    """bml.levels.jams vs bml.exhaustive.classify_all on whole tori, empty state included."""
+    import numpy as np
+    from bml.exhaustive import classify_all, decode, JAM
+    from bml.levels import jams
+    c = classify_all(h, w)
+    states = decode(np.arange(3 ** (h * w), dtype=np.int64), h, w)
+    assert (jams(states) == (c.cls == JAM)).all()
