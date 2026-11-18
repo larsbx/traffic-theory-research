@@ -355,6 +355,33 @@ The evolved distribution is not the initial iid measure, so its orientation prob
 cannot be multiplied as if independent. Reusing the same time-zero bound at all later
 times, or taking an unproved union over unbounded time, does not close this gap.
 
+## 8b. Persistent cores and capture
+
+The [freezing and nucleation note](research/2026-11-18-freezing-gridlock-nucleation.md)
+separates existence, formation, capture, and limiting basin probability. It
+specializes the mixed-winding blocking mechanism in Angel–Holroyd–Martin's
+proof of Theorem 2: a persistent occupied core meeting every row and column
+forces all cars to stop within
+
+`M = n_E*(W-1) + n_N*(H-1)`
+
+full steps, and bounds every finite prefix of future car moves by M. A simple
+occupied blocker cycle containing both directions supplies such a core by
+winding around both torus coordinates. A monochromatic cycle alone need not
+capture the whole system.
+
+`BML/Capture.lean` proves core persistence and the universal actual-kernel
+capture theorem from explicit row/column obstacle witnesses. The winding-to-
+coverage construction is still prose mathematics, checked by `bml.capture`
+on finite certificates. Independent labeled replay verifies core identities,
+individual motion, rank decrease, and the bound against the production model.
+See the [coverage register](../formal/README.md) for the exact boundary.
+
+The remaining probability problem is the formation of a suitable structure.
+The theorem supplies a capture bound after a certificate appears; it does not
+locate a critical density or establish that a mixed cycle is necessary for
+all possible global jams.
+
 ## 9. Next targets
 
 1. **Continue the Lean proof layer.** G0 and the concrete recurrent witnesses now have

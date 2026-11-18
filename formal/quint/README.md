@@ -9,7 +9,7 @@ filesystems that do not distinguish upper and lower case.
 
 | Suite | Entry points | Deterministic coverage |
 |---|---|---|
-| Finite BML replay | `BML.qnt`, `check.py`, `evaluate.py` | Seven Quint tests; every state of all 14 ordered positive rectangles with at most six cells, plus three `4x2` witness rows; three executed mutation controls. |
+| Finite BML replay | `BML.qnt`, `check.py`, `evaluate.py` | Ten Quint tests; every state of all 14 ordered positive rectangles with at most six cells, plus three `4x2` witness rows; three executed mutation controls. |
 | Phase and Wang layer | `traffic.qnt`, `bml_tests.qnt`, `bml_model.qnt`, `bml_export.qnt`, `export.cjs` | 25 pure tests and four state-transition tests; 1,560 boards on six tori, with both phases for 3,120 half-step cases. |
 
 All acceptance commands use Quint's TypeScript backend. No Rust backend
@@ -29,8 +29,8 @@ python formal/quint/check.py --max-cells 6
 
 The `typecheck` command checks both suites. `npm test` runs the 25 pure and four
 state-transition tests for the phase and Wang layer. `check.py` parses and
-typechecks `BML.qnt`, runs its seven deterministic tests, and then performs the
-NumPy replay and mutation controls. To run only those seven tests:
+typechecks `BML.qnt`, runs its ten deterministic tests, and then performs the
+NumPy replay and mutation controls. To run only those ten tests:
 
 ```sh
 npm run test:replay-model --prefix formal/quint
@@ -91,6 +91,20 @@ observable by the gate.
 A third modified Quint model preserves the five encoded result fields while
 introducing illegal digits (`[1,1]`, `[4,0]`, and `[7,-1]` all encode as `4`).
 The invariant flag must reject this model before its output is accepted.
+
+### Blocking-core capture controls
+
+The three added deterministic controls check a successor-closed occupied core,
+its preservation through both phases, and capture by the explicit movement
+budget. On the 3×3 witness `5738`, the six-site core winds in both directions;
+two further car moves lead to a jam after two full rounds (the general budget
+is 16). A full east row with a circulating car on another row is a negative
+control for treating every permanent core as a global capture certificate.
+Invalid core indices, an empty core, and a broken successor chain are rejected.
+
+`captureCheck` executes the actual `transition` for at most the stated budget;
+these are bounded controls. The universal theorem from explicit core obstacles
+on all rows and columns is proved separately in `BML/Capture.lean`.
 
 ### Replay interface
 
