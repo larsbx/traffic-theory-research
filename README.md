@@ -30,6 +30,14 @@ connections to tiling and dynamical-systems theory.
   on every row and column within `n_E*(W-1) + n_N*(H-1)` full rounds; Python
   verifies mixed-cycle geometry and independently replays tagged cars. The
   results do not determine a probabilistic jamming threshold.
+- [Probabilistic gridlock bounds](docs/research/2026-11-18-probabilistic-gridlock-bounds.md)
+  (2026-11-18): proves in prose that mixed-cycle formation agrees with eventual
+  gridlock outside an exponentially rare initial full-lane event, and that
+  `p_L*L <= (2-epsilon)*log(log(L))` implies vanishing gridlock probability.
+  It also proves limits of conserved-lane and fixed-time arguments. Lean checks
+  the underlying CLASSIC count invariants; exact finite Python probabilities
+  and obstruction checks remain distinct from these asymptotic proofs. A
+  fixed positive critical density is still unproved.
 - [Formal coverage and validation](formal/README.md): the CLASSIC finite-torus
   `BML` proofs, identity-preserving transport and non-monotonicity witness, together
   with the complementary `Traffic` tiling/staircase proofs, the complete
@@ -44,6 +52,8 @@ connections to tiling and dynamical-systems theory.
 - `bml/certificates.py` — independent labeled orbits and blocker-cycle certificates.
 - `bml/capture.py` — checked blocker cycles, identity-aware capture certificates,
   and separate formation/capture observations with explicit unresolved cutoffs.
+- `bml/probability.py` — exact finite iid basin probabilities, initial full-lane
+  probabilities, and checked conserved-strip obstructions and probability bounds.
 - `bml/analysis.py` — tables for all tori with WH ≤ 16, written to `data/exhaustive.json` (~6 min).
 - `bml/nonmonotone.py` — un-jamming pairs with car identities tracked.
 - `bml/montecarlo.py` — empirical jam curves (not a proof).
@@ -52,6 +62,7 @@ connections to tiling and dynamical-systems theory.
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
 python scripts/check_capture.py --report .artifacts/capture-replay.json
+python scripts/check_probability.py --report .artifacts/probability-replay.json
 python -m bml.analysis 16    # regenerate data/exhaustive.json
 ```
 
@@ -68,8 +79,9 @@ together and full rings rotate. An unchanged occupancy pattern can hide TRAIN
 movement, so its jam predicate uses actual zero movement. The CLASSIC G0
 fixed-point result does not transfer.
 
-- **BML:** the finite-torus kernel, species transport bijections, local G0
-  equivalences, permanent cores and route-cover capture bounds, arithmetic
+- **BML:** the finite-torus kernel, species transport bijections, numerical
+  species and lane-count conservation, local G0 equivalences, permanent cores
+  and route-cover capture bounds, arithmetic
   components of G1/F, and the strong 4×2
   non-monotonicity witness. Finite replays compare Lean with NumPy on 93,387
   states and Quint with NumPy on 3,720 states plus three witness rows; see the

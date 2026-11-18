@@ -31,7 +31,7 @@ The CLASSIC transfer and rectangular generalizations are separate obligations.
 
 | Suite | Proved constructions and checks | Detailed entry point |
 | --- | --- | --- |
-| `BML` / `BML.qnt` | Finite-torus update semantics, species transport bijections, nonempty-jam boundaries, persistent cores and route-cover capture, G1/F arithmetic components, and a strong identity-aware non-monotonicity witness. Separate finite replays compare Lean and Quint with NumPy. | The register and commands below; [Lean package](lean/README.md). |
+| `BML` / `BML.qnt` | Finite-torus update semantics, species transport bijections, numerical species/lane invariants, full-lane reflection, north-free-strip invariance, nonempty-jam boundaries, persistent cores and route-cover capture, G1/F arithmetic components, and a strong identity-aware non-monotonicity witness. Separate finite replays compare Lean and Quint with NumPy. | The register and commands below; [Lean package](lean/README.md). |
 | `Traffic` / `traffic.qnt` | General-grid freezing, exact 21-Wang-tile recoding, a constructed infinite staircase for any supplied direction word, finite Fibonacci count and algebraic-length identities, and winding conditional on modular closure. Six finite grids are compared directly between Lean and Quint. | [Traffic coverage and acceptance](traffic-layer.md); [Traffic inventory](coverage.json). |
 | `BML.Train` / `Train.qnt` | Queue and ring movement, transport and trace coverage, numeric conservation, the full rectangular jam-population theorem, and eventual full speed on every N×N square with fewer than N/2 cars. Quint and cross-language checks retain finite domains. | [TRAIN coverage and acceptance](TRAIN.md); [TRAIN inventory](train-coverage.json). |
 
@@ -61,7 +61,8 @@ other suites.
 
 | Claim | Current evidence | Remaining obligation |
 |---|---|---|
-| Half-step semantics, no collisions or created cars | Universal Lean proofs of source/destination behavior and an explicit bijection on each species' cars; the other species stays in place. | Relate the executable numerical `speciesCount` sum to this bijection in a separate general theorem. |
+| Half-step semantics, no collisions or created cars | Universal Lean proofs of source/destination behavior and an explicit bijection on each species' cars; the other species stays in place. `BML/Lanes.lean` connects the bijection to numerical `speciesCount` conservation through both phases and every iterate. | Unrestricted correspondence with the Python source remains separate. |
+| CLASSIC conserved lanes and strips | `BML/Lanes.lean` derives east-row and north-column numerical count conservation from actual kernel transport. Full E-rows, full N-columns, and specified north-free columns or cyclic strips are present at an iterate iff present initially; full monochromatic lanes have no hidden movement. | Mixed-cycle exclusion and the strip-crossing obstruction are proved in prose, not derived as Lean probability theorems. |
 | G0 local equivalence | Lean proves full-step fixed ⇔ local blockage ⇔ no movers in either phase, on the actual finite-torus kernel. Frozen states persist through every iterate. | General eventual periodicity and correctness of the orbit classifier are still separate obligations; the cycle-average formulation is explained in prose. |
 | Full occupancy and the empty boundary | Lean proves full occupancy freezes; the empty state is fixed but is not a jam. Nonemptiness is invariant under evolution. | No missing local boundary lemma is claimed. |
 | Persistent occupied cores | `BlockingCore.persists` proves preservation under the actual two-phase kernel; `BlockerCycle.persists` derives a core from a supplied occupied closed walk. | The Lean closed walk may revisit sites. Extraction of a simple cycle from an arbitrary frozen state remains separate. |
@@ -74,7 +75,7 @@ other suites.
 | Strong non-monotonicity | Lean proves code 3858 reaches a jam, while adding a stationary N yields the perpetual two-cycle 3860↔4340. An explicitly tracked original car moves every step. Independent labeled Python replay also checks the identities. | No minimality or novelty claim. |
 | No initial simple loop, followed by gridlock | Reproducible identity-aware Python certificate on 3×2, compared against NumPy. | This witness is not currently a Lean theorem. |
 | Python/Lean/Quint correspondence | Actual implementations are evaluated and compared on the finite domains below, including both half-steps and separate move counts. | A finite replay is not unrestricted source refinement or proof of the classifier algorithm. |
-| Critical density and probabilistic switch | Published background and empirical context only. | No critical-density value, positive-density low-density phase, or dynamical loop-formation bound is proved. |
+| Probability reductions and sparse no-gridlock window | The [probability note](../docs/research/2026-11-18-probabilistic-gridlock-bounds.md) gives prose proofs of `M = J intersect R-complement`, a uniform exponentially small ring exception, and no eventual gridlock with high probability when `p_L*L <= (2-epsilon)*log(log(L))`. Python checks finite iid probabilities and strip certificates. | The probability laws, analytic limits, cycle extraction, and strip-crossing argument are not an end-to-end Lean theorem. No fixed-positive-density nonjamming interval, sharp transition, or critical-density value is proved. |
 
 ## Reproduce the BML suite
 
@@ -85,6 +86,7 @@ For the BML suite, use Python 3.12, Node.js 22, and the Lean toolchain pinned in
 python -m pip install -r requirements-dev.txt
 python -m pytest -q
 python scripts/check_capture.py --report .artifacts/capture-replay.json
+python scripts/check_probability.py --report .artifacts/probability-replay.json
 npm ci --ignore-scripts --prefix formal/quint
 cd formal/lean
 lake build
@@ -120,6 +122,7 @@ domains and receipts are in [TRAIN.md](TRAIN.md#finite-executable-evidence).
 | Historical table reproduction | All 23 stored records with WH≤9, regenerated and compared in full. |
 | G1 and F constructions | Every positive W,H≤12; these tests do not make the all-size claims Lean theorems. |
 | Static cores and independent capture replay | All 34,344 states on 2×2, 3×2, 2×3, 4×2, 2×4, and 3×3 tori. All 831 states with a mixed core have independent tagged capture replay (964 edges, including frozen self-edges). These are separate from the kernel correspondence domains above. |
+| Eventual mixed-cycle formation, ring exceptions, and strip obstructions | All 565,785 states on those six tori plus 4×3. Eventual mixed-cycle occurrence is propagated from separately detected cycles through the successor graph and compared with the jam classifier. Every allowed strip width is checked. The 4×4 non-monotonicity example is a trajectory control, not an exhaustive 4×4 census. |
 
 `scripts/check_capture.py` writes source-bound capture counts and separately
 identified production-classifier phase totals. `trace_capture` records the first
@@ -131,6 +134,14 @@ is treated as a permanent core or complete gridlock.
 See [the freezing/gridlock note](../docs/research/2026-11-18-freezing-gridlock-nucleation.md)
 for the direct mixed-winding argument, AHM prior art, and the remaining formation
 probability problem.
+
+`scripts/check_probability.py` evaluates finite iid probabilities with exact
+rational arithmetic and records the enumeration domain, runtime versions, and
+source hashes. Its evidence supports the finite calculations; the separate
+prose proofs in the [probability note](../docs/research/2026-11-18-probabilistic-gridlock-bounds.md)
+justify the asymptotic statements. Configurations conditioned on exact car
+counts and iid initial states have separate probability weights. None of the
+probability statements applies to TRAIN by default.
 
 Quint mutation controls execute actual altered specifications and require
 rejection for reversed phase order, asynchronous scanning, and invalid cell

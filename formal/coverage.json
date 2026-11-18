@@ -93,7 +93,7 @@
   "not_claimed": [
     "Unbounded Lean-Quint refinement or a general equivalence theorem between the BML and Traffic libraries",
     "Full Lean proofs of finite-torus G1, G2, Lemma R, and Theorem F; BML proves arithmetic components but not the complete arguments and constructions",
-    "General species-conservation theorem in Traffic; BML separately proves species transport bijections but not their equality with the executable speciesCount sum",
+    "General species-conservation theorem in Traffic; BML separately proves numerical species and lane-count conservation in BML/Lanes.lean",
     "Existence of a bi-infinite Fibonacci hull element and its frequency limits",
     "Real orthogonal projection, trigonometric identities, or density limits",
     "Derivation of modular closure from an actual finite traffic dependency cycle",
