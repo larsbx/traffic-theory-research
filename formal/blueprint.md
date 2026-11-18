@@ -126,12 +126,16 @@ Let g = gcd w h. In ℤ_w × ℤ_h, the subgroup ⟨(1, −1)⟩ is the kernel o
 (x, y) ↦ x + y mod g. Stated on representatives, for `a < w` and `b < h`:
 
 ```lean
-theorem coset_iff (w h a b : Nat) (hw : 0 < w) (hh : 0 < h) :
+theorem coset_iff (w h a b : Nat) (hw : 0 < w) (hh : 0 < h) (ha : a < w) (hb : b < h) :
     (a + b) % Nat.gcd w h = 0 ↔
       ∃ t : Int, t % w = a ∧ (b + t) % h = 0
 ```
 
 Read it as: (a, b) = (t mod w, −t mod h) for some t ∈ ℤ.
+
+The bound `ha : a < w` is necessary: `t % w` is always below w. Without it, w = h = 2, a = 2,
+b = 0 makes the left side true and the right side false. `hb` is not needed for the
+equivalence, but it keeps (a, b) a representative pair as B3 uses it.
 
 **Lemma B2.1 (Bézout).** `∃ x y : Int, x * m + y * n = Nat.gcd m n`.
 

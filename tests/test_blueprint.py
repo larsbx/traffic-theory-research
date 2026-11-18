@@ -56,7 +56,7 @@ def test_B2_coset_identity_and_constructive_witness(h, w):
         for b in range(h):
             in_coset = any(t % w == a and (b + t) % h == 0 for t in range(lcm(w, h)))
             assert in_coset == ((a + b) % g == 0)
-            if in_coset:                                       # the (→) construction
+            if in_coset:                                       # the (→) construction (needs a < w)
                 k = (a + b) // g
                 t = a - x * k * w
                 assert t % w == a and (b + t) % h == 0
@@ -77,3 +77,10 @@ def test_B3_1_rigid_half_step(h, w):
 def test_B5_staircase_attains_w_plus_h(h, w):
     s = train_stuck_with(h, w, w + h)
     assert int((s != 0).sum()) == w + h and is_stuck(s, TRAIN)
+
+
+def test_B2_representative_bound_is_necessary():
+    """Without a < w the statement fails: w = h = 2, a = 2, b = 0."""
+    w = h = 2; a, b = 2, 0
+    assert (a + b) % gcd(w, h) == 0
+    assert not any(t % w == a for t in range(-10, 10))
