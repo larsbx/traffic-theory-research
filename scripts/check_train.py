@@ -2,7 +2,8 @@
 """Build/audit TRAIN proofs and compare actual Lean, Quint, and Python evaluators.
 
 Writes a source-bound acceptance report even when a stage fails. The finite
-replay checks are kept separate from the unrestricted Lean threshold theorem.
+replay checks are kept separate from the unrestricted Lean threshold and
+sparse-square eventual-movement theorems.
 """
 from __future__ import annotations
 
@@ -10,6 +11,7 @@ import argparse
 from collections import Counter
 from datetime import datetime, timezone
 import hashlib
+from itertools import combinations, product
 import json
 import os
 from pathlib import Path
@@ -27,6 +29,7 @@ sys.path.insert(0, str(ROOT))
 
 from bml.extremal import train_stuck_with  # noqa: E402
 from train_check import encode_board, python_rows  # noqa: E402
+from train_flow_check import validate_certificate as validate_flow_certificate  # noqa: E402
 
 
 def require(condition: bool, message: str) -> None:
@@ -187,6 +190,104 @@ def compare_constructions(rows: list) -> dict:
             "max_side": spec["max_side"], "all_populations": "W+H through W*H inclusive"}
 
 
+def compare_sparse_flow(lean_rows: list, quint_rows: list, flow_report: dict,
+                        sources: dict, quint_path: Path) -> dict:
+    """Check every sparse row and independently verify the finite graph certificate."""
+    spec = COVERAGE["low_density_flow"]
+    require(flow_report.get("schema") == "train.flow.quint.v1" and
+            flow_report.get("status") == "passed" and flow_report.get("rule") == "train",
+            "Quint flow acceptance did not pass")
+    require(flow_report.get("quint_version") == COVERAGE["quint_version"] and
+            flow_report.get("backend") == COVERAGE["quint"]["backend"] and
+            flow_report.get("seed") == COVERAGE["quint"]["seed"], "wrong flow evaluator settings")
+    expected_sources = {
+        "formal/quint/Train.qnt", "formal/quint/train_evaluate.py", "formal/quint/train_check.py",
+        "formal/quint/train_flow_tests.qnt", "formal/quint/train_flow_check.py",
+        "formal/quint/package.json", "formal/quint/package-lock.json", "bml/model.py",
+    }
+    hashes = flow_report.get("sources_sha256", {})
+    require(set(hashes) == expected_sources and all(sources.get(p) == digest for p, digest in hashes.items()),
+            "flow evidence is not bound to the checked sources")
+    require(flow_report.get("columns") == COVERAGE["finite_comparison"]["columns"] and
+            flow_report.get("rows_sha256") == sha256(quint_path.read_bytes()), "stale or malformed flow table")
+    domain = flow_report.get("domain", {})
+    require(all(domain.get(k) == spec[k] for k in ("min_side", "max_side", "condition", "state_counts")) and
+            domain.get("total_states") == spec["boards"], "wrong sparse flow domain")
+    keys, per_side = [], {}
+    for n in range(spec["min_side"], spec["max_side"]+1):
+        codes = sorted(sum(sp*3**p for p, sp in zip(positions, species, strict=True))
+                       for occupied in range((n-1)//2+1)
+                       for positions in combinations(range(n*n), occupied)
+                       for species in product((1, 2), repeat=occupied))
+        require(len(codes) == len(set(codes)) == spec["state_counts"][n-spec["min_side"]],
+                "incorrect sparse domain enumeration")
+        per_side[n] = codes
+        keys.extend([n, n, code] for code in codes)
+    require(len(keys) == spec["boards"] and [r[:3] for r in lean_rows] == keys and
+            [r[:3] for r in quint_rows] == keys, "missing, duplicated, or reordered sparse flow rows")
+    expected = [r for n, codes in per_side.items() for r in python_rows(n, n, codes)]
+    for lean, quint, python in zip(lean_rows, quint_rows, expected, strict=True):
+        require(lean == quint == python, f"sparse three-language mismatch: {lean[:3]}")
+        validate_row(lean)
+    graphs = flow_report.get("graphs", [])
+    require([g.get("side") for g in graphs] == list(per_side), "missing sparse functional graph")
+    summaries = []
+    for graph in graphs:
+        n = graph["side"]
+        table = {r[2]: r for r in lean_rows if r[0] == n}
+        require(graph.get("states") == len(table) and graph.get("closed") is True and
+                graph.get("max_population") == (n-1)//2, "incorrect graph domain")
+        require(all(r[5] in table for r in table.values()), "sparse graph is not closed")
+        cycles = graph.get("cycles", [])
+        roots, cycle_members = {}, set()
+        for cycle in cycles:
+            codes, root = cycle["codes"], cycle["root"]
+            require(codes and root == min(codes) == codes[0] and root not in roots,
+                    "noncanonical or duplicate terminal cycle")
+            require(len(codes) == len(set(codes)) == cycle["period"] and
+                    not cycle_members.intersection(codes), "overlapping or repeated cycle")
+            require(all(code in table and table[code][5] == successor
+                        for code, successor in zip(codes, codes[1:]+codes[:1], strict=True)),
+                    "cycle certificate disagrees with actual successors")
+            population = sum(digit_counts(root, n*n)[sp] for sp in (1, 2))
+            totals = [table[code][6]+table[code][8] for code in codes]
+            require(cycle["population"] == population and cycle["full_step_mover_totals"] == totals and
+                    all(total == population for total in totals), "terminal cycle has blocked cars")
+            roots[root] = set(codes)
+            cycle_members.update(codes)
+        certificate = graph.get("distance_certificate", [])
+        require(all(isinstance(c, list) and len(c) == 3 and all(type(x) is int and x >= 0 for x in c)
+                    for c in certificate) and [c[0] for c in certificate] == per_side[n],
+                "incomplete graph distance certificate")
+        distances = {code: (root, distance) for code, root, distance in certificate}
+        for code, (root, distance) in distances.items():
+            require(root in roots, "distance certificate names an unknown cycle")
+            successor_root, successor_distance = distances[table[code][5]]
+            require(root == successor_root and successor_distance == max(0, distance-1) and
+                    (distance != 0 or code in roots[root]), "invalid distance to a terminal cycle")
+        maximum = max(distance for _, distance in distances.values())
+        require(graph.get("maximum_transient") == maximum and graph.get("cycle_count") == len(roots) and
+                graph.get("cycle_states") == len(cycle_members) and
+                graph.get("all_terminal_cycles_full_movement") is True, "incorrect graph summary")
+        summaries.append({key: graph[key] for key in (
+            "side", "states", "cycle_count", "cycle_states", "maximum_transient")})
+    tests, expected_tests = flow_report.get("quint_tests", {}), spec["quint_test_suite"]
+    passed = tests.get("passed", [])
+    require(tests.get("module") == expected_tests["module"] and
+            len(passed) == tests.get("count") == len(expected_tests["tests"]) and
+            set(passed) == set(expected_tests["tests"]) and tests.get("failed") == tests.get("ignored") == [],
+            "missing or failed Quint flow test")
+    controls = flow_report.get("rejected_controls", [])
+    require([c.get("name") for c in controls] == spec["required_controls"], "missing flow negative controls")
+    require(controls[0].get("reason") == "actual-Quint-test-failure" and
+            "completeCycleClockTest" in controls[0].get("failed_tests", []), "wrong clock mutation survived")
+    require(all(c.get("reason") == "certificate-rejected" for c in controls[1:5]) and
+            controls[-1].get("reason") == "incomplete-domain-rejected", "wrong negative-control failures")
+    return {"status": "passed", "boards": len(keys), "graphs": summaries,
+            "quint_tests": tests, "rejected_controls": controls,
+            "scope": "complete finite low-density square graphs through side 5; all terminal cycles have full movement"}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", type=Path, default=ROOT / ".artifacts/train-acceptance.json")
@@ -274,9 +375,53 @@ def main() -> int:
         require(targeted_count == quint_report["targeted_states"] ==
                 COVERAGE["finite_comparison"]["larger_targeted_boards"], "wrong targeted-case count")
         report["larger_targeted_boards"] = targeted_count
+        flow_lean_path = artifacts / "train-flow-lean.tsv"
+        flow_quint_path = artifacts / "train-flow-quint.tsv"
+        flow_report_path = artifacts / "train-flow-quint.json"
+        require(report_path != flow_report_path, "acceptance and flow reports must have different paths")
+        run("lean-low-density", [str(executable), "--low-density",
+            str(COVERAGE["low_density_flow"]["max_side"])], LEAN, flow_lean_path.name)
+        run("quint-low-density", [sys.executable, "formal/quint/train_flow_check.py",
+            "--rows", str(flow_quint_path), "--report", str(flow_report_path)], ROOT)
+        flow_report = json.loads(flow_report_path.read_text())
+        report["low_density_flow"] = compare_sparse_flow(parse_rows(flow_lean_path),
+            parse_rows(flow_quint_path), flow_report, before, flow_quint_path)
+        target_orbits = flow_report.get("target_orbits", [])
+        target_spec = COVERAGE["low_density_flow"]["target_orbits"]
+        require([{key: case.get(key) for key in expected}
+                 for case, expected in zip(target_orbits, target_spec, strict=True)] == target_spec,
+                "wrong flow orbit inventory")
+        flow_target_paths, orbit_summaries = [], []
+        for index, case in enumerate(target_orbits):
+            validate_flow_certificate(case)
+            w, h, rows = case["width"], case["height"], case["rows"]
+            output_name = f"train-flow-orbit-{index}-{w}x{h}.tsv"
+            run(f"flow-orbit-{index}", [str(executable), str(w), str(h), *[str(r[2]) for r in rows]],
+                LEAN, output_name)
+            path = artifacts / output_name
+            actual = parse_rows(path)
+            require(actual == rows == python_rows(w, h, [r[2] for r in rows]),
+                    f"three-language orbit mismatch: {case['label']}")
+            for row in actual:
+                validate_row(row)
+            flow_target_paths.append(path)
+            orbit_summaries.append({key: case[key] for key in (
+                "label", "width", "height", "initial_code", "population", "transient_length", "period",
+                "eventually_full_movement", "cycle_velocity_numerator", "cycle_velocity_denominator")})
+        require(sum(len(c["rows"]) for c in target_orbits) == flow_report.get("target_orbit_rows") ==
+                COVERAGE["low_density_flow"]["target_orbit_rows"], "wrong flow target coverage")
+        rectangle = next(c for c in target_orbits if c["label"] == "rectangular-5x7-counterexample")
+        require(rectangle["transient_length"] == 1 and rectangle["period"] == 15 and
+                rectangle["repeated_code"] == 1459 and rectangle["cycle_total_moves"] == 29 and
+                rectangle["cycle_velocity_numerator"] == 29 and rectangle["cycle_velocity_denominator"] == 30 and
+                rectangle["satisfies_2m_lt_min_rectangle_bound"] is True and
+                rectangle["eventually_full_movement"] is False, "lost the rectangular counterexample")
+        report["low_density_flow"]["target_orbit_rows"] = flow_report["target_orbit_rows"]
+        report["low_density_flow"]["target_orbits"] = orbit_summaries
         require(source_manifest() == before, "project sources changed during acceptance")
         report["artifact_sha256"] = {p.name: sha256(p.read_bytes()) for p in
-            [lean_path, quint_path, quint_report_path, constructions_path]}
+            [lean_path, quint_path, quint_report_path, constructions_path,
+             flow_lean_path, flow_quint_path, flow_report_path, *flow_target_paths]}
         report["status"] = "passed"
     except Exception as exc:
         report["status"] = "failed"

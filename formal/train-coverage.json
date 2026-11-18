@@ -3,7 +3,11 @@
   "rule": "train",
   "lean_version": "4.34.1",
   "quint_version": "0.33.1",
-  "allowed_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "allowed_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
   "required_theorems": [
     "BML.Train.canMove_iff_queue_or_fullRing",
     "BML.Train.canMove_iff_propagation",
@@ -38,15 +42,78 @@
     "BML.Train.no_jam_singleton",
     "BML.Train.jam_population_iff_positive",
     "BML.Train.noMoves_population_iff",
-    "BML.Train.stuckCheck_eq_true_iff"
+    "BML.Train.stuckCheck_eq_true_iff",
+    "BML.Train.moveCount_le_speciesCount",
+    "BML.Train.moveCount_eq_speciesCount_iff",
+    "BML.Train.totalMoveCount_le_population",
+    "BML.Train.fullSpeed_iff_all_phases_move",
+    "BML.Train.fullSpeed_iff_all_cars_move",
+    "BML.Train.fullSpeed_at_time_iff_tags",
+    "BML.Train.eventuallyFullSpeed_iff_moves_equal_initial_population",
+    "BML.Train.fullTransport_preserves_cell",
+    "BML.Train.fullTransport_injective",
+    "BML.Train.fullTransport_surjective",
+    "BML.Train.trace_cell",
+    "BML.Train.trace_injective",
+    "BML.Train.trace_coverage",
+    "BML.Train.corrected_trace_step_cases",
+    "BML.Train.corrected_trace_release",
+    "BML.Train.corrected_trace_stable_iff_move",
+    "BML.Train.Diagonals.sparse_eventual_stable",
+    "BML.Train.sparse_square_eventually_fullSpeed",
+    "BML.Train.sparse_square_moves_equal_population"
   ],
   "finite_comparison": {
     "max_cells": 6,
     "rectangles": 14,
     "boards": 3720,
-    "columns": ["width", "height", "input_code", "east_code", "north_code", "full_code", "east_moves", "north_moves", "cycle_north_moves", "stuck"],
+    "columns": [
+      "width",
+      "height",
+      "input_code",
+      "east_code",
+      "north_code",
+      "full_code",
+      "east_moves",
+      "north_moves",
+      "cycle_north_moves",
+      "stuck"
+    ],
     "larger_targeted_boards": 74,
-    "larger_targeted_dimensions": [[7, 1], [1, 7], [8, 2], [2, 8], [3, 3], [4, 3], [3, 4], [4, 4]]
+    "larger_targeted_dimensions": [
+      [
+        7,
+        1
+      ],
+      [
+        1,
+        7
+      ],
+      [
+        8,
+        2
+      ],
+      [
+        2,
+        8
+      ],
+      [
+        3,
+        3
+      ],
+      [
+        4,
+        3
+      ],
+      [
+        3,
+        4
+      ],
+      [
+        4,
+        4
+      ]
+    ]
   },
   "construction": {
     "min_side": 2,
@@ -60,30 +127,142 @@
     "seed": 20261118,
     "test_suites": {
       "train_tests.qnt": [
-        "emptyStuckTest", "eastQueueMovesTogetherTest", "northQueueMovesTogetherTest",
-        "eastOppositeBlockerTest", "northOppositeBlockerTest", "eastWrapQueueTest",
-        "northWrapQueueTest", "eastFullRingMovesTest", "northFullRingMovesTest",
-        "oneCellEastRotatesTest", "oneCellNorthRotatesTest", "thinTorusOwnDirectionRingsTest",
-        "quietPhaseIsNotStuckTest", "fixedOccupancyIsNotStuckTest", "phaseOrderMattersTest",
-        "mixedStuckBoardTest", "longQueuePropagationTest", "separatePhaseMovementCountsTest",
+        "emptyStuckTest",
+        "eastQueueMovesTogetherTest",
+        "northQueueMovesTogetherTest",
+        "eastOppositeBlockerTest",
+        "northOppositeBlockerTest",
+        "eastWrapQueueTest",
+        "northWrapQueueTest",
+        "eastFullRingMovesTest",
+        "northFullRingMovesTest",
+        "oneCellEastRotatesTest",
+        "oneCellNorthRotatesTest",
+        "thinTorusOwnDirectionRingsTest",
+        "quietPhaseIsNotStuckTest",
+        "fixedOccupancyIsNotStuckTest",
+        "phaseOrderMattersTest",
+        "mixedStuckBoardTest",
+        "longQueuePropagationTest",
+        "separatePhaseMovementCountsTest",
         "allRectanglesThroughSixCellsTest"
       ],
       "train_model.qnt": [
-        "ringMovementAdvancesClockTest", "emptyStepTogglesPhaseTest",
-        "stuckStepTogglesPhaseTest", "bothPhasesConserveSpeciesTest",
+        "ringMovementAdvancesClockTest",
+        "emptyStepTogglesPhaseTest",
+        "stuckStepTogglesPhaseTest",
+        "bothPhasesConserveSpeciesTest",
         "quietActivePhaseTogglesTest"
       ]
     },
     "required_mutations": [
-      "classic-replacement", "omitted-full-ring", "truncated-queue-propagation",
-      "north-before-east", "illegal-digits-with-identical-encoding"
+      "classic-replacement",
+      "omitted-full-ring",
+      "truncated-queue-propagation",
+      "north-before-east",
+      "illegal-digits-with-identical-encoding"
     ]
   },
   "not_claimed": [
     "Unbounded refinement of the Python/Quint source programs to Lean",
     "Apalache model-checking or a Quint theorem over arbitrary grid dimensions",
-    "Austin-Benjamini eventual speed-one theorem or probabilistic transition theorems",
+    "Probabilistic transition theorems, an effective settling-time bound, or a rectangular extension of the sparse-square theorem",
     "A TRAIN Wang-tile characterization without the homogeneous-ring exclusions",
     "Quasicrystal diffraction or analytic trigonometric limit theorems"
-  ]
+  ],
+  "low_density_flow": {
+    "min_side": 1,
+    "max_side": 5,
+    "condition": "2*population < side",
+    "state_counts": [
+      1,
+      1,
+      19,
+      33,
+      1251
+    ],
+    "boards": 1305,
+    "target_orbits": [
+      {
+        "label": "square6-delayed-pair",
+        "width": 6,
+        "height": 6,
+        "initial_code": 7,
+        "eventually_full_movement": true
+      },
+      {
+        "label": "square7-blocked-train",
+        "width": 7,
+        "height": 7,
+        "initial_code": 22,
+        "eventually_full_movement": true
+      },
+      {
+        "label": "square8-wrapped-train",
+        "width": 8,
+        "height": 8,
+        "initial_code": 2194,
+        "eventually_full_movement": true
+      },
+      {
+        "label": "north-phase-after-east",
+        "width": 5,
+        "height": 5,
+        "initial_code": 20920706407,
+        "eventually_full_movement": true
+      },
+      {
+        "label": "equality-boundary-gap",
+        "width": 4,
+        "height": 4,
+        "initial_code": 3720087,
+        "eventually_full_movement": true
+      },
+      {
+        "label": "rectangular-5x7-counterexample",
+        "width": 5,
+        "height": 7,
+        "initial_code": 7,
+        "eventually_full_movement": false
+      },
+      {
+        "label": "fixed-occupancy-jam",
+        "width": 2,
+        "height": 2,
+        "initial_code": 52,
+        "eventually_full_movement": false
+      },
+      {
+        "label": "fixed-occupancy-rotating-ring",
+        "width": 1,
+        "height": 1,
+        "initial_code": 1,
+        "eventually_full_movement": true
+      }
+    ],
+    "quint_test_suite": {
+      "module": "train_flow_tests.qnt",
+      "tests": [
+        "completeCycleClockTest",
+        "wrongHalfStepClockRejectedTest",
+        "wholeTrainQueueClockTest",
+        "northReadsEastResultTest",
+        "blockedNorthDiagonalFallsTest",
+        "emptyGapPairCanDisappearTest",
+        "fixedOccupancyIsNotFullMovementTest",
+        "rotatingRingIsFullMovementTest",
+        "emptyOrbitIsVacuouslyFullMovementTest",
+        "rectangularLowDensityCounterexampleTest"
+      ]
+    },
+    "required_controls": [
+      "wrong-half-step-diagonal-clock",
+      "independent-north-count-used-for-cycle",
+      "fixed-occupancy-implies-free",
+      "rectangular-square-theorem-overreach",
+      "truncated-orbit-closure",
+      "incomplete-square-domain"
+    ],
+    "target_orbit_rows": 53
+  }
 }
