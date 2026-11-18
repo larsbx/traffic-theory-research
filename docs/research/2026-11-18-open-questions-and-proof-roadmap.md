@@ -404,7 +404,8 @@ Other distinct questions must stay separate:
   including noncommutation of limits in the high-density regime; it does not
   prove eternal avoidance of gridlock.
 - Is the iid averaged jam probability monotone in density in the relevant
-  setting? Configurationwise non-monotonicity does not settle that question.
+  setting? (Finite sizes W·H ≤ 16: yes, exactly; see the
+  [finite iid monotonicity note](2026-11-18-finite-iid-monotonicity.md).) Configurationwise non-monotonicity does not settle that question.
   The note separately gives finite-size non-monotonicity for the mixed-cycle
   event's iid probability; that event differs from the jam event by the ring
   exception.
