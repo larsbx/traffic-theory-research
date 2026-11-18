@@ -46,11 +46,24 @@ connections to tiling and dynamical-systems theory.
 - [Probabilistic gridlock bounds](docs/research/2026-11-18-probabilistic-gridlock-bounds.md)
   (2026-11-18): proves in prose that mixed-cycle formation agrees with eventual
   gridlock outside an exponentially rare initial full-lane event, and that
-  `p_L*L <= (2-epsilon)*log(log(L))` implies vanishing gridlock probability.
+  `p_L*L <= 2*log(log(L))-4*log(log(log(L)))-2` eventually implies vanishing
+  gridlock probability; the earlier leading-order window follows as a corollary.
   It also proves limits of conserved-lane and fixed-time arguments. Lean checks
   the underlying CLASSIC count invariants; exact finite Python probabilities
   and obstruction checks remain distinct from these asymptotic proofs. A
   fixed positive critical density is still unproved.
+- [Limits of deterministic lane-profile certificates](docs/research/2026-11-18-lane-profile-obstruction.md)
+  (2026-11-18): Lean constructs a ringless jam with any positive E-row and
+  N-column profiles whose two maxima sum to at most the side length. Exact
+  initial-law bounds show that such profiles occur with high probability at
+  every fixed `0<p<1`. Consequently every sound nonjamming certificate based
+  only on lane counts has vanishing acceptance probability. This does not
+  estimate the jam basin within a profile class.
+- [Disjoint-strip capacity bounds](docs/research/2026-11-18-disjoint-strip-capacity.md)
+  (2026-11-18): several disjoint north-empty strips can exceed the conserved
+  east-row capacity even when every single-strip test fails. An exact
+  convolution gives stronger finite iid gridlock bounds, with complete small
+  torus checks. The geometric and probability arguments have prose proofs.
 - [Fixed-density mixed-cycle formation](docs/research/2026-11-18-fixed-density-formation.md)
   (2026-11-18): initial-law exponential bounds on early capture formation and
   an exact one-round winding-cycle probability. A transfer calculation and a
@@ -86,6 +99,10 @@ connections to tiling and dynamical-systems theory.
   with actual-kernel controls for proposed fixed-density proof routes.
 - `bml/fixation.py` — independent labeled fixation counts and exact initial-iid
   Palm probabilities, including the car-weighted jam probability and ring error.
+- `bml/profiles.py` — explicit jams with prescribed lane counts and exact upper
+  bounds on acceptance of sound nonjamming certificates that use only those counts.
+- `bml/capacity.py` — checked disjoint-strip capacity obstructions and exact
+  marginal-law bounds on eventual gridlock.
 - `bml/analysis.py` — tables for all tori with WH ≤ 16, written to `data/exhaustive.json` (~6 min).
 - `bml/nonmonotone.py` — un-jamming pairs with car identities tracked.
 - `bml/montecarlo.py` — empirical jam curves (not a proof).
@@ -96,6 +113,8 @@ python -m pytest -q
 python scripts/check_capture.py --report .artifacts/capture-replay.json
 python scripts/check_probability.py --report .artifacts/probability-replay.json
 python scripts/check_fixation.py --report .artifacts/fixation-replay.json
+python scripts/check_profiles.py --report .artifacts/profiles-replay.json
+python scripts/check_capacity.py --report .artifacts/capacity-replay.json
 python -m bml.analysis 16    # regenerate data/exhaustive.json
 ```
 
@@ -115,7 +134,8 @@ fixed-point result does not transfer.
 - **BML:** the finite-torus kernel, species transport bijections, numerical
   species and lane-count conservation, local G0 equivalences, permanent cores
   and route-cover capture bounds, the exact tagged-fixation/full-lane/jam
-  reduction for the actual kernel, arithmetic
+  reduction for the actual kernel, exact jammed representatives of positive
+  bounded lane profiles and their deterministic certificate limitation, arithmetic
   components of G1/F, and the strong 4×2
   non-monotonicity witness. Finite replays compare Lean with NumPy on 93,387
   states and Quint with NumPy on 3,720 states plus three witness rows; see the
