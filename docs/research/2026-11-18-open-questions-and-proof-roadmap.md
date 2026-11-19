@@ -11,6 +11,19 @@ PR status in this note is a dated snapshot, not a continuously updated assertion
 The [formal register](../../formal/README.md), [TRAIN register](../../formal/TRAIN.md),
 and [Traffic register](../../formal/traffic-layer.md) give the detailed scopes.
 
+**Subsequent deterministic follow-up — 19 November 2026:** the current
+[blueprint](../../formal/blueprint.md) records B0–B7 as kernel-checked,
+including the CLASSIC rigidity, maximal free-flow capacity, and rectangular
+sparse-speed results formerly pending below. The elapsed-time conversion in
+§3 is now formalized for CLASSIC: when `2m < g = gcd(W,H)`, permanent full
+movement holds from round `lcm(W,H) * m(g−2)` onward, and the state is
+`StaticFree` at that deadline. See `low_density_speed_one_deadline` and
+`low_density_staticFree_deadline` in
+[BML/SparseSpeed.lean](../../formal/lean/BML/SparseSpeed.lean).
+The original status table and priorities below retain their dated snapshot.
+Equality, rectangular TRAIN speed one, and the fixed-positive-density
+probability problem remain separate obligations.
+
 **Subsequent probability follow-up:** the
 [tagged-fixation note](2026-11-18-tagged-fixation-and-gridlock.md) adds a complete
 Lean proof that some original car eventually stops iff global jam occurs or an
@@ -263,12 +276,16 @@ bad index is at most \(\ell B-1\). For \(B=0\), take \(T=0\). Hence
 \]
 
 This argument works for either rule when full movement has its actual
-movement meaning. Combining it with the proposed strict sparse gcd bound
-would give \(T\le\ell m(g-2)\). The conversion is a prose lemma here; the
-combined quantitative theorem has not been integrated into Lean. For a
-nonempty strict sparse state \(g\ge3\), so the factor \(g-2\) is nonnegative.
-Do not attach the same rank bound to the equality extension without checking
-its quantitative premises separately.
+movement meaning. At this note's original snapshot, combining it with the
+proposed strict sparse gcd bound would give \(T\le\ell m(g-2)\), but the
+combined theorem was not yet in Lean. The subsequent CLASSIC formalization
+now proves this deadline from B7's block budget and B3's finite-window
+criterion: `K+1` disjoint windows of `ell` rounds with at most `K` blocked
+rounds contain a fully moving window starting by `ell * K`.
+A nonempty strict sparse state has \(g\ge3\); the empty state's deadline is
+zero. The general two-rule conversion above remains a prose statement outside
+the proved CLASSIC scope. Do not attach the same rank bound to the equality
+extension without checking its quantitative premises separately.
 
 Finite-state determinism already gives a computable bound: on a fixed
 \(W\times H\) board there are at most \(3^{WH}\) occupancy states. In a

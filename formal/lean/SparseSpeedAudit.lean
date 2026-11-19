@@ -34,3 +34,7 @@ audit_sparse_speed_export
 -- keeps blocking outside the sparse range.
 #guard !(decide (2 * BML.carCount 4 4 (BML.decode 4 4 19) < Nat.gcd 4 4))
 #guard BML.blockedRoundCount (by decide) (by decide) (BML.decode 3 3 13) 4 == 4
+
+-- Deadlines use elapsed time, including the zero deadline on empty boards.
+#guard BML.sparseSpeedDeadline 1 1 (BML.decode 1 1 0) == 0
+#guard BML.sparseSpeedDeadline 5 10 (BML.decode 5 10 487) == 60
