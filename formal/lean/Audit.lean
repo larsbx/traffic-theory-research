@@ -1,5 +1,8 @@
-import Lean
+-- Batch audits need the command and axiom APIs, not the server/shell umbrella.
+import Lean.Elab.Command
+import Lean.Util.CollectAxioms
 import BML
+import G1Export
 
 open Lean Elab Command
 
@@ -11,7 +14,67 @@ elab "audit_bml" : command => do
   let mut used : Array Name := #[]
   let required : Array Name := #[
     ``BML.step_eq_iff_frozen, ``BML.step_eq_iff_noMoves,
+    ``BML.phaseIndex_east, ``BML.phaseIndex_north, ``BML.correctedClass_roundTransport,
+    ``BML.corrected_release, ``BML.corrected_survival,
+    ``BML.corrected_emptyPair_backwards, ``BML.corrected_emptyPair_before,
+    ``BML.corrected_emptyPair_of_sparse, ``BML.low_density_tag_block_bound,
+    ``BML.low_density_block_bound, ``BML.low_density_speed_one,
     ``BML.transport_bijection, ``BML.iterate_nonempty_iff,
+    ``BML.carCount_eq_speciesCount, ``BML.halfStep_speciesCount,
+    ``BML.iterate_torusStep_speciesCount, ``BML.iterate_torusStep_carCount,
+    ``BML.finite_closed_cycle,
+    ``BML.blocker_closed_winding, ``BML.jam_has_simple_blocker_cycle,
+    ``BML.jam_carCount_lower_bound, ``BML.few_cars_never_jam,
+    ``BML.exists_minimum_jam, ``BML.exists_jam_at_most_iff,
+    ``BML.carCount_of_rank, ``BML.gridlockWith_is_jam,
+    ``BML.gridlockWith_carCount, ``BML.exists_jam_with_count,
+    ``BML.jam_carCount_iff, ``BML.exists_eventual_jam_with_count_iff,
+    ``BML.cyclicNext_reaches_lt, ``BML.cyclicNext_reaches,
+    ``BML.EastMixedRow.halfStep, ``BML.NorthMixedColumn.halfStep,
+    ``BML.EastMixedRow.has_mover, ``BML.NorthMixedColumn.has_mover,
+    ``BML.EastMixedRow.never_jam, ``BML.NorthMixedColumn.never_jam,
+    ``BML.nonGridlockWith_carCount, ``BML.nonGridlockWith_never_jam,
+    ``BML.exists_never_jam_with_count, ``BML.carCount_eq_area_iff,
+    ``BML.full_carCount_is_jam, ``BML.forced_eventual_jam_iff,
+    ``BML.nat_gcd_bezout, ``BML.coset_dvd_iff, ``BML.coset_int_iff, ``BML.coset_iff,
+    ``BML.cyclicShift_add, ``BML.diagonalShift_add, ``BML.iterate_diagonalStep,
+    ``BML.diagonalShift_exists_iff, ``BML.diagonal_kernel_iff,
+    ``BML.phaseClass_east, ``BML.phaseClass_surjective,
+    ``BML.east_diagonalShift_exists_iff,
+    ``BML.diagonalShift_emod_lcm, ``BML.iterate_diagonalStep_eq_self_iff,
+    ``BML.iterate_diagonalStep_lcm, ``BML.diagonalStep_reaches_lt_iff,
+    ``BML.diagonalStep_reaches_iff, ``BML.diagonalStep_reaches_pos_iff,
+    ``BML.east_diagonalStep_reaches_lt_iff, ``BML.east_diagonalStep_reaches_pos_iff,
+    ``BML.halfStep_rigid, ``BML.allMove_step_east_iff, ``BML.allMove_step_north_iff,
+    ``BML.allMove_iterate_east_iff, ``BML.allMove_iterate_north_iff,
+    ``BML.allMove_iterate_east_at, ``BML.allMove_iterate_north_at,
+    ``BML.diagonal_encounter_iff, ``BML.east_diagonal_encounter_iff,
+    ``BML.same_phase_encounter_pos_iff, ``BML.next_phase_encounter_lt_iff,
+    ``BML.staticFree_allMove, ``BML.staticFree_step, ``BML.staticFree_iterate,
+    ``BML.staticFree_of_allMove_before_lcm, ``BML.lemmaR,
+    ``BML.lemmaR_finite_lt, ``BML.lemmaR_finite, ``BML.lemmaR_window,
+    ``BML.not_staticFree_iff_blocked_before_lcm,
+    ``BML.freeFlow_returns_lcm, ``BML.freeFlow_periodic,
+    ``BML.eventually_allMove_iff_reaches_staticFree,
+    ``BML.sumFin_twice_le_of_adjacent, ``BML.sumFin_le_half_of_adjacent,
+    ``BML.phaseFiber_length, ``BML.phaseSpeciesCount_sum,
+    ``BML.carCount_eq_sum_phaseSpeciesCount, ``BML.carCount_phaseConfig,
+    ``BML.phaseSpeciesCount_add_le, ``BML.phaseEastCount_add_next_le,
+    ``BML.phaseNorthCount_add_next_le, ``BML.phaseCounts_cross_same,
+    ``BML.phaseCounts_cross_next,
+    ``BML.cyclic_weighted_packing_triple, ``BML.cyclic_weighted_packing_bound,
+    ``BML.staticFree_coprime_pure, ``BML.staticFree_coprime_carCount_le,
+    ``BML.freePattern_count, ``BML.maxFreeConfig_staticFree,
+    ``BML.maxFreeConfig_carCount, ``BML.staticFree_of_subconfig,
+    ``BML.thinConfig_carCount, ``BML.thinConfig_staticFree,
+    ``BML.staticFree_carCount_le_freeMax, ``BML.freeMax_le_area,
+    ``BML.freeWith_staticFree, ``BML.freeWith_carCount, ``BML.freeWith_carCount_of_le,
+    ``BML.exists_staticFree_with_count_iff,
+    ``BML.exists_perpetual_allMove_with_count_iff,
+    ``BML.eventual_allMove_carCount_le_freeMax,
+    ``BML.exists_eventual_allMove_with_count_iff,
+    ``BML.above_freeMax_never_staticFree,
+    ``BML.freeMax_square, ``BML.freeMax_square_attains_two_thirds_iff,
     ``BML.torus_fixed_iff_blocked, ``BML.winding_length_lower_bound,
     ``BML.freeClasses_attains_two_thirds_iff,
     ``BML.Witness.after_never_jams, ``BML.Witness.original_traced_car_moves_forever,
@@ -87,9 +150,15 @@ elab "audit_bml" : command => do
     | some info =>
       unless info.isTheorem do
         throwError "BML audit required declaration is not a theorem: {name}"
+  let requiredExecutables : Array Name := #[
+    ``BML.G1Export.boardDigits, ``BML.G1Export.emitConstruction,
+    ``BML.G1Export.exportThrough, ``main]
+  for name in requiredExecutables do
+    if (env.find? name).isNone then
+      throwError "BML audit missing G1 exporter declaration {name}"
   let allowed : Array Name := #[``propext, ``Quot.sound, ``Classical.choice]
   for (name, info) in env.constants.toList do
-    if (`BML).isPrefixOf name then
+    if (`BML).isPrefixOf name || name == ``main then
       declarations := declarations + 1
       if info.isTheorem then theorems := theorems + 1
       let axioms ← collectAxioms name

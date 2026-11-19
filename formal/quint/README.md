@@ -304,8 +304,35 @@ verification or unbounded source-refinement theorem is claimed.
 These Quint suites do not prove eventual classification for all configurations,
 G1/G2/Theorem F, a critical density, high-density random gridlock, infinite
 Fibonacci frequencies, trigonometric identities, or diffraction theorems.
-The separate Lean TRAIN library proves the complete rectangular zero-movement
-existence threshold and eventual full speed on sparse squares; the Quint runs
-remain bounded evidence. The empty state
-has no movers but is not a nonempty jam. In TRAIN, fixed occupancy can coexist
-with moving cars, and the model's stuck predicate uses mover counts.
+The separate Lean libraries prove complete CLASSIC G1/G2, the forced-gridlock
+boundary among feasible CLASSIC populations n≤WH, the B2 coordinate coset
+identity, the actual-phase CLASSIC free-flow characterization R, and the rectangular TRAIN
+zero-movement existence threshold and sparse-square speed-one theorem; the
+Quint runs remain bounded evidence.
+CLASSIC G2 constructs a board of each sub-full count that never reaches a
+nonempty jam, without claiming eventual free flow. Full CLASSIC occupancy
+forces a jam at time zero. The empty fixed state has no movers but is not a
+nonempty jam, including on the 1×1 torus. In TRAIN, fixed occupancy can coexist
+with moving cars, and the model's stuck predicate uses mover counts; the
+CLASSIC forced-gridlock boundary does not transfer to that rule.
+
+The separate `coset_export`/`scripts/check_cosets.py` gate compares Lean's
+actual cyclic-coordinate action and phase classes with independent Python
+modular arithmetic. It reconstructs coordinate cycles and checks same-class
+and east-translated reachability on a finite domain; it does not invoke Quint
+or evaluate traffic configurations. The universal B2 proof supplies signed
+and bounded forward witnesses. The separate Lean proof of R connects these
+to actual traffic orbits: static conditions are equivalent to full movement
+from time zero, and checking the first lcm(W,H) rounds suffices. Such
+configurations return after the lcm, possibly with a smaller least period.
+Eventual entry into this static-free set is a separate question; no general
+convergence statement is implied. The packing and maximizing constructions
+of F remain unformalized.
+
+The separate `freeflow_export`/`scripts/check_freeflow.py` gate evaluates
+the actual Lean static and movement predicates and full traffic phase traces.
+Its default domain is all 93,387 initial states on the 23 ordered positive
+rectangles with WH≤9, covering 622,362 full transitions. NumPy and an
+independent scalar orbit oracle check the phases and movement from time zero;
+source-bound receipts record successful runs and rejection controls. This
+gate does not invoke Quint or extend the Quint replay domain above.

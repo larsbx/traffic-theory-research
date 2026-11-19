@@ -32,7 +32,7 @@ connections to tiling and dynamical-systems theory.
   projection, torus winding, published geometric traffic analysis, and diffraction.
 - [When does BML gridlock switch?](docs/theorems.md) (2026-11-18): an open
   probabilistic threshold question, plus extremal existence results on finite tori:
-  - gridlock exists ⟺ n ≥ min(W,H);
+  - gridlock exists ⟺ min(W,H) ≤ n ≤ WH;
   - gridlock is never forced below full density;
   - for g = gcd(W,H) ≥ 2, maximal free-flow count is (WH/g)·⌊2g/3⌋;
     for g = 1, it is max(H⌊W/2⌋, W⌊H/2⌋);
@@ -143,13 +143,30 @@ movement, so its jam predicate uses actual zero movement. The CLASSIC G0
 fixed-point result does not transfer.
 
 - **BML:** the finite-torus kernel, species transport bijections, numerical
-  species and lane-count conservation, local G0 equivalences, permanent cores
-  and route-cover capture bounds, the exact tagged-fixation/full-lane/jam
-  reduction for the actual kernel, exact jammed representatives of positive
-  bounded lane profiles and their deterministic certificate limitation, arithmetic
-  components of G1/F, guarded-queue first movement and exclusion of early
-  gridlock, and the strong 4×2
-  non-monotonicity witness. Finite replays compare Lean with NumPy on 93,387
+  species and lane-count conservation, full-lane reflection, and conserved
+  north-free strips. It proves local G0 equivalences and the complete G1 theorem:
+  an n-car jam exists exactly when `min(W,H) ≤ n ≤ W*H`. Lean extracts a simple
+  occupied blocker cycle, proves its winding and car-count bounds, and constructs
+  a jam at every admissible exact count. Conservation also proves that fewer
+  cars can never evolve into a jam. The complete G2 construction realizes every
+  `0 ≤ n < W*H` with a state that never jams: zero cars use the empty state, while
+  a positive population has a single-species mixed lane retaining both a car
+  and a hole at every iterate. Among feasible populations, all configurations
+  eventually jam iff `n = W*H`. The coset theorem identifies the actual cyclic
+  `(1,-1)` coordinate orbits with `x+y mod gcd(W,H)`, including signed and bounded
+  forward witnesses. Lemma R connects this geometry to the actual traffic
+  phases: the static adjacency and phase-class conditions hold exactly when
+  every car moves in every round starting at time zero. Checking the first
+  `lcm(W,H)` rounds suffices, and each such configuration returns after that
+  many rounds, possibly with a smaller least period. B7 proves eventual full
+  movement for every board with `2m < gcd(W,H)` and at most
+  `m * (gcd(W,H) - 2)` blocked rounds in any finite prefix. The suite also
+  proves permanent cores and route-cover capture bounds. Some original car eventually
+  stops exactly when the state eventually jams or initially has a full E-row
+  or N-column. Arithmetic components of F and the strong 4×2 non-monotonicity
+  witness are also proved. Exact jammed representatives of bounded positive
+  lane profiles and guarded-queue first-movement bounds are proved for the
+  actual kernel as well. Finite replays compare Lean with NumPy on 93,387
   states and Quint with NumPy on 3,720 states plus three witness rows; see the
   [BML evidence register](formal/README.md#finite-evidence-scopes).
 - **Traffic:** the exact 21-Wang-tile correspondence, an infinite blocked
@@ -168,7 +185,8 @@ fixed-point result does not transfer.
   It also proves that every N×N state with `2 * population < N` eventually
   reaches full speed: all cars move in every later full cycle. The empty state
   is included. This square theorem supplies no effective stabilization-time
-  bound and does not establish the proposed CLASSIC transfer.
+  bound. The rectangular CLASSIC proof uses the CLASSIC transport kernel.
+  See [blueprint B7](formal/blueprint.md#b7-classic-low-density-speed-one).
 
 These are separately scoped proof and validation suites in one pinned Lean
 package. The replay domains are finite executable checks, and no general
@@ -184,11 +202,22 @@ analysis, direct mathematical derivations, and proposed research obligations.
 Direct derivations carry no claim of novelty.
 
 The repository contains executable CLASSIC and TRAIN models, historical exhaustive tables
-(`data/exhaustive.json`), machine-checked local kernel theorems, and an automated
-test suite. The full G1/G2/R/F extremal arguments are still prose proofs with
-bounded computational support; the Lean arithmetic components are not presented
-as formal proofs of those full results. The TRAIN all-count threshold T has a
-complete Lean proof, as does the TRAIN square speed-one result below N/2 cars.
+(`data/exhaustive.json`), machine-checked kernel and exact gridlock-population
+theorems, and an automated test suite. The complete CLASSIC G1, G2, and TRAIN T
+existence thresholds are proved in Lean for every positive rectangle, including
+their constructions at every admissible exact count. CLASSIC G2 establishes
+perpetual avoidance of total gridlock, which does not require eventual free
+flow. The TRAIN square speed-one result below N/2 cars also has a complete
+Lean proof. The coset identity B2 is formalized on the actual torus coordinates;
+the general free-flow equivalence R is proved for the actual CLASSIC kernel,
+including a finite moving-window criterion and return after `lcm(W,H)` rounds.
+It characterizes perpetual free flow from the current state; it does not assert
+that every state eventually reaches free flow. Theorem F is also proved in
+Lean: the exact free-flow capacity, executable maximizing constructions,
+and constructions at every smaller population hold on every positive rectangle.
+The same capacity bounds eventual free flow by car-count conservation. Independent
+max-plus DP checks and actual Lean construction replays give finite implementation
+evidence alongside the universal proofs.
 The formal register states the exact
 replay domains and distinguishes regenerated data from inherited tables.
 

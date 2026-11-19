@@ -62,7 +62,16 @@ def main() -> None:
     # still checks it without claiming the additional rectangle is exhaustive
     # coverage under the chosen max-cells setting.
     extra = [] if args.max_cells >= 8 else [compare_shape(binary, 4, 2)]
-    source_paths = [ROOT / "formal/lean/Main.lean", ROOT / "bml/model.py"]
+    # Main imports umbrella BML, whose local closure includes these two shared
+    # helpers. It does not depend on the rest of the TRAIN dynamics modules.
+    source_paths = [
+        ROOT / "scripts/check_lean_replay.py", ROOT / "bml/model.py",
+        ROOT / "bml/exhaustive.py", ROOT / "requirements-dev.txt",
+        ROOT / "formal/lean/Main.lean", ROOT / "formal/lean/BML.lean",
+        ROOT / "formal/lean/Train/Counting.lean", ROOT / "formal/lean/Train/Finite.lean",
+        ROOT / "formal/lean/lakefile.toml", ROOT / "formal/lean/lake-manifest.json",
+        ROOT / "formal/lean/lean-toolchain",
+    ]
     source_paths += sorted((ROOT / "formal/lean/BML").glob("*.lean"))
     report = {
         "schema": "bml.lean-replay.v1",
