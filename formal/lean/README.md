@@ -215,7 +215,7 @@ These theorems cover every positive rectangle, including singleton axes and
 the empty board. They characterize movement from time zero.
 `eventually_allMove_iff_reaches_staticFree` separately identifies eventual
 permanent full movement with eventual entry into the static-free set. B7 gives
-a sufficient population condition for such entry.
+a sufficient population condition and an explicit deadline for such entry.
 
 `freeflow_export --max-cells 9` enumerates every initial configuration on
 every ordered positive rectangle with WH≤9. Each row contains actual Lean
@@ -499,9 +499,29 @@ pair at the end of every prefix.
 `low_density_block_bound`, and `low_density_speed_one`. These bound each
 original tag's block count by `g−2`, the number of blocked rounds by
 `carCount * (g−2)`, and give eventual `AllMove` for the actual torus orbit.
-The BML audit checks all three theorem declarations. The separate replay
+
+`low_density_speed_one_deadline` strengthens the time conclusion: under
+the same strict hypothesis, every round at or after
+`sparseSpeedDeadline w h s = lcm(w,h) * carCount * (g−2)` has `AllMove`.
+`low_density_staticFree_deadline` proves entry into `StaticFree` by that
+deadline. The reusable `staticFree_of_blockedRoundCount_bound` accepts any
+uniform finite-prefix blockage budget, without a sparsity hypothesis.
+This combines the finite blockage budget with
+`lemmaR_finite_lt`: `K+1` disjoint windows of length `lcm(w,h)` cannot
+all contain a blockage when every prefix has at most `K` blocked rounds.
+The empty board has deadline zero; a nonempty sparse board has `g ≥ 3`.
+The deadline is a sufficient upper bound, with no sharpness claim.
+`low_density_square_speed_one_deadline` specializes it to `n * m * (n−2)`
+on an `n×n` square with `2m < n`.
+
+The BML audit checks these public theorem declarations. The separate replay
 compares both CLASSIC phases and original-tag traces with an independent
-scalar implementation. Run `python scripts/check_sparse_speed.py` from the
+scalar implementation. Its header exports the proved deadline formula for
+sparse boards and `-` outside the strict hypothesis. Complete recurrent
+traces check permanent-flow entry by the deadline. A targeted `5×10`
+two-car orbit first becomes permanently free at round 10 despite having
+bad-round budget 6, distinguishing the two quantities.
+Run `python scripts/check_sparse_speed.py` from the
 repository root after `lake build`.
 
 ## Remaining obligations

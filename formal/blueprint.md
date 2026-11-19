@@ -33,7 +33,7 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B4 | Theorem F: densest free flow | kernel-checked exact capacity, all-count constructions, static/perpetual/eventual existence spectra, and square corollaries | B2, B3, Counting |
 | B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
 | B6 | TRAIN eventual speed one on sparse N×N squares | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `Train/Diagonals`, `Train/FreeFlow`, actual diagonal transport/release |
-| B7 | CLASSIC eventual speed one for 2m<gcd(W,H) | kernel-checked eventual full movement and at most m(g−2) blocked rounds per prefix | B2 geometry, CLASSIC transport and car count |
+| B7 | CLASSIC eventual speed one for 2m<gcd(W,H) | kernel-checked full movement from round lcm(W,H)·m(g−2) onward and at most m(g−2) blocked rounds per prefix | B2 geometry, B3 finite free window, CLASSIC transport and car count |
 
 ---
 
@@ -602,10 +602,20 @@ blocked original tag whenever `AllMove` fails. The theorem
 `[0,T)` by `m(g−2)`. The prefix count is nondecreasing and attains a maximum.
 Any later blockage would increase it, proving `low_density_speed_one`.
 
-The theorem includes the empty board and singleton dimensions. Its numerical
-bound counts blocked rounds. The deterministic condition gives a shrinking
-density range as the torus grows. The fixed-positive-density probability
-problem remains open.
+**Elapsed-time deadline.** Put `ell = lcm(W,H)` and `K = m(g−2)`.
+`low_density_speed_one_deadline` proves that every round `t ≥ ell * K`
+has `AllMove`, and `low_density_staticFree_deadline` gives `StaticFree` at
+the deadline. The proof combines the blockage budget with B3's
+`lemmaR_finite_lt`: among `K+1` disjoint windows of `ell` rounds, at least
+one has no blocked round. Its start is at most `ell * K`, and its full
+movement forces permanent free flow from that start.
+
+The bound `K` counts blocked rounds; `ell * K` bounds elapsed time to
+permanent free flow. The theorem includes the empty board, with deadline
+zero, and singleton dimensions. A nonempty state satisfying the strict
+hypothesis has `g ≥ 3`. No sharpness or equality-case extension is claimed.
+The deterministic condition gives a shrinking density range as the torus
+grows. The fixed-positive-density probability problem remains open.
 
 The [finite replay](../scripts/check_sparse_speed.py) independently checks
 every sparse board on 14 ordered shapes through its first board recurrence,

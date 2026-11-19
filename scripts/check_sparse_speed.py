@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Replay exact CLASSIC B7 prefixes, through first recurrence for sparse boards."""
+"""Replay CLASSIC B7 blockage counts and permanent-flow deadlines.
+
+Automatic sparse cases run through exact first recurrence. Only those complete
+traces certify the permanent-flow entry time; targeted finite prefixes do not.
+"""
 from __future__ import annotations
 
 import argparse
@@ -41,17 +45,31 @@ class Trace:
     population: int
     sparse: bool
     rounds: list[tuple[int, ...]]
+    recurrence: int | None
 
     def request(self) -> str:
         return f"{self.width} {self.height} {self.code} {len(self.rounds)}"
 
     def row(self) -> str:
-        header = self.request().split() + [str(self.population), str(int(self.sparse))]
+        header = self.request().split() + [str(self.population), str(int(self.sparse)),
+                                           str(self.deadline) if self.sparse else "-"]
         return "\t".join(header + [",".join(map(str, row)) for row in self.rounds])
 
     @property
     def blocked_rounds(self) -> int:
         return sum(1 - row[2] for row in self.rounds)
+
+    @property
+    def deadline(self) -> int | None:
+        if not self.sparse:
+            return None
+        return lcm(self.width, self.height) * self.population * max(gcd(self.width, self.height)-2, 0)
+
+    @property
+    def permanent_flow_entry(self) -> int | None:
+        if self.recurrence is None:
+            return None
+        return max((t + 1 for t, row in enumerate(self.rounds) if not row[2]), default=0)
 
 
 def target(p: int, sp: int, w: int, h: int) -> int:
@@ -112,13 +130,18 @@ def trace_case(w: int, h: int, code: int, horizon: int | None = None) -> Trace:
         seen[after] = t + 1
         board = after
 
-    trace = Trace(w, h, code, population, sparse, rows)
+    trace = Trace(w, h, code, population, sparse, rows, recurrence)
     if horizon is None:
         require(recurrence is not None and all(row[2] for row in rows[recurrence:]),
                 "eventual-movement", f"{case}: no all-moving terminal cycle found")
     if sparse:
         require(max(blocks, default=0) <= per_car_budget and trace.blocked_rounds <= round_budget,
                 "block-bound", f"{case}: sparse prefix exceeds the B7 blockage budget")
+        require(all(t < trace.deadline or row[2] for t, row in enumerate(rows)),
+                "stabilization-deadline", f"{case}: a round at or after the deadline blocks")
+        if recurrence is not None:
+            require(trace.permanent_flow_entry <= trace.deadline,
+                    "stabilization-deadline", f"{case}: permanent movement starts after the deadline")
     return trace
 
 
@@ -153,13 +176,34 @@ def check_controls() -> tuple[list[Trace], dict]:
         require(trace.rounds[0][4] == expected and wrong == 1 - expected,
                 "phase-order", "north must read the board produced by the east phase")
     zero = trace_case(1, 1, 0, 0)
-    return [three, four, equality, jam, queue, vacated, filled, zero], {
+
+    # Nine fully moving rounds can precede a block. The last block is later
+    # than the B7 bad-round budget, while the lcm-scaled deadline remains valid.
+    late = trace_case(5, 10, 1 + 2*3**5)
+    late_budget = late.population * (gcd(late.width, late.height) - 2)
+    require(late.blocked_rounds == 1 and late.rounds[9][2] == 0
+            and all(row[2] for row in late.rounds[:9])
+            and late.permanent_flow_entry == 10 > late_budget == 6
+            and late.deadline == 60,
+            "elapsed-time", "bad-round count or an initially moving prefix was used as permanent flow")
+    require(equality.deadline is None and jam.deadline is None and zero.deadline == 0,
+            "deadline-domain", "deadline guarantee escaped strict sparsity or excluded the empty board")
+    require(queue.permanent_flow_entry is None and vacated.permanent_flow_entry is None,
+            "deadline-domain", "a targeted prefix was misrepresented as a complete orbit")
+    return [three, four, equality, jam, queue, vacated, filled, zero, late], {
         "larger_sparse_queues": [three.population, four.population],
         "strict_equality_excluded": 2*equality.population,
         "dense_fixed_row_blocked_rounds": jam.blocked_rounds,
         "train_queue_differs": True,
         "north_target_vacated_and_filled": True,
         "zero_horizon": True,
+        "elapsed_time_exceeds_block_budget": {
+            "shape": [5, 10], "code": late.code, "block_budget": late_budget,
+            "blocked_rounds": late.blocked_rounds, "permanent_flow_entry": late.permanent_flow_entry,
+            "deadline": late.deadline,
+        },
+        "deadline_excludes_nonsparse_boards": True,
+        "finite_prefix_not_claimed_permanent": True,
     }
 
 
@@ -185,12 +229,19 @@ def main() -> None:
     status = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT,
                             text=True, capture_output=True)
     report = {
+        "schema": "bml.sparse-speed-replay.v2",
         "worktree_clean": status.returncode == 0 and not status.stdout,
         "lean_binary_sha256": hashlib.sha256(binary.read_bytes()).hexdigest(),
         "status": "passed", "revision": revision, "tree": tree,
         "ordered_shapes": SHAPES, "exhaustive_sparse_boards": len(traces),
         "rounds_through_first_recurrence": sum(len(t.rounds) for t in traces),
         "sparse_boards_with_blockage": sum(t.blocked_rounds > 0 for t in traces),
+        "deadline_checks": {
+            "complete_exhaustive_orbits": len(traces),
+            "max_permanent_flow_entry": max(t.permanent_flow_entry for t in traces),
+            "max_deadline": max(t.deadline for t in traces),
+            "zero_deadline_orbits": sum(t.deadline == 0 for t in traces),
+        },
         "targeted_cases": len(controls), "controls": control_results,
         "lean_trace_sha256": hashlib.sha256(result.stdout.encode()).hexdigest(),
     }

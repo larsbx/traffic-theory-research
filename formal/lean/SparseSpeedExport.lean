@@ -15,10 +15,11 @@ def row (w h : Nat) (hw : 0 < w) (hh : 0 < h) (code horizon : Nat) : String := I
   let initial := boardConfig board
   let population := carCount w h initial
   let sparse := if 2 * population < Nat.gcd w h then 1 else 0
+  let deadline := if sparse == 1 then toString (sparseSpeedDeadline w h initial) else "-"
   let mut tags := (occupiedCells w h initial).map fun p =>
     (if initial p == .east then Species.east else Species.north, p)
   let mut fields := #[toString w, toString h, toString code, toString horizon,
-    toString population, toString sparse]
+    toString population, toString sparse, deadline]
   for t in [:horizon] do
     let s := boardConfig board
     let mid := halfStep east .east s

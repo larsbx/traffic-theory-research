@@ -162,8 +162,9 @@ fixed-point result does not transfer.
   phases: the static adjacency and phase-class conditions hold exactly when
   every car moves in every round starting at time zero. Checking the first
   `lcm(W,H)` rounds suffices, and each such configuration returns after that
-  many rounds, possibly with a smaller least period. B7 proves eventual full
-  movement for every board with `2m < gcd(W,H)` and at most
+  many rounds, possibly with a smaller least period. B7 proves permanent full
+  movement from round `lcm(W,H) * m * (gcd(W,H) - 2)` onward for every board
+  with `2m < gcd(W,H)`. Its separate blockage bound is at most
   `m * (gcd(W,H) - 2)` blocked rounds in any finite prefix. The suite also
   proves permanent cores and route-cover capture bounds. Some original car eventually
   stops exactly when the state eventually jams or initially has a full E-row

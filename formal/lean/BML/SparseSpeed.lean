@@ -37,6 +37,11 @@ def blockedTagCount (s : Config (Position w h)) (sp : Species) (p : Position w h
 def blockedRoundCount (s : Config (Position w h)) (T : Nat) : Nat :=
   ((List.range T).filter fun t => decide (¬ AllMove E N (orbit t s))).length
 
+/-- An elapsed-time deadline for permanent CLASSIC free flow under the strict
+sparse hypothesis. The lcm converts a blocked-round budget into full rounds. -/
+def sparseSpeedDeadline (w h : Nat) (s : Config (Position w h)) : Nat :=
+  Nat.lcm w h * (carCount w h s * (Nat.gcd w h - 2))
+
 private theorem filter_range_succ_length (P : Nat → Prop) [DecidablePred P] (t : Nat) :
     ((List.range (t + 1)).filter fun i => decide (P i)).length =
       ((List.range t).filter fun i => decide (P i)).length + (if P t then 1 else 0) := by
@@ -53,6 +58,17 @@ private theorem blockedRoundCount_succ (s : Config (Position w h)) (t : Nat) :
     blockedRoundCount hw hh s (t + 1) = blockedRoundCount hw hh s t +
       (if ¬ AllMove E N (orbit t s) then 1 else 0) :=
   filter_range_succ_length _ t
+
+private theorem blockedRoundCount_mono (s : Config (Position w h))
+    (a b : Nat) (hab : a ≤ b) :
+    blockedRoundCount hw hh s a ≤ blockedRoundCount hw hh s b := by
+  obtain ⟨n, rfl⟩ := Nat.exists_eq_add_of_le hab
+  induction n with
+  | zero => exact Nat.le_refl _
+  | succ n ih =>
+    have hstep := blockedRoundCount_succ hw hh s (a + n)
+    change blockedRoundCount hw hh s a ≤ blockedRoundCount hw hh s (a + n + 1)
+    omega
 
 private theorem shift_from_cut_pos (cut y : Fin g) (hy : y ≠ cut) :
     0 < (cyclicShift g hg (-(cut.val : Int)) y).val := by
@@ -194,6 +210,81 @@ theorem low_density_block_bound (s : Config (Position w h))
       intro ⟨sp, p⟩ hp
       exact low_density_tag_block_bound hw hh s hm sp p ((mem_carTags s sp p).mp hp) T
     _ = _ := by simp [List.map_const', List.sum_replicate_nat, length_carTags]
+
+/-- A uniform budget of K blocked CLASSIC rounds gives entry into the static
+free-flow set by lcm(w,h)*K. If that deadline were not static-free, each of the
+K+1 preceding-or-starting lcm windows would contain a blocked round. -/
+theorem staticFree_of_blockedRoundCount_bound (s : Config (Position w h))
+    (K : Nat) (hbound : ∀ T, blockedRoundCount hw hh s T ≤ K) :
+    StaticFree w h hw hh (orbit (Nat.lcm w h * K) s) := by
+  classical
+  apply Classical.byContradiction
+  intro hnot
+  let ell := Nat.lcm w h
+  have hearlier (k : Nat) (hk : k ≤ K) :
+      ¬ StaticFree w h hw hh (orbit (ell * k) s) := by
+    intro hfree
+    have hle : ell * k ≤ ell * K := Nat.mul_le_mul_left ell hk
+    obtain ⟨d, hd⟩ := Nat.exists_eq_add_of_le hle
+    have hlate := staticFree_iterate w h hw hh (orbit (ell * k) s) hfree d
+    apply hnot
+    simpa only [← iterate_add, ← hd] using hlate
+  have hincrement (k : Nat) (hk : k ≤ K) :
+      blockedRoundCount hw hh s (ell * k) + 1 ≤
+        blockedRoundCount hw hh s (ell * (k + 1)) := by
+    obtain ⟨j, hj, hblocked⟩ :=
+      (not_staticFree_iff_blocked_before_lcm w h hw hh (orbit (ell * k) s)).mp
+        (hearlier k hk)
+    have hb : ¬ AllMove E N (orbit (ell * k + j) s) := by
+      simpa only [iterate_add] using hblocked
+    have hstart := blockedRoundCount_mono hw hh s (ell * k) (ell * k + j) (by omega)
+    have hfinish := blockedRoundCount_mono hw hh s (ell * k + j + 1)
+      (ell * (k + 1)) (by
+        rw [Nat.mul_add, Nat.mul_one]
+        change j < ell at hj
+        omega)
+    have hstep := blockedRoundCount_succ hw hh s (ell * k + j)
+    rw [ite_eq_left hb] at hstep
+    omega
+  have hcount (k : Nat) (hk : k ≤ K + 1) :
+      k ≤ blockedRoundCount hw hh s (ell * k) := by
+    induction k with
+    | zero => exact Nat.zero_le _
+    | succ k ih =>
+      have hprev := ih (by omega)
+      have hnext := hincrement k (by omega)
+      omega
+  have htooMany := hcount (K + 1) (Nat.le_refl _)
+  have hbudget := hbound (ell * (K + 1))
+  omega
+
+/-- Under 2m<gcd(w,h), the actual CLASSIC state is static-free at the
+executable deadline lcm(w,h)*m*(gcd(w,h)-2). -/
+theorem low_density_staticFree_deadline (s : Config (Position w h))
+    (hm : 2 * carCount w h s < g) :
+    StaticFree w h hw hh (orbit (sparseSpeedDeadline w h s) s) :=
+  staticFree_of_blockedRoundCount_bound hw hh s (carCount w h s * (g - 2))
+    (low_density_block_bound hw hh s hm)
+
+/-- Every full round at or after the sparse deadline moves every original
+car. The bound is on elapsed time, in addition to the B7 blockage budget. -/
+theorem low_density_speed_one_deadline (s : Config (Position w h))
+    (hm : 2 * carCount w h s < g) (t : Nat) (ht : sparseSpeedDeadline w h s ≤ t) :
+    AllMove E N (orbit t s) := by
+  obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le ht
+  rw [iterate_add]
+  exact staticFree_perpetual_allMove w h hw hh _
+    (low_density_staticFree_deadline hw hh s hm) d
+
+/-- On an n by n square, the sparse deadline simplifies to n*m*(n-2)
+complete rounds, under the same strict population condition 2m<n. -/
+theorem low_density_square_speed_one_deadline (n : Nat) (hn : 0 < n)
+    (s : Config (Position n n)) (hm : 2 * carCount n n s < n)
+    (t : Nat) (ht : n * (carCount n n s * (n - 2)) ≤ t) :
+    AllMove (eastDirection n n hn) (northDirection n n hn)
+      (iterate (torusStep n n hn hn) t s) := by
+  apply low_density_speed_one_deadline hn hn s (by simpa only [Nat.gcd_self] using hm) t
+  simpa only [sparseSpeedDeadline, Nat.lcm_self, Nat.gcd_self] using ht
 
 /-- If twice the car population is below the gcd of the positive side
 lengths, the actual CLASSIC orbit eventually moves every car in every round. -/
