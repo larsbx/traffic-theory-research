@@ -85,6 +85,10 @@ connections to tiling and dynamical-systems theory.
   specified occupied site, with an explicit error tending to zero at every
   fixed positive density. The deterministic theorem, exact finite labeled
   evidence, and prose probability argument have separately recorded scopes.
+- [Diagonal cuts and the first mixed cycle](docs/research/2026-11-18-diagonal-cuts.md)
+  (2026-11-18). This bounds mixed-cycle formation through order `sqrt(log L)`
+  rounds at every fixed density below one. The proof explores a blocker path
+  using only initial cells and identifies the late formation term still to control.
 - [Formal coverage and validation](formal/README.md): the CLASSIC finite-torus
   `BML` proofs, identity-preserving transport and non-monotonicity witness, together
   with the complementary `Traffic` tiling/staircase proofs, the complete

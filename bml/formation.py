@@ -70,6 +70,46 @@ def geometric_formation_upper_bound(
     return min(Fraction(1), Fraction(side, 2) * base ** (2 * side) / (1 - base))
 
 
+def diagonal_cut_probability(rounds: int, p: Rational, *, rule: str = CLASSIC) -> Fraction:
+    """Conditional stop certificate for a blocker path on a still unread initial slab.
+
+    The next direction at the path's current site is known. After 3*T+1 edges
+    the possible endpoints have no compatible initial car origin on this event.
+    The formula applies before the initial sites wrap into the queried slab.
+    """
+    _classic(rule)
+    rounds = _natural(rounds, "rounds")
+    p = _density(p)
+    both_species = (rounds + 1) * (5 * rounds + 2) // 2
+    one_species = rounds * (rounds + 1)
+    return (1 - p) ** both_species * (1 - p / 2) ** one_species
+
+
+def diagonal_formation_upper_bound(
+    side: int, p: Rational, rounds: int = 0, *, rule: str = CLASSIC,
+) -> Fraction:
+    """Upper bound on any mixed cycle by T on an L-by-L square torus.
+
+    At each path checkpoint the cut has the initial product-law probability
+    conditional on the exposed cells. Exploring the path only up to a single
+    diagonal wrap makes this true even though the path chooses its own turns.
+    This is a bounded-time estimate under the initial law.
+    """
+    _classic(rule)
+    side = _natural(side, "side", 1)
+    rounds = _natural(rounds, "rounds")
+    p = _density(p)
+    if side == 1 or p == 0:
+        return Fraction()
+    trials = max(0, (side - 2 * rounds - 1) // (3 * rounds + 1))
+    occupied_roots_per_cycle = 2
+    root_expectation = side * p / occupied_roots_per_cycle
+    if trials == 0 or p == 1:
+        return min(Fraction(1), root_expectation)
+    stop = diagonal_cut_probability(rounds, p, rule=rule)
+    return min(Fraction(1), root_expectation * (1 - stop) ** trials)
+
+
 def staircase_present(rows: Sequence[Sequence[int]], offset: int = 0) -> bool:
     """A specified 2L-cycle: E at (y+a,y), N at (y+a+1,y)."""
     h, w, flat = _rows(rows)
