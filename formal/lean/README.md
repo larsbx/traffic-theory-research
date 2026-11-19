@@ -25,6 +25,7 @@ lake env lean G2Audit.lean
 lake env lean CosetAudit.lean
 lake env lean FreeFlowAudit.lean
 lake env lean FreeMaxAudit.lean
+lake env lean SparseSpeedAudit.lean
 lake env lean AbsorptionAudit.lean
 .lake/build/bin/bml_replay 3 3
 ```
@@ -212,10 +213,8 @@ may have a smaller least period; the empty state is one example.
 These theorems cover every positive rectangle, including singleton axes and
 the empty board. They characterize movement from time zero.
 `eventually_allMove_iff_reaches_staticFree` separately identifies eventual
-permanent full movement with eventual entry into the static-free set. It
-does not prove that every orbit enters that set or supply a uniform entry-time
-bound. The packing upper bound and maximizing constructions of F are still
-separate formal obligations.
+permanent full movement with eventual entry into the static-free set. B7 gives
+a sufficient population condition for such entry.
 
 `freeflow_export --max-cells 9` enumerates every initial configuration on
 every ordered positive rectangle with WH≤9. Each row contains actual Lean
@@ -486,14 +485,30 @@ semantic `Stuck` predicate. `TrainAudit.lean` audits this layer separately;
 [`scripts/check_train.py`](../../scripts/check_train.py) compares its outputs
 with the actual Quint interpreter and Python TRAIN implementation.
 
+## B7. CLASSIC sparse speed one
+
+`BML/SparseDynamics.lean` proves the corrected diagonal dynamics using
+`phaseIndex_east`, `phaseIndex_north`, and the CLASSIC `roundTransport`.
+Release is checked with north eligibility on the east intermediate. A pair
+of corrected vacancies at the end of a finite prefix persists backwards
+through that prefix. Conservation and `2 * carCount < gcd(w,h)` supply a
+pair at the end of every prefix.
+
+`BML/SparseSpeed.lean` proves `low_density_tag_block_bound`,
+`low_density_block_bound`, and `low_density_speed_one`. These bound each
+original tag's block count by `g−2`, the number of blocked rounds by
+`carCount * (g−2)`, and give eventual `AllMove` for the actual torus orbit.
+The BML audit checks all three theorem declarations. The separate replay
+compares both CLASSIC phases and original-tag traces with an independent
+scalar implementation. Run `python scripts/check_sparse_speed.py` from the
+repository root after `lake build`.
+
 ## Remaining obligations
 
-The deterministic G0, G1, G2, Lemma R, and Theorem F statements now have
+The deterministic G0, G1, G2, B7, Lemma R, and Theorem F statements now have
 kernel-checked proofs, with their nonempty/empty conventions and exact
 population scopes recorded above. Further obligations include:
 
-- Formalize the CLASSIC low-density eventual-speed-one argument under
-  `2 * carCount < gcd(W,H)` in blueprint B7.
 - Formalize eventual periodicity/classifier correctness and unrestricted
   Python-to-Lean source correspondence.
 - Construct `RouteCover` witnesses directly from a mixed occupied blocker cycle

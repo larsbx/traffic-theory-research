@@ -88,7 +88,7 @@ require care when proposing a single sharp threshold. Primary-source checks give
 | result | statement |
 |---|---|
 | [Angel–Holroyd–Martin][AHM], *Electron. Comm. Probab.* 10 (2005), Theorems 1–2 | On ℤ², for p sufficiently close to 1, every car moves only finitely often a.s. The finite-torus theorem also gives eventual gridlock with probability tending to 1 as both dimensions grow and their ratio converges in (0,∞). |
-| [Austin–Benjamini][AB], arXiv:math/0607759v3 (2006), Propositions 1, 6, 8 | Prop 1: eventual speed one below N/2 cars. Prop 6: a stuck configuration of m cars exists ⟺ m ≥ 2N. **Different update rule (resolved in §5b):** their written rule moves same-species queues together and rotates a full ring (the *train rule*, `bml.model.TRAIN`). That explains 2N against the CLASSIC kernel's N. Prop 6 is re-proved and extended to rectangles in §5b. The full TRAIN Prop 1 Lean proof is described in §5c. The separate CLASSIC transfer (§2 and blueprint B7) has a prose proof; its Lean formalization remains open. |
+| [Austin–Benjamini][AB], arXiv:math/0607759v3 (2006), Propositions 1, 6, 8 | Prop 1: eventual speed one below N/2 cars. Prop 6: a stuck configuration of m cars exists ⟺ m ≥ 2N. **Different update rule (resolved in §5b):** their written rule moves same-species queues together and rotates a full ring (the *train rule*, `bml.model.TRAIN`). That explains 2N against the CLASSIC kernel's N. Prop 6 is re-proved and extended to rectangles in §5b. The full TRAIN Prop 1 Lean proof is described in §5c. The separate CLASSIC proof is kernel-checked for positive rectangles (§2 and blueprint B7). |
 | [Hertzberg Rabinovich–Biham–Katzav][HBK], arXiv:2601.01180v2 (2026) | Square lattices: free-flowing periodic states are the zero set of a distance D = D∥ + D⊥, and the zero set persists. The full text studies relaxation with numerical fits; it does not prove our fixed-positive-density probability target. |
 | [D'Souza][DS], *Phys. Rev. E* 71 (2005), 066112 | Numerical stable intermediate phases and dependence on lattice aspect ratio. |
 | [Yashina–Tatashev][YT], arXiv:2311.17120 (2023), Theorem 1 | For deterministic fixed directions and both species present, perpetual free motion requires gcd(W,H) ≥ 3; this overlaps a consequence of Lemma R. |
@@ -179,24 +179,15 @@ in ordering from `extremal.gridlock_with`; its actual compiled output is checked
 against Python CLASSIC dynamics for every admissible count on W,H≤12, without
 asserting equality between the two constructors.
 
-*CLASSIC transfer of Austin–Benjamini Prop 1: prose derivation, not a verified import.*
+*CLASSIC transfer of Austin–Benjamini Proposition 1.*
 
-The paper's written rule is TRAIN, and §5c treats that actual rule. The separate
-CLASSIC argument is developed in
-[blueprint B7](../formal/blueprint.md#b7-classic-low-density-speed-one), for
-`2m < gcd(W,H)` on positive rectangles. Its prose proof and finite checks are
-distinct from the compiled TRAIN theorem; the CLASSIC argument is not yet
-formalized in Lean. The square case uses the following release idea:
-
-- Their proof tracks empty arcs of time-corrected NW–SE diagonals. It uses only two facts:
-  cars advance at most one diagonal per step, and a diagonal with an empty diagonal above it
-  always releases at least one car.
-- The second fact also holds here. Its E cars move first into the empty diagonal, unobstructed;
-  if it has none, every N car moves.
-- The B7 prose argument gives eventual speed one when m < N/2, which is stronger than the
-  corollary above on square tori.
-- Random tests up to 14×14 under both rules agree (`tests/test_train_rule.py`).
-  This CLASSIC transfer still has no complete Lean proof.
+The paper's written rule is TRAIN, treated in §5c. The CLASSIC result B7
+is separately proved in Lean for all positive rectangles. If `2m < g`,
+where `g = gcd(W,H)`, all cars eventually move in every complete CLASSIC
+round. In each finite prefix there are at most `g−2` blocks per original
+car and at most `m(g−2)` rounds containing a block. The proof uses actual
+two-phase transport, corrected diagonal classes, and empty pairs that
+persist backwards. See [blueprint B7](../formal/blueprint.md#b7-classic-low-density-speed-one).
 
 ## 3. Theorem G2 (no forced gridlock below full density)
 
@@ -803,16 +794,15 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
    exact-count constructions, and the concrete recurrent witnesses have kernel-checked
    coverage. R includes a finite lcm-window criterion and lcm return; F includes
    static, perpetual, and eventual existence spectra. The separate TRAIN threshold T
-   and sparse-square speed-one theorem are fully proved. The next CLASSIC obligation
-   is the low-density eventual-speed-one argument under `2m < gcd(W,H)` in blueprint B7.
+   and sparse-square speed-one theorem are fully proved. CLASSIC B7 proves eventual
+   full movement and bounds blocked rounds under `2m < gcd(W,H)`.
    See the precise [coverage register](../formal/README.md).
 2. **Control formation of blocking loops under μ_p.** Section 8 gives the initial counting
    bound and explains the missing dynamical estimate. Do not treat a finite-time simulation
    or an iid count at time zero as an eventual-probability bound.
 3. **Literature and novelty.** The Austin–Benjamini rule correspondence is resolved (§5b).
-   Still open: search for the complete rectangular formula; read the full text of [HBK]; and
-   formalise the Prop 1 transfer of §2. The 2/3 value and the gcd obstruction already have prior
-   literature.
+   The remaining literature questions include the complete rectangular capacity
+   formula and the scope of [HBK]. The 2/3 value and gcd obstruction have prior literature.
 4. **Why is un-jamming trivial on tori with ≤ 6 cells?** Is there a structural reason (§4)?
 5. Extend the exhaustive tables to 4×5 (3²⁰ ≈ 3.5·10⁹ states). That needs a symmetry quotient
    (translations × species-preserving symmetries).

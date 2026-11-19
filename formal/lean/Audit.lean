@@ -14,6 +14,11 @@ elab "audit_bml" : command => do
   let mut used : Array Name := #[]
   let required : Array Name := #[
     ``BML.step_eq_iff_frozen, ``BML.step_eq_iff_noMoves,
+    ``BML.phaseIndex_east, ``BML.phaseIndex_north, ``BML.correctedClass_roundTransport,
+    ``BML.corrected_release, ``BML.corrected_survival,
+    ``BML.corrected_emptyPair_backwards, ``BML.corrected_emptyPair_before,
+    ``BML.corrected_emptyPair_of_sparse, ``BML.low_density_tag_block_bound,
+    ``BML.low_density_block_bound, ``BML.low_density_speed_one,
     ``BML.transport_bijection, ``BML.iterate_nonempty_iff,
     ``BML.carCount_eq_speciesCount, ``BML.halfStep_speciesCount,
     ``BML.iterate_torusStep_speciesCount, ``BML.iterate_torusStep_carCount,

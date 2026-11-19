@@ -130,9 +130,8 @@ This is eventual **full movement**, stronger than the absence of a jam. It
 does not supply an effective upper bound on T, a positive random-density
 transition, or a statement for every rectangular torus. The actual-kernel
 bridge is specific to TRAIN. The CLASSIC rectangular counterpart under
-`2 * carCount < gcd(W,H)` has a prose proof and finite checks in
-[blueprint B7](blueprint.md#b7-classic-low-density-speed-one); its Lean
-formalization remains open.
+`2 * carCount < gcd(W,H)` has its own Lean proof using the CLASSIC kernel.
+See [blueprint B7](blueprint.md#b7-classic-low-density-speed-one).
 
 ### Adjacent empty pairs and a permanent cut
 
@@ -381,17 +380,15 @@ The separate CLASSIC rule is Model I of
 
 Austin–Benjamini's Proposition 1 is the source of the square speed-one theorem
 above; the adjacent-empty-pair proof is a formalization of its corrected-diagonal
-argument, with no novelty claim. The proposed transfer to CLASSIC, effective
-stabilization-time bounds, sharp random-density thresholds, and loop-formation
-probability bounds remain outside this formalization. The separate CLASSIC library proves
+argument, with no novelty claim. Effective stabilization-time bounds, random-density thresholds, and
+loop-formation probability bounds remain open in this layer. The separate CLASSIC library proves
 complete G1/G2 and the forced-gridlock boundary among feasible populations:
 every n-car configuration eventually jams exactly when n=WH, assuming n≤WH.
 That forced boundary does not transfer to TRAIN: a fully east-filled TRAIN
 board has rotating rings. CLASSIC G2 establishes never reaching a nonempty
 jam for its sub-full constructions, without asserting eventual speed one.
-The remaining CLASSIC obligations include packing for F and formalizing
-the low-density argument in [blueprint B7](blueprint.md#b7-classic-low-density-speed-one);
-see [the shared register](README.md). The CLASSIC B2 coset identity is proved for
+The CLASSIC packing theorem F and the sparse rectangular speed-one theorem
+B7 have Lean proofs in [the shared register](README.md). The CLASSIC B2 coset identity is proved for
 the auxiliary `(1,-1)` action on actual cyclic coordinates, including signed
 and bounded forward witnesses. CLASSIC Lemma R now connects those witnesses
 to rigid occupancy under the actual phases and proves the static/perpetual

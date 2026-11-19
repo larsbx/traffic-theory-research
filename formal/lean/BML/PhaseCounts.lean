@@ -11,26 +11,6 @@ constraints below are proved by finite bijections on the torus.
 -/
 namespace BML
 
-/-- The diagonal phase, with its natural finite index type. -/
-def phaseIndex (w h : Nat) (hw : 0 < w) (p : Position w h) : Fin (Nat.gcd w h) :=
-  ⟨phaseClass w h p, phaseClass_lt w h hw p⟩
-
-@[simp] theorem phaseIndex_val (w h : Nat) (hw : 0 < w) (p : Position w h) :
-    (phaseIndex w h hw p).val = phaseClass w h p := rfl
-
-theorem phaseIndex_east (w h : Nat) (hw : 0 < w) (p : Position w h) :
-    phaseIndex w h hw ((eastDirection w h hw).next p) =
-      cyclicNext (Nat.gcd w h) (Nat.gcd_pos_of_pos_left h hw) (phaseIndex w h hw p) := by
-  apply Fin.ext
-  simp only [phaseIndex_val, cyclicNext_val, phaseClass_east]
-
-theorem phaseIndex_north (w h : Nat) (hw : 0 < w) (hh : 0 < h)
-    (p : Position w h) :
-    phaseIndex w h hw ((northDirection w h hh).next p) =
-      cyclicNext (Nat.gcd w h) (Nat.gcd_pos_of_pos_left h hw) (phaseIndex w h hw p) := by
-  apply Fin.ext
-  simp only [phaseIndex_val, cyclicNext_val, phaseClass_north]
-
 /-- All sites of one diagonal phase, each listed once. -/
 def phaseFiber (w h : Nat) (hw : 0 < w) (i : Fin (Nat.gcd w h)) :
     List (Position w h) :=

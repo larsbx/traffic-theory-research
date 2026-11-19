@@ -19,12 +19,6 @@ local instance staticFreeDecidable (w h : Nat) (hw : 0 < w) (hh : 0 < h)
   unfold StaticFree
   infer_instance
 
-local instance allMoveDecidable (w h : Nat)
-    (east north : Direction (Position w h)) (s : Config (Position w h)) :
-    Decidable (AllMove east north s) := by
-  unfold AllMove
-  infer_instance
-
 def staticFreeFlag (w h : Nat) (hw : 0 < w) (hh : 0 < h)
     (s : Config (Position w h)) : Nat :=
   if StaticFree w h hw hh s then 1 else 0

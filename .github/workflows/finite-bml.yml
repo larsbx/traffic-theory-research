@@ -91,6 +91,7 @@ jobs:
           lake env lean CosetAudit.lean | tee ../../.artifacts/coset-audit.log
           lake env lean FreeFlowAudit.lean | tee ../../.artifacts/freeflow-audit.log
           lake env lean FreeMaxAudit.lean | tee ../../.artifacts/free-max-audit.log
+          lake env lean SparseSpeedAudit.lean | tee ../../.artifacts/sparse-speed-audit.log
       - name: Compare both half-steps on every rectangle with at most nine cells
         run: python scripts/check_lean_replay.py --max-cells 9 --report .artifacts/lean-replay.json | tee .artifacts/lean-replay.log
       - name: Check actual Lean G1 constructions at every admissible population
@@ -103,6 +104,8 @@ jobs:
         run: python scripts/check_freeflow.py --max-cells 9 --report .artifacts/freeflow.json --rows .artifacts/freeflow.tsv | tee .artifacts/freeflow.log
       - name: Check actual Lean free-flow constructions at every attainable population
         run: python scripts/check_free_max.py --max-side 12 --report .artifacts/free-max.json --rows .artifacts/free-max.tsv | tee .artifacts/free-max.log
+      - name: Replay CLASSIC sparse-speed bounds and movement-rule controls
+        run: python scripts/check_sparse_speed.py --report .artifacts/sparse-speed.json | tee .artifacts/sparse-speed.log
       - name: Check certified cutoff bounds against the actual Lean probe
         run: python scripts/check_absorption.py --backend lean --report .artifacts/absorption-lean.json | tee .artifacts/absorption-lean.log
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

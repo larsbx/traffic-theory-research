@@ -1,6 +1,6 @@
 # Blueprint: proof status and open formal obligations
 
-This hand-off document records the completed B0/B1/B2/B3/B4/B5/B6 proofs and the remaining
+This hand-off document records the completed B0–B7 proofs and the remaining
 obligations of [the coverage register](README.md), with proofs decomposed into
 lemmas small enough to formalise one at a time.
 
@@ -8,9 +8,6 @@ lemmas small enough to formalise one at a time.
   bottom-up. Lean signatures target the `BML` kernel in this package (`Kernel`,
   `Torus`, `Transport`, `Counting`, `Enumeration`). `carCount` is the actual
   occupied-position count, proved equal to the executable species-count sum.
-- Signatures in the open B7 section are **specifications, not compiled code**.
-  Adjust those names freely, but keep the statements. B0–B6 identify
-  compiled declarations.
 - G1's exact-count construction is complete in `AllCounts.lean` and
   `Gridlock.lean`. B0 is complete in `Ring.lean`; B1 uses `Lanes.lean`,
   `NonGridlock.lean`, and the prefix-rank counting theorem in `Enumeration.lean`.
@@ -22,6 +19,7 @@ lemmas small enough to formalise one at a time.
   `FreePattern.lean`, `FreeConstruction.lean`, `FreeDeletion.lean`, and
   `FreeMaximum.lean`, with finite-sum helpers in `FiniteSums.lean`.
   B5 and B6 are complete in the separate TRAIN library linked below.
+  B7 is complete in `SparseDynamics.lean` and `SparseSpeed.lean`.
 
 Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 `f = torusStep w h hw hh = step E N`, and `f^t = iterate f t`.
@@ -35,7 +33,7 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B4 | Theorem F: densest free flow | kernel-checked exact capacity, all-count constructions, static/perpetual/eventual existence spectra, and square corollaries | B2, B3, Counting |
 | B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
 | B6 | TRAIN eventual speed one on sparse N×N squares | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `Train/Diagonals`, `Train/FreeFlow`, actual diagonal transport/release |
-| B7 | CLASSIC eventual speed one for 2m<gcd(W,H) | prose proof and finite checks; at most m(g−2) blocked rounds; not compiled in Lean | B0, Transport, car count |
+| B7 | CLASSIC eventual speed one for 2m<gcd(W,H) | kernel-checked eventual full movement and at most m(g−2) blocked rounds per prefix | B2 geometry, CLASSIC transport and car count |
 
 ---
 
@@ -568,8 +566,7 @@ individual eventual times give simultaneous eventual stability. No eventual
 periodicity or bounded test result is assumed.
 
 This proves the result for squares only and supplies no effective stabilization-time bound.
-The CLASSIC transfer has the separate prose proof in B7 below; its Lean
-formalization remains open. Separate finite acceptance covers all
+The CLASSIC rectangular proof is in B7 below. TRAIN finite acceptance covers all
 1,305 sparse square states through N=5 and checks full actual movement on
 every terminal-cycle edge. Eight targeted orbit certificates add 53 transition
 rows; ten new Quint tests and six controls check the clock, counts, recurrence,
@@ -580,69 +577,39 @@ commands, and source-bound acceptance status.
 
 ## B7. CLASSIC low-density speed one
 
-**Status: prose proof and finite checks; not formalized in Lean.**
+**Status: kernel-checked for every positive rectangle.**
 
-Austin–Benjamini prove this for their queue ("train") rule on N×N. Their argument transfers to
-the CLASSIC kernel, and to every W×H with g = gcd(w, h) in place of N. The transfer, and the
-explicit bound below, are our derivation.
+For `g = gcd(W,H)` and `m = carCount`, the strict hypothesis is `2m < g`.
+The proofs use the CLASSIC transport and counting kernel. Austin–Benjamini’s
+corrected-diagonal argument for the TRAIN rule motivates the construction.
+The correction subtracts the number of completed rounds from the diagonal
+class modulo `g`.
 
-```lean
-/-- Time-corrected class occupancy: some car at time t lies in class (z + t) mod g. -/
-def Occ (s) (t z : Nat) : Prop := ∃ p, f^t s p ≠ .empty ∧ φ p = (z + t) % g
+| Part | Lean declarations | Argument |
+| --- | --- | --- |
+| B7.0 | `phaseIndex_east`, `phaseIndex_north`, `correctedClass_roundTransport` | Either coordinate step advances the phase by one modulo `g`. A moving tag keeps its corrected class. A blocked tag takes one cyclic predecessor step. |
+| B7.1 | `corrected_release` | An east car can enter a vacant next class. When the occupied class has only north cars, their north targets have no east predecessor that can fill them during the first phase. |
+| B7.2 | `corrected_survival` | Every car survives via `roundTransport_preserves_car`. Its corrected class stays or moves to its predecessor. |
+| B7.3 | `corrected_emptyPair_backwards`, `corrected_emptyPair_before` | Survival excludes a predecessor-time occupant of the second class. Release then excludes one in the first class. Induction gives the same pair throughout a finite prefix. |
+| B7.4 | `corrected_emptyPair_of_sparse` | Without an empty pair, the occupied list and its cyclic predecessors would cover all `g` classes with at most `2m` entries. Conservation applies the argument at each time. |
+| B7.5 | `low_density_tag_block_bound` | Cut at the first class of an empty pair at time `T`. An original car's rotated class stays between 1 and `g−1` through `T`. Its distance drops by one for each blocked round, so its block count is at most `g−2`. |
 
-theorem low_density_speed_one (s) (hm : 2 * carCount w h s < Nat.gcd w h) :
-    ∃ T, ∀ t ≥ T, AllMove (f^t s)
+[BML/SparseDynamics.lean](lean/BML/SparseDynamics.lean) proves the class and
+empty-pair lemmas. [BML/SparseSpeed.lean](lean/BML/SparseSpeed.lean) sums the
+per-tag bounds using the initial species counts. Trace surjectivity gives a
+blocked original tag whenever `AllMove` fails. The theorem
+`low_density_block_bound` bounds the number of such rounds in each prefix
+`[0,T)` by `m(g−2)`. The prefix count is nondecreasing and attains a maximum.
+Any later blockage would increase it, proving `low_density_speed_one`.
 
-/-- Explicit form: at most m·(g − 2) steps contain a blocked car. -/
-theorem low_density_block_bound (s) (hm : 2 * carCount w h s < Nat.gcd w h) (T : Nat) :
-    ((List.range T).filter fun t => ¬ AllMove (f^t s)).length ≤ carCount w h s * (g - 2)
-```
+The theorem includes the empty board and singleton dimensions. Its numerical
+bound counts blocked rounds. The deterministic condition gives a shrinking
+density range as the torus grows. The fixed-positive-density probability
+problem remains open.
 
-If g ≤ 2, the hypothesis forces m = 0 and the statement is trivial. Assume g ≥ 3. Write
-"Y-value z at time t" for the class (z + t) mod g. A car that moves keeps its Y-value; a blocked
-car's Y-value drops by 1.
-
-**B7.0 (one step advances the class by 1).** φ (E.next p) = φ p + 1 and φ (N.next p) = φ p + 1
-(mod g). The wrap-around x = w−1 → 0 is harmless because g ∣ w (B0); likewise g ∣ h.
-
-**B7.1 (release).** `Occ s t z ∧ ¬ Occ s t (z+1) → Occ s (t+1) z`.
-- If class D = z + t holds an east car, its target lies in class D + 1, which is empty. So it
-  moves, and lands in class D + 1, which is Y-value z at time t + 1.
-- If D holds no east car, after the east phase class D + 1 is still empty: east cars enter it only
-  from D, and there are none. So the north cars of D move (`CanMove` on the intermediate state).
-
-**B7.2 (survival).** `Occ s t (z+1) → Occ s (t+1) z ∨ Occ s (t+1) (z+1)`. Each car survives a
-step, moving at most one cell east or north (`transport_preserves_car` for each phase, with B7.0).
-
-**B7.3 (empty pairs persist backwards).**
-`¬ Occ s (t+1) z ∧ ¬ Occ s (t+1) (z+1) → ¬ Occ s t z ∧ ¬ Occ s t (z+1)`.
-- If `Occ s t (z+1)`, then B7.2 contradicts the hypothesis.
-- If `Occ s t z` and not `Occ s t (z+1)`, then B7.1 contradicts it.
-
-By induction on T − t: an empty pair at time T has been empty at every t ≤ T.
-
-**B7.4 (an empty pair always exists).** If 2·carCount < g, then for every t there is z with
-`¬ Occ s t z ∧ ¬ Occ s t (z+1)`.
-- At most carCount Y-values are occupied (the car count is conserved, by PR #7's conservation).
-- Double counting: Σ_z ([Occ z] + [Occ (z+1)]) = 2·#occupied ≤ 2m < g. So some z has both
-  indicators 0. This is the same trick as B4.2.
-
-**B7.5 (each car is blocked at most g − 2 times).** Fix T, and let z be the empty pair at time T
-from B7.4. By B7.3, Y-values z and z+1 are empty at every t ≤ T.
-- Follow one car with `transport`. Its Y-value never equals z or z+1 before T.
-- It changes only by −1 steps.
-- Starting at Y₀ ∉ {z, z+1}, it would reach z after (Y₀ − z) mod g ≤ g − 1 blocks. So it is
-  blocked at most (Y₀ − z) mod g − 1 ≤ g − 2 times in [0, T).
-
-**Assembly.**
-- A step contains a blocked car iff `¬ AllMove`.
-- Summing B7.5 over the m cars bounds those steps in [0, T) by m·(g − 2), for every T. This gives
-  `low_density_block_bound`.
-- Hence only finitely many steps contain a blocked car, which gives `low_density_speed_one`.
-
-**Evidence.** `tests/test_blueprint.py`:
-- B7.1 and B7.2 checked on every state of 2×2, 3×3, 2×4, 4×2, 2×6;
-- the per-car block bound checked on random runs over N×N and N×2N with 2m < g.
+The [finite replay](../scripts/check_sparse_speed.py) independently checks
+every sparse board on 14 ordered shapes through its first board recurrence,
+with larger sparse queues and strict-density and phase-semantics controls.
 
 ---
 

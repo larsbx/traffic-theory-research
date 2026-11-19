@@ -1,3 +1,4 @@
+import BML.Counting
 import BML.FreeFlowConditions
 import BML.Rigid
 import BML.Encounters
@@ -9,6 +10,15 @@ The static conditions imply actual movement in both successive phases and
 are preserved by the resulting full round.
 -/
 namespace BML
+
+/-- Decide CLASSIC full movement by enumerating the actual positions. -/
+instance torusAllMoveDecidable (east north : Direction (Position w h))
+    (s : Config (Position w h)) : Decidable (AllMove east north s) := by
+  letI (P : Position w h → Prop) [DecidablePred P] : Decidable (∀ p, P p) :=
+    decidable_of_iff (∀ p ∈ positions w h, P p)
+      ⟨fun hp p => hp p (mem_positions w h p), fun hp p _ => hp p⟩
+  unfold AllMove
+  infer_instance
 
 /-- Cyclic successor is injective on canonical residue representatives. -/
 private theorem residue_succ_injective (g a b : Nat) (hg : 0 < g)

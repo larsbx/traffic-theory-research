@@ -158,8 +158,10 @@ fixed-point result does not transfer.
   phases: the static adjacency and phase-class conditions hold exactly when
   every car moves in every round starting at time zero. Checking the first
   `lcm(W,H)` rounds suffices, and each such configuration returns after that
-  many rounds, possibly with a smaller least period. The suite also proves
-  permanent cores and route-cover capture bounds. Some original car eventually
+  many rounds, possibly with a smaller least period. B7 proves eventual full
+  movement for every board with `2m < gcd(W,H)` and at most
+  `m * (gcd(W,H) - 2)` blocked rounds in any finite prefix. The suite also
+  proves permanent cores and route-cover capture bounds. Some original car eventually
   stops exactly when the state eventually jams or initially has a full E-row
   or N-column. Arithmetic components of F and the strong 4×2 non-monotonicity
   witness are also proved. Exact jammed representatives of bounded positive
@@ -183,9 +185,8 @@ fixed-point result does not transfer.
   It also proves that every N×N state with `2 * population < N` eventually
   reaches full speed: all cars move in every later full cycle. The empty state
   is included. This square theorem supplies no effective stabilization-time
-  bound. The CLASSIC counterpart has a separate prose proof in
-  [blueprint B7](formal/blueprint.md#b7-classic-low-density-speed-one),
-  with its Lean formalization still open.
+  bound. The rectangular CLASSIC proof uses the CLASSIC transport kernel.
+  See [blueprint B7](formal/blueprint.md#b7-classic-low-density-speed-one).
 
 These are separately scoped proof and validation suites in one pinned Lean
 package. The replay domains are finite executable checks, and no general

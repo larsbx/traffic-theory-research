@@ -13,7 +13,7 @@ elab "audit_freeflow_export" : command => do
     ``BML.StaticFree, ``BML.AllMove, ``BML.halfStep, ``BML.torusStep,
     ``BML.FreeFlowExport.positionForall,
     ``BML.FreeFlowExport.staticFreeDecidable,
-    ``BML.FreeFlowExport.allMoveDecidable,
+    ``BML.torusAllMoveDecidable,
     ``BML.FreeFlowExport.staticFreeFlag, ``BML.FreeFlowExport.allMoveFlag,
     ``BML.FreeFlowExport.materialize, ``BML.FreeFlowExport.arrayConfig,
     ``BML.FreeFlowExport.traceState, ``BML.FreeFlowExport.exportThrough, ``main]
