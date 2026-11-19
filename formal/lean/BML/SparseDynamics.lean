@@ -140,6 +140,30 @@ theorem corrected_survival (u : Config (Position w h)) (t : Nat) (i : Fin g)
   · exact Or.inl ⟨q, hq, hrow⟩
   · exact Or.inr ⟨q, hq, hrow⟩
 
+/-- Even if an empty adjacent pair disappears, its first class stays empty
+for one more full round: a car can only enter it from that pair. -/
+theorem corrected_emptyPair_first_after (u : Config (Position w h)) (t : Nat) (i : Fin g)
+    (hp : CorrectedEmptyPair hw u t i) :
+    ¬ CorrectedOccupied hw (torusStep w h hw hh u) (t + 1) i := by
+  rintro ⟨q, hq, hclass⟩
+  have hspecies : ∃ sp : Species, torusStep w h hw hh u q = sp.cell := by
+    cases hc : torusStep w h hw hh u q with
+    | empty => exact (hq hc).elim
+    | east => exact ⟨.east, rfl⟩
+    | north => exact ⟨.north, rfl⟩
+  obtain ⟨sp, hsp⟩ := hspecies
+  obtain ⟨p, hcar, htransport⟩ := roundTransport_surjective_on_cars E N sp u q hsp
+  have hrow := correctedClass_roundTransport hw hh u sp t p
+  rw [htransport, hclass] at hrow
+  have hoccupied : u p ≠ .empty := fun h => sp.cell_ne_empty (hcar.symm.trans h)
+  by_cases hm : RoundCanMove E N sp u p
+  · rw [ite_eq_left hm] at hrow
+    exact hp.1 ⟨p, hoccupied, hrow.symm⟩
+  · rw [ite_eq_right hm] at hrow
+    have hnext := congrArg (cyclicNext g hg) hrow
+    rw [cyclicNext_prev] at hnext
+    exact hp.2 ⟨p, hoccupied, hnext.symm⟩
+
 /-- B7.3. An empty adjacent pair at the end of a CLASSIC round was empty
 at its start in the corrected frame. -/
 theorem corrected_emptyPair_backwards (u : Config (Position w h)) (t : Nat) (i : Fin g)

@@ -56,6 +56,9 @@ It does not embed Python-produced expected transitions.
 | `BML/GuardedQueue.lean` | A main E run at offsets `0..T`, a hole at `T+1`, and a lower E guard at offsets `1..T` force the original rear tag's first move to occur in round `T`, regardless of the exterior. One-round and iterated shrinking follow from the actual two-phase kernel. Any nonempty jam time is strictly greater than `T`. Generic results assume east-next commutes with north-previous; torus specializations discharge this premise. |
 | `BML/Fixation.lean` | Eventual constancy of an original `carTrace` is equivalent to finitely many actual moves. An eventually permanent car has an eventually permanent successor, with the north proof using the post-east checkpoint. All permanent sites form a nonempty core at a common future time. A core that misses a row forces a full E-row; a missed column forces a full N-column. Consequently, some original car fixes iff eventual nonempty jam or an initial full monochromatic lane occurs. All cars fix iff the state is empty or eventually jams. Outside both exceptional events, every original car moves and every site becomes empty arbitrarily late. |
 | `BML/Locality.lean` | A radius-`T` lifted box determines the time-`T` torus color. Lifted points at height gaps in `(0,L)` have distinct projections on the square torus. Excluding compatible initial origins of both species forces time-`T` vacancy. |
+| `BML/SparseDynamics.lean`, `BML/SparseSpeed.lean` | Corrected diagonal dynamics for original car identities; under `2m < gcd(W,H)`, each car has at most `gcd(W,H)−2` blocked rounds, and permanent free flow starts by `lcm(W,H) * m * (gcd(W,H)−2)`. |
+| `BML/SparseEquality.lean` | Extends the same blockage bounds and deadline to `2m ≤ gcd(W,H)`. A saturated configuration without an adjacent empty corrected-class pair is already static-free. |
+| `BML/MissedMoves.lean` | Exact agreement between original-tag moves and actual Eulerian phase counts; cumulative missed moves equal total tag blockages and satisfy the inclusive sparse budget. The same correspondence gives an Eulerian movement bound for `RouteCover`. |
 | `BML/Torus.lean` | Positive finite cyclic coordinates with proved inverse shifts; the general kernel is instantiated on `Fin WIDTH × Fin HEIGHT`; executable base-three encoding, decoding, and counts. |
 | `BML/Counting.lean` | The position enumeration is complete and has no duplicates. Filtered species lists agree with the executable `speciesCount` sums; the occupied-list length is their sum. Transport induces a list permutation, proving numerical species conservation under every half-step, and total-count conservation under every full-step iterate. |
 | `BML/Enumeration.lean` | Explicit row-major and reverse row/column bijections, with quotient/remainder inverses. A configuration occupying exactly a prefix of n ranks has actual car count n. |
@@ -252,8 +255,9 @@ and a specified core obstacle on every row and every column. The public theorem
 `RouteCover.jammed_by_movementBudget` derives strict decrease from actual
 `CanMove` events and tagged transport; it does not assume rank decrease as an
 unproved premise. `RouteCover.total_moves_le` counts moves through original car
-tags and the proved `carTrace_bijection`. A separate equality with the existing
-Eulerian `moveCount` function is not claimed.
+tags and the proved `carTrace_bijection`. `BML/MissedMoves.lean` proves equality
+with the actual Eulerian phase counts and transfers this capture bound through
+`RouteCover.cumulativeMoveCount_le_budget`.
 
 `Fixation.lean` now also constructs `RouteCover` from any nonempty closed core
 when there is no full E-row or full N-column. Its proof minimizes cyclic distance
@@ -509,18 +513,45 @@ uniform finite-prefix blockage budget, without a sparsity hypothesis.
 This combines the finite blockage budget with
 `lemmaR_finite_lt`: `K+1` disjoint windows of length `lcm(w,h)` cannot
 all contain a blockage when every prefix has at most `K` blocked rounds.
-The empty board has deadline zero; a nonempty sparse board has `g ≥ 3`.
+The empty board has deadline zero; a nonempty strictly sparse board has `g ≥ 3`.
 The deadline is a sufficient upper bound, with no sharpness claim.
 `low_density_square_speed_one_deadline` specializes it to `n * m * (n−2)`
 on an `n×n` square with `2m < n`.
 
+`BML/SparseEquality.lean` extends all these conclusions to `2m ≤ g`,
+retaining the same deadline and blockage budgets. The inclusive public
+theorems are `low_density_tag_block_bound_le`, `low_density_block_bound_le`,
+`low_density_staticFree_deadline_le`, `low_density_speed_one_deadline_le`,
+`low_density_speed_one_le`, and `low_density_square_speed_one_deadline_le`.
+If no adjacent corrected-class pair is empty, cardinality saturation gives
+one car per occupied class and no adjacent occupied classes; the board is
+already `StaticFree`. Otherwise the first vacancy of an empty pair survives
+one extra round, preserving the rank bound through a final blockage. Thus
+the newly admitted single-car `g=2` configurations have deadline zero.
+
+`BML/MissedMoves.lean` connects identities to executable movement counts.
+`roundMoveCount` sums east moves and north moves on the east intermediate.
+`missedMoveCount_eq_tag_blocks` identifies the cumulative Eulerian deficit
+with the sum of original-tag block counts. The exact balance
+`cumulativeMoveCount_add_missedMoveCount` holds for every state and horizon.
+Under `2m ≤ g`, `low_density_missed_move_bound_le` bounds total misses by
+`m(g−2)` and `low_density_movement_bounds_le` gives
+`m*T−m(g−2) ≤ cumulative movement ≤ m*T`. The natural-number statements
+include zero population and zero horizon. Strict variants remain available.
+The same bridge proves `RouteCover.taggedMoves_eq_roundMoveCount`,
+`RouteCover.movesThrough_eq_cumulativeMoveCount`, and the Eulerian capture
+budget `RouteCover.cumulativeMoveCount_le_budget`.
+
 The BML audit checks these public theorem declarations. The separate replay
 compares both CLASSIC phases and original-tag traces with an independent
 scalar implementation. Its header exports the proved deadline formula for
-sparse boards and `-` outside the strict hypothesis. Complete recurrent
+sparse boards and `-` outside `2m ≤ g`. Each round also exports the actual
+Eulerian movement count and successor `StaticFree` predicate. Complete recurrent
 traces check permanent-flow entry by the deadline. A targeted `5×10`
 two-car orbit first becomes permanently free at round 10 despite having
-bad-round budget 6, distinguishing the two quantities.
+bad-round budget 6, distinguishing the two quantities. An equality-case
+`6×6` queue has two blocked rounds but three missed car movements; a `4×4`
+three-car queue is above the bound and slows down periodically forever.
 Run `python scripts/check_sparse_speed.py` from the
 repository root after `lake build`.
 

@@ -1,9 +1,20 @@
-import BML.SparseSpeed
+import BML.MissedMoves
 import BML.Absorption
 
 /-! Finite CLASSIC traces using the proved data-state evaluator and actual
 tag transport. Tag order is the row-major order of the original cars. -/
 namespace BML.SparseSpeedExport
+
+/-- Executable finite quantification for the exported static-free predicate. -/
+local instance positionForall (w h : Nat) (P : Position w h → Prop)
+    [DecidablePred P] : Decidable (∀ p, P p) :=
+  decidable_of_iff (∀ p ∈ positions w h, P p)
+    ⟨fun hp p => hp p (mem_positions w h p), fun hp p _ => hp p⟩
+
+local instance staticFreeDecidable (w h : Nat) (hw : 0 < w) (hh : 0 < h)
+    (s : Config (Position w h)) : Decidable (StaticFree w h hw hh s) := by
+  unfold StaticFree
+  infer_instance
 
 def siteIndex (w : Nat) (p : Position w h) : Nat :=
   p.2.val * w + p.1.val
@@ -14,7 +25,7 @@ def row (w h : Nat) (hw : 0 < w) (hh : 0 < h) (code horizon : Nat) : String := I
   let mut board := materialize w h (decode w h code)
   let initial := boardConfig board
   let population := carCount w h initial
-  let sparse := if 2 * population < Nat.gcd w h then 1 else 0
+  let sparse := if 2 * population <= Nat.gcd w h then 1 else 0
   let deadline := if sparse == 1 then toString (sparseSpeedDeadline w h initial) else "-"
   let mut tags := (occupiedCells w h initial).map fun p =>
     (if initial p == .east then Species.east else Species.north, p)
@@ -25,13 +36,15 @@ def row (w h : Nat) (hw : 0 < w) (hh : 0 < h) (code horizon : Nat) : String := I
     let mid := halfStep east .east s
     let next := boardStep w h hw hh board
     let allMove := if AllMove east north s then 1 else 0
+    let moves := roundMoveCount hw hh s
+    let staticAfter := if StaticFree w h hw hh (boardConfig next) then 1 else 0
     let tagged := tags.map fun (sp, p) =>
       let moved := if RoundCanMove east north sp s p then 1 else 0
       let q := roundTransport east north sp s p
       (sp, q, moved)
     let tagFields := tagged.flatMap fun (_, q, moved) =>
       [siteIndex w q, moved, (correctedClass hw (t + 1) q).val]
-    let round := [encode w h mid, encode w h (boardConfig next), allMove] ++ tagFields
+    let round := [encode w h mid, encode w h (boardConfig next), allMove, moves, staticAfter] ++ tagFields
     fields := fields.push (String.intercalate "," (round.map toString))
     tags := tagged.map fun (sp, q, _) => (sp, q)
     board := next
