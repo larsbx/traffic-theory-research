@@ -30,11 +30,17 @@ audit_sparse_speed_export
 #guard BML.blockedTagCount (by decide) (by decide) (BML.decode 5 5 82) .east (4, 0) 2 == 1
 #guard BML.blockedTagCount (by decide) (by decide) (BML.decode 5 5 82) .east (0, 0) 2 == 0
 
--- The strict inequality excludes equality, and a 3×3 full east row
--- keeps blocking outside the sparse range.
-#guard !(decide (2 * BML.carCount 4 4 (BML.decode 4 4 19) < Nat.gcd 4 4))
+-- Equality is now admitted, including g=2 with a zero deadline. A dense
+-- row still keeps blocking outside the inclusive sparse range.
+#guard decide (2 * BML.carCount 4 4 (BML.decode 4 4 19) <= Nat.gcd 4 4)
+#guard BML.sparseSpeedDeadline 2 4 (BML.decode 2 4 2) == 0
+#guard !(decide (2 * BML.carCount 4 4 (BML.decode 4 4 13) <= Nat.gcd 4 4))
 #guard BML.blockedRoundCount (by decide) (by decide) (BML.decode 3 3 13) 4 == 4
 
 -- Deadlines use elapsed time, including the zero deadline on empty boards.
 #guard BML.sparseSpeedDeadline 1 1 (BML.decode 1 1 0) == 0
 #guard BML.sparseSpeedDeadline 5 10 (BML.decode 5 10 487) == 60
+
+-- Two blocked rounds can contain three missed car movements.
+#guard BML.blockedRoundCount (by decide) (by decide) (BML.decode 6 6 13) 2 == 2
+#guard BML.missedMoveCount (by decide) (by decide) (BML.decode 6 6 13) 2 == 3

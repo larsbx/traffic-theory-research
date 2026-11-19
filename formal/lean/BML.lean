@@ -17,6 +17,8 @@ import BML.CosetTimes
 import BML.FreeFlow
 import BML.FreeMaximum
 import BML.SparseSpeed
+import BML.SparseEquality
+import BML.MissedMoves
 import BML.Lanes
 import BML.NonGridlock
 import BML.GridlockThresholds

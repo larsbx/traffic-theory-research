@@ -104,7 +104,7 @@ jobs:
         run: python scripts/check_freeflow.py --max-cells 9 --report .artifacts/freeflow.json --rows .artifacts/freeflow.tsv | tee .artifacts/freeflow.log
       - name: Check actual Lean free-flow constructions at every attainable population
         run: python scripts/check_free_max.py --max-side 12 --report .artifacts/free-max.json --rows .artifacts/free-max.tsv | tee .artifacts/free-max.log
-      - name: Replay CLASSIC sparse-speed deadlines and movement-rule controls
+      - name: Replay inclusive CLASSIC deadlines and missed movements
         run: python scripts/check_sparse_speed.py --report .artifacts/sparse-speed.json | tee .artifacts/sparse-speed.log
       - name: Check certified cutoff bounds against the actual Lean probe
         run: python scripts/check_absorption.py --backend lean --report .artifacts/absorption-lean.json | tee .artifacts/absorption-lean.log

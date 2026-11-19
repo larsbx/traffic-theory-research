@@ -21,8 +21,14 @@ movement holds from round `lcm(W,H) * m(g−2)` onward, and the state is
 `low_density_staticFree_deadline` in
 [BML/SparseSpeed.lean](../../formal/lean/BML/SparseSpeed.lean).
 The original status table and priorities below retain their dated snapshot.
-Equality, rectangular TRAIN speed one, and the fixed-positive-density
-probability problem remain separate obligations.
+At that stage, equality remained separate. The further CLASSIC extension
+now proves `2m ≤ gcd(W,H)` with the same deadline and bounds, using
+counting saturation when no empty corrected-class pair exists.
+`BML/MissedMoves.lean` also proves the exact original-tag/Eulerian counting
+identity and at most `m(g−2)` missed car movements in every prefix. The
+corresponding route-cover movement-count identity is now formalized.
+The TRAIN equality and rectangular extensions discussed below, and the
+fixed-positive-density probability problem, remain separate obligations.
 
 **Subsequent probability follow-up:** the
 [tagged-fixation note](2026-11-18-tagged-fixation-and-gridlock.md) adds a complete
@@ -284,8 +290,11 @@ criterion: `K+1` disjoint windows of `ell` rounds with at most `K` blocked
 rounds contain a fully moving window starting by `ell * K`.
 A nonempty strict sparse state has \(g\ge3\); the empty state's deadline is
 zero. The general two-rule conversion above remains a prose statement outside
-the proved CLASSIC scope. Do not attach the same rank bound to the equality
-extension without checking its quantitative premises separately.
+the proved CLASSIC scope. The CLASSIC equality extension now supplies the
+quantitative premises for the same budget: the first vacancy of an empty
+pair survives one further round, so induction over moving and blocked final
+rounds preserves the rank bound. This does not transfer the equality
+conclusion or its rank bound to TRAIN.
 
 Finite-state determinism already gives a computable bound: on a fixed
 \(W\times H\) board there are at most \(3^{WH}\) occupancy states. In a

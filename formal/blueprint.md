@@ -19,7 +19,9 @@ lemmas small enough to formalise one at a time.
   `FreePattern.lean`, `FreeConstruction.lean`, `FreeDeletion.lean`, and
   `FreeMaximum.lean`, with finite-sum helpers in `FiniteSums.lean`.
   B5 and B6 are complete in the separate TRAIN library linked below.
-  B7 is complete in `SparseDynamics.lean` and `SparseSpeed.lean`.
+  B7 is complete in `SparseDynamics.lean`, `SparseSpeed.lean`, and
+  `SparseEquality.lean`; `MissedMoves.lean` supplies the actual movement-count
+  correspondence and cumulative deficit bounds.
 
 Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 `f = torusStep w h hw hh = step E N`, and `f^t = iterate f t`.
@@ -33,7 +35,7 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B4 | Theorem F: densest free flow | kernel-checked exact capacity, all-count constructions, static/perpetual/eventual existence spectra, and square corollaries | B2, B3, Counting |
 | B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
 | B6 | TRAIN eventual speed one on sparse N×N squares | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `Train/Diagonals`, `Train/FreeFlow`, actual diagonal transport/release |
-| B7 | CLASSIC eventual speed one for 2m<gcd(W,H) | kernel-checked full movement from round lcm(W,H)·m(g−2) onward and at most m(g−2) blocked rounds per prefix | B2 geometry, B3 finite free window, CLASSIC transport and car count |
+| B7 | CLASSIC eventual speed one for 2m≤gcd(W,H) | kernel-checked full movement from round lcm(W,H)·m(g−2) onward; at most m(g−2) missed car movements and blocked rounds per prefix | B2 geometry, B3 finite free window, CLASSIC transport and car count |
 
 ---
 
@@ -579,7 +581,9 @@ commands, and source-bound acceptance status.
 
 **Status: kernel-checked for every positive rectangle.**
 
-For `g = gcd(W,H)` and `m = carCount`, the strict hypothesis is `2m < g`.
+For `g = gcd(W,H)` and `m = carCount`, the original strict argument uses
+`2m < g`. The inclusive extension below proves the same conclusion and
+quantitative bounds under `2m ≤ g`.
 The proofs use the CLASSIC transport and counting kernel. Austin–Benjamini’s
 corrected-diagonal argument for the TRAIN rule motivates the construction.
 The correction subtracts the number of completed rounds from the diagonal
@@ -612,14 +616,35 @@ movement forces permanent free flow from that start.
 
 The bound `K` counts blocked rounds; `ell * K` bounds elapsed time to
 permanent free flow. The theorem includes the empty board, with deadline
-zero, and singleton dimensions. A nonempty state satisfying the strict
-hypothesis has `g ≥ 3`. No sharpness or equality-case extension is claimed.
-The deterministic condition gives a shrinking density range as the torus
-grows. The fixed-positive-density probability problem remains open.
+zero, and singleton dimensions. No sharpness is claimed.
+
+**Equality and cumulative movement.** `BML/SparseEquality.lean` proves
+the inclusive condition `2m ≤ g`. If no adjacent corrected-class pair is
+empty, the cover by occupied classes and their predecessors saturates the
+count bound. Its entries are distinct, so each occupied class contains one
+car and no adjacent occupied classes exist. The actual configuration is
+then `StaticFree`.
+
+A blocked round must therefore begin with an empty pair. Its first vacancy
+remains empty for one more round, since a car entering it would have to
+come from one of the two empty classes. This extends the positive-rank
+argument through that final blocked round. Induction on the horizon retains
+the same `g−2` per-tag budget, `m(g−2)` blocked-round budget, and elapsed
+deadline, including equality. The public inclusive theorems end in `_le`.
+At `g=2`, the admitted single-car states have deadline zero.
+
+`BML/MissedMoves.lean` proves that total missed car movements equal the sum
+of original-tag blockage counts, and that actual cumulative movement plus
+those misses equals `m*T` in every T-round prefix. Thus under `2m ≤ g`,
+`m*T−m(g−2) ≤ cumulative movement ≤ m*T`. Multiple cars may be blocked
+in one round, so missed movements and blocked rounds are separate counts.
+The deterministic condition still gives a shrinking density range as the
+torus grows; the fixed-positive-density probability problem remains open.
 
 The [finite replay](../scripts/check_sparse_speed.py) independently checks
-every sparse board on 14 ordered shapes through its first board recurrence,
-with larger sparse queues and strict-density and phase-semantics controls.
+every inclusively sparse board on 16 ordered shapes through first recurrence,
+including all equality boards in those domains, with separate phase,
+movement-count, and above-boundary controls.
 
 ---
 

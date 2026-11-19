@@ -48,7 +48,7 @@ private theorem filter_range_succ_length (P : Nat → Prop) [DecidablePred P] (t
   rw [List.range_succ, List.filter_append, List.length_append]
   by_cases hp : P t <;> simp [hp]
 
-private theorem blockedTagCount_succ (s : Config (Position w h)) (sp : Species)
+theorem blockedTagCount_succ (s : Config (Position w h)) (sp : Species)
     (p : Position w h) (t : Nat) :
     blockedTagCount hw hh s sp p (t + 1) = blockedTagCount hw hh s sp p t +
       (if ¬ TraceCanMove hw hh s sp p t then 1 else 0) :=
@@ -90,23 +90,19 @@ private theorem shift_from_cut_prev (cut y : Fin g) :
       cyclicPrev g hg (cyclicShift g hg (-(cut.val : Int)) y) := by
   simp only [← cyclicShift_neg_one, cyclicShift_add, Int.add_comm]
 
-/-- B7.5. Every original CLASSIC car is blocked at most g−2 times in any
-finite prefix. Its natural distance from the cut decreases by one for
-each block and never reaches zero. -/
-theorem low_density_tag_block_bound (s : Config (Position w h))
-    (hm : 2 * carCount w h s < g) (sp : Species) (p : Position w h) (hp : s p = sp.cell)
-    (T : Nat) : blockedTagCount hw hh s sp p T ≤ g - 2 := by
-  have hsize : 2 * carCount w h (orbit T s) < g := by
-    simpa only [iterate_torusStep_carCount] using hm
-  obtain ⟨cut, hcut⟩ := corrected_emptyPair_of_sparse hw (orbit T s) T hsize
+/-- A corrected class avoided throughout a finite prefix bounds each
+original car's block count by g−2 through natural rank decrease. -/
+theorem tag_block_bound_of_corrected_cut (s : Config (Position w h))
+    (sp : Species) (p : Position w h) (hp : s p = sp.cell) (T : Nat) (cut : Fin g)
+    (hempty : ∀ t, t ≤ T → ¬ CorrectedOccupied hw (orbit t s) t cut) :
+    blockedTagCount hw hh s sp p T ≤ g - 2 := by
   let Y := fun t => correctedClass hw t (carTrace E N sp s t p)
   let rank := fun t => (cyclicShift g hg (-(cut.val : Int)) (Y t)).val
   have hpos (t : Nat) (ht : t ≤ T) : 0 < rank t := by
     apply shift_from_cut_pos hw
     intro h
-    have hempty := (corrected_emptyPair_before hw hh s ht cut hcut).1
     have hcar := carTrace_preserves_car E N sp s p hp t
-    exact hempty ⟨_, fun he => sp.cell_ne_empty (hcar.symm.trans he), h⟩
+    exact hempty t ht ⟨_, fun he => sp.cell_ne_empty (hcar.symm.trans he), h⟩
   have hstep (t : Nat) (ht : t < T) :
       rank (t + 1) + (if ¬ TraceCanMove hw hh s sp p t then 1 else 0) = rank t := by
     have hclass : Y (t + 1) = if TraceCanMove hw hh s sp p t then Y t
@@ -137,7 +133,32 @@ theorem low_density_tag_block_bound (s : Config (Position w h))
   have hhi : rank 0 < g := (cyclicShift g hg (-(cut.val : Int)) (Y 0)).isLt
   omega
 
-private theorem allMove_iff_traceCanMove (s : Config (Position w h)) (t : Nat) :
+/-- A pair empty before the final round supplies a cut through that round:
+backward persistence covers the prefix and its first vacancy survives once. -/
+theorem tag_block_bound_of_emptyPair_before (s : Config (Position w h))
+    (sp : Species) (p : Position w h) (hp : s p = sp.cell) (T : Nat) (cut : Fin g)
+    (hcut : CorrectedEmptyPair hw (orbit T s) T cut) :
+    blockedTagCount hw hh s sp p (T + 1) ≤ g - 2 := by
+  apply tag_block_bound_of_corrected_cut hw hh s sp p hp (T + 1) cut
+  intro t ht
+  by_cases hle : t ≤ T
+  · exact (corrected_emptyPair_before hw hh s hle cut hcut).1
+  · have heq : t = T + 1 := by omega
+    subst t
+    exact corrected_emptyPair_first_after hw hh (orbit T s) T cut hcut
+
+/-- B7.5. Under strict sparsity every original CLASSIC car is blocked at
+most g−2 times in any finite prefix. -/
+theorem low_density_tag_block_bound (s : Config (Position w h))
+    (hm : 2 * carCount w h s < g) (sp : Species) (p : Position w h) (hp : s p = sp.cell)
+    (T : Nat) : blockedTagCount hw hh s sp p T ≤ g - 2 := by
+  have hsize : 2 * carCount w h (orbit T s) < g := by
+    simpa only [iterate_torusStep_carCount] using hm
+  obtain ⟨cut, hcut⟩ := corrected_emptyPair_of_sparse hw (orbit T s) T hsize
+  apply tag_block_bound_of_corrected_cut hw hh s sp p hp T cut
+  exact fun t ht => (corrected_emptyPair_before hw hh s ht cut hcut).1
+
+theorem allMove_iff_traceCanMove (s : Config (Position w h)) (t : Nat) :
     AllMove E N (orbit t s) ↔ ∀ sp p, s p = sp.cell → TraceCanMove hw hh s sp p t := by
   constructor
   · intro hm sp p hp
@@ -191,11 +212,10 @@ private theorem blockedRound_le_blockedTags (s : Config (Position w h)) (t : Nat
     simp only [hall, not_false_eq_true, ↓reduceIte]
     exact Nat.succ_le_of_lt hpos
 
-/-- Across any finite time prefix, at most m(g−2) complete CLASSIC rounds
-contain a blocked car. This counts blocked rounds, not elapsed time. -/
-theorem low_density_block_bound (s : Config (Position w h))
-    (hm : 2 * carCount w h s < g) (T : Nat) :
-    blockedRoundCount hw hh s T ≤ carCount w h s * (g - 2) := by
+/-- Summing a common original-tag blockage bound bounds blocked rounds. -/
+theorem blockedRoundCount_le_of_tag_bound (s : Config (Position w h)) (T B : Nat)
+    (hbound : ∀ sp p, s p = sp.cell → blockedTagCount hw hh s sp p T ≤ B) :
+    blockedRoundCount hw hh s T ≤ carCount w h s * B := by
   calc
     _ = ((List.range T).map (fun t => if ¬ AllMove E N (orbit t s) then 1 else 0)).sum :=
       length_filter_eq_indicator_sum _ _
@@ -205,11 +225,19 @@ theorem low_density_block_bound (s : Config (Position w h))
     _ = ((carTags s).map (fun tag => blockedTagCount hw hh s tag.1 tag.2 T)).sum := by
       rw [list_sum_map_swap]
       simp only [blockedTagCount, length_filter_eq_indicator_sum]
-    _ ≤ ((carTags s).map (fun _ => g - 2)).sum := by
+    _ ≤ ((carTags s).map (fun _ => B)).sum := by
       apply list_sum_map_le
       intro ⟨sp, p⟩ hp
-      exact low_density_tag_block_bound hw hh s hm sp p ((mem_carTags s sp p).mp hp) T
+      exact hbound sp p ((mem_carTags s sp p).mp hp)
     _ = _ := by simp [List.map_const', List.sum_replicate_nat, length_carTags]
+
+/-- Across any finite time prefix, at most m(g−2) complete CLASSIC rounds
+contain a blocked car. This counts blocked rounds, not elapsed time. -/
+theorem low_density_block_bound (s : Config (Position w h))
+    (hm : 2 * carCount w h s < g) (T : Nat) :
+    blockedRoundCount hw hh s T ≤ carCount w h s * (g - 2) :=
+  blockedRoundCount_le_of_tag_bound hw hh s T (g - 2)
+    (fun sp p hp => low_density_tag_block_bound hw hh s hm sp p hp T)
 
 /-- A uniform budget of K blocked CLASSIC rounds gives entry into the static
 free-flow set by lcm(w,h)*K. If that deadline were not static-free, each of the
