@@ -27,3 +27,4 @@ import BML.Delay
 import BML.GuardedQueue
 import BML.Fixation
 import BML.Profiles
+import BML.Locality

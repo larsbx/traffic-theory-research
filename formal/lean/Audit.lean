@@ -143,7 +143,9 @@ elab "audit_bml" : command => do
     ``BML.exists_jam_with_lane_profile,
     ``BML.exists_jam_with_lane_profile_of_caps,
     ``BML.exists_jam_with_same_lane_profile,
-    ``BML.admissible_profile_cannot_certify_no_jam]
+    ``BML.admissible_profile_cannot_certify_no_jam,
+    ``BML.torus_iterate_eq_of_lifted_box, ``BML.torusProject_ne_of_height_gap,
+    ``BML.torus_iterate_empty_of_no_lifted_origins]
   for name in required do
     match env.find? name with
     | none => throwError "BML audit missing required theorem {name}"

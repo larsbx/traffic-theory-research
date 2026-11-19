@@ -389,6 +389,13 @@ There is also a structural limit to the empty-strip approach. At fixed
 most \(L(1-p/2)^L\to0\). Optimizing the strip width alone cannot make this
 particular mechanism establish a fixed-positive-density nonjamming interval.
 
+The [diagonal-cuts bound](2026-11-18-diagonal-cuts.md) suppresses direct mixed
+cycles through \(T_L=\lfloor c\sqrt{\log L}\rfloor\) for every fixed \(p<1\)
+and sufficiently small \(c=c(p)>0\). It follows arrows at the chosen snapshot
+and uses unqueried initial cells to stop each path. At this horizon initial
+queues also make perfect free flow unlikely. To prove a fixed positive
+nonjamming interval, it remains to control cycles that form after \(T_L\).
+
 ### 5.2 Questions that remain
 
 One precise threshold formulation is
