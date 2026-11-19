@@ -15,7 +15,13 @@ the actual CLASSIC E-count in each row and N-count in each column, together
 with equivalences between initial and later full E-rows, full N-columns,
 and north-free strips. The event identity, mixed-cycle geometry, strip-crossing
 argument, constructions, probability estimates, and asymptotic conclusions
-below have mathematical prose proofs; they are not claimed as Lean theorems.
+below have mathematical prose proofs. The later
+[profile note](2026-11-18-lane-profile-obstruction.md) generalizes the jammed
+representative and connects it to a universal actual-kernel Lean construction;
+the free-flow representative and probability conclusions remain prose results.
+The [capacity note](2026-11-18-disjoint-strip-capacity.md) strengthens the
+finite strip bound using several disjoint strips. Theorem 6a below sharpens
+the asymptotic sparse window using the original strip estimate.
 Consult the [formal coverage register](../../formal/README.md) for the exact
 machine-checked statements and validation status. Finite exhaustive checks
 can verify finite statements and detect mistakes; they do not prove the
@@ -263,11 +269,125 @@ This is a nonjamming theorem, not a proof of eventual perfect free flow.
 Its allowed densities tend to zero. It therefore establishes no positive
 lower bound for a critical density.
 
+### Theorem 6a: an additive improvement of the sparse window
+
+The same finite strip estimate gives the stronger implication
+
+\[
+\boxed{
+p_L L\le 2\log\log L-4\log\log\log L-2
+\text{ for all sufficiently large }L
+\quad\Longrightarrow\quad q_L(p_L)\longrightarrow0.}
+\]
+
+All logarithms are natural, and the displayed upper bound is positive for
+sufficiently large \(L\). No fixed positive subtraction from its right-hand
+side is required.
+
+**Proof.** Put
+
+\[
+t=\log L,\quad s=\log t,\quad g=\log s,\quad
+\lambda=p_L L/2,\quad
+\Lambda=s-2g-1,\quad \beta=g/s,\quad d=\Lambda+\beta,
+\]
+
+and choose the integer strip width
+
+\[
+k=\left\lceil\frac{t}{d}\right\rceil.
+\]
+
+The hypothesis gives \(0\le\lambda\le\Lambda\). Eventually
+\(s/2\le\Lambda<d<s\), \(1\le k\le L\), and
+\(k>e\Lambda\). We also have \(k\le t/d+1\). If \(\lambda=0\),
+the initial state is empty almost surely and \(q_L(0)=0\). It therefore
+suffices to give uniform bounds on the remaining indices, where
+\(\lambda>0\).
+
+For the first term of Proposition 5, the binomial exponential-moment estimate
+used in Theorem 6 gives \(\Pr[\operatorname{Bin}(L,\lambda/L)\ge k]
+\le(e\lambda/k)^k\). Since \(k\ge t/d\) and
+\(\log[t/(e\Lambda d)]>0\) eventually,
+
+\[
+\begin{aligned}
+\log\left[L(e\lambda/k)^k\right]
+&\le t-\frac{t}{d}\log\frac{t}{e\Lambda d}\\
+&=\frac{t}{d}\left[d-s+1+\log\Lambda+\log d\right]\\
+&=\frac{t}{d}\left[\beta+\log(\Lambda/s)+\log(d/s)\right].
+\end{aligned}
+\]
+
+Use \(\log(1-x)\le-x\) on
+\(\Lambda/s=1-(2g+1)/s\) and
+\(d/s=1-(2g+1-\beta)/s\). For sufficiently large \(s>1\), both
+arguments belong to \((0,1)\), and the bracket is at most
+
+\[
+\beta-\frac{4g+2-\beta}{s}
+=-\frac{3g+2}{s}+\frac{g}{s^2}
+\le-\frac{2g}{s}.
+\]
+
+Thus the first term is at most
+\(\exp[-2gt/(sd)]\le\exp[-2gt/s^2]\), which tends to zero.
+
+For the empty-strip term, set
+\(n=\lfloor L/k\rfloor\) and
+\(\theta=(1-\lambda/L)^{Lk}\). Eventually \(L/k\ge2\), so
+\(n\ge L/(2k)\). Also \(\lambda/L\le1/2\), and
+\(\log(1-z)\ge-z-2z^2\) for \(0\le z\le1/2\) gives
+
+\[
+\log\theta\ge-\Lambda k-e_L,
+\qquad e_L=2\Lambda^2k/L\longrightarrow0.
+\]
+
+The error tends to zero because \(\Lambda\le s\) and
+\(k\le2t/s+1\), so \(e_L=O(st/L+s^2/L)\). Keeping the ceiling and
+floor errors explicitly,
+
+\[
+\begin{aligned}
+\log(n\theta)
+&\ge t-\log(2k)-\Lambda k-e_L\\
+&\ge\frac{\beta t}{d}-\log(2k)-\Lambda-e_L\\
+&\ge\frac{gt}{s^2}-O(s)\longrightarrow\infty.
+\end{aligned}
+\]
+
+Here \(\log k=O(s)\), and \(gt/s^2\) dominates \(s\), since
+\(t=e^s\). Therefore
+\((1-\theta)^n\le\exp(-n\theta)\to0\).
+
+Finally, the full-column term is bounded by
+\(L(\Lambda/L)^L\to0\), because \(\Lambda=O(\log\log L)\).
+All three terms in Proposition 5 vanish. The bounds depend only on the
+displayed envelope \(\Lambda\), so indices with smaller positive
+\(\lambda\), together with the already handled zero-density indices,
+give the claimed convergence for the full sequence. ∎
+
+Theorem 6 remains a simpler leading-order consequence: for every fixed
+\(\varepsilon>0\), eventually
+\((2-\varepsilon)\log\log L\le
+2\log\log L-4\log\log\log L-2\).
+The improved envelope divided by \(L\) still tends to zero. This is a
+stronger shrinking-density nonjamming result, with no implication of a
+nonjamming phase at any fixed positive density or of eventual perfect free
+flow.
+
 ## 4. Conserved lane profiles can contain both outcomes
 
 Let \(r_y\) be the number of E-cars in row \(y\), and \(c_x\) the
 number of N-cars in column \(x\). A **lane profile** specifies both vectors.
 These counts are conserved, but they do not generally determine the outcome.
+
+The subsequent [profile note](2026-11-18-lane-profile-obstruction.md) proves
+that a jammed representative exists for every positive profile with
+\(\max r+\max c\le L\), and that such profiles occur with high probability
+at every fixed \(0<p<1\). The two-representative result below retains its
+stronger hypotheses for the free-flow construction.
 
 ### Proposition 7: two states for every profile in a specified range
 
@@ -344,6 +464,14 @@ class. The result consequently does not contradict a probabilistic phase
 transition.
 
 ## 5. Finite-time isolation and limits that do not commute
+
+The later [protected-queue theorem](2026-11-18-protected-queue-gridlock-delay.md)
+strengthens the growing-time conclusion in this section from order
+`sqrt(log L)` to order `log L` at every fixed `0<p<1`. It uses only `2T+1`
+prescribed east cars and one hole, has an actual-kernel Lean proof of the
+original car's first movement, and accounts exactly for overlapping cyclic
+patterns. The isolation bound below remains a valid alternative finite bound;
+both results allow eventual gridlock after the certified delay.
 
 ### Proposition 9: an explicit bound on early global gridlock
 

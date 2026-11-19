@@ -15,9 +15,14 @@ import BML.Congruence
 import BML.Cosets
 import BML.CosetTimes
 import BML.FreeFlow
+import BML.FreeMaximum
 import BML.Lanes
 import BML.NonGridlock
 import BML.GridlockThresholds
 import BML.Capture
 import BML.Formation
+import BML.Absorption
+import BML.Delay
+import BML.GuardedQueue
 import BML.Fixation
+import BML.Profiles

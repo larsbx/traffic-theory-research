@@ -1,6 +1,6 @@
 # Blueprint: proof status and open formal obligations
 
-This hand-off document records the completed B0/B1/B2/B3/B5/B6 proofs and the remaining
+This hand-off document records the completed B0/B1/B2/B3/B4/B5/B6 proofs and the remaining
 obligations of [the coverage register](README.md), with proofs decomposed into
 lemmas small enough to formalise one at a time.
 
@@ -8,8 +8,8 @@ lemmas small enough to formalise one at a time.
   bottom-up. Lean signatures target the `BML` kernel in this package (`Kernel`,
   `Torus`, `Transport`, `Counting`, `Enumeration`). `carCount` is the actual
   occupied-position count, proved equal to the executable species-count sum.
-- Signatures in the open B4 and B7 sections are **specifications, not compiled code**.
-  Adjust those names freely, but keep the statements. B0/B1/B2/B3 and B5/B6 identify
+- Signatures in the open B7 section are **specifications, not compiled code**.
+  Adjust those names freely, but keep the statements. B0–B6 identify
   compiled declarations.
 - G1's exact-count construction is complete in `AllCounts.lean` and
   `Gridlock.lean`. B0 is complete in `Ring.lean`; B1 uses `Lanes.lean`,
@@ -18,6 +18,9 @@ lemmas small enough to formalise one at a time.
   populations. B2 is complete in `Congruence.lean`, `Cosets.lean`, and
   `CosetTimes.lean`. B3 is complete in `Rigid.lean`, `Encounters.lean`,
   `FreeFlowConditions.lean`, `FreeFlowNecessity.lean`, and `FreeFlow.lean`.
+  B4 is complete in `PhaseCounts.lean`, `FreePacking.lean`, `FreePureBound.lean`,
+  `FreePattern.lean`, `FreeConstruction.lean`, `FreeDeletion.lean`, and
+  `FreeMaximum.lean`, with finite-sum helpers in `FiniteSums.lean`.
   B5 and B6 are complete in the separate TRAIN library linked below.
 
 Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
@@ -29,7 +32,7 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B1 | G2: no forced gridlock below full occupancy | kernel-checked exact-count construction and all-time non-jamming; forced boundary proved for n≤WH | B0, `Kernel`, `Enumeration`, `Lanes` |
 | B2 | Coset identity ⟨(1,−1)⟩ = ker φ | kernel-checked signed action, arbitrary-point fibers, east-translated coset, bounded/positive witnesses, and exact lcm period | B0, `Congruence`, actual cyclic coordinates |
 | B3 | Lemma R: static ⟺ perpetual free flow | kernel-checked for the actual phases, with strict/inclusive lcm windows, bounded failure witnesses, and lcm return | B0, B2, Kernel |
-| B4 | Theorem F: densest free flow | complete prose proof below; DP-checked to g = 6 | B3 |
+| B4 | Theorem F: densest free flow | kernel-checked exact capacity, all-count constructions, static/perpetual/eventual existence spectra, and square corollaries | B2, B3, Counting |
 | B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
 | B6 | TRAIN eventual speed one on sparse N×N squares | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `Train/Diagonals`, `Train/FreeFlow`, actual diagonal transport/release |
 | B7 | CLASSIC eventual speed one for 2m<gcd(W,H) | prose proof and finite checks; at most m(g−2) blocked rounds; not compiled in Lean | B0, Transport, car count |
@@ -259,7 +262,7 @@ domain W,H≤12 contains 144 rectangles, 6,084 positions, 283,526 orbit visits,
 and 422,500 ordered pairs per relation, with 12 required rejection controls.
 These totals describe finite coordinate checks; successful acceptance is
 recorded in a source-bound receipt. B3 has its own traffic proof and finite
-acceptance gate; the packing proof in B4 remains a separate obligation.
+acceptance gate; the packing proof and constructions are completed separately in B4.
 
 ---
 
@@ -390,98 +393,102 @@ receipts identify the successful runs.
 
 ## B4. Theorem F: densest free flow
 
-With g = gcd(w, h), M = w·h/g (the size of each class φ⁻¹(c)) and V(g) = ⌊2g/3⌋
-(already proved: `freeClasses_eq_two_thirds`):
+Let g=gcd(w,h), M=w·h/g, and V(g)=⌊2g/3⌋. `BML/FreeMaximum.lean`
+defines the exact capacity:
 
 ```lean
-theorem free_count_le (s) (hs : StaticFree s) :
-    carCount w h s ≤ if Nat.gcd w h = 1 then max (h * (w / 2)) (w * (h / 2))
-                     else (w * h / Nat.gcd w h) * ((2 * Nat.gcd w h) / 3)
-
-theorem free_count_attained (n : Nat) (hn : n ≤ freeMax w h) :
-    ∃ s, StaticFree s ∧ carCount w h s = n
+def freeMax (w h : Nat) : Nat :=
+  if Nat.gcd w h = 1 then max (h * (w / 2)) (w * (h / 2))
+  else (w * h / Nat.gcd w h) * ((2 * Nat.gcd w h) / 3)
 ```
 
-Combined with B3, these give Theorem F.
+For every positive rectangle, the compiled declarations are:
 
-For Lean, formalize the block inequality over lists, then the per-segment caps,
-and sum over rows and columns with the proved identities in `Counting.lean`.
-The full prose argument follows; its remaining steps are not compiled theorems.
+| Declaration | Statement |
+|---|---|
+| `staticFree_carCount_le_freeMax` | Every actual StaticFree configuration has at most freeMax cars. |
+| `maxFreeConfig_staticFree`, `maxFreeConfig_carCount_eq_freeMax` | An executable maximum board is free and has exactly the capacity. |
+| `freeWith_staticFree`, `freeWith_carCount_of_le` | The executable constructor is free and has exactly n cars whenever n≤freeMax. |
+| `exists_staticFree_with_count_iff` | A static-free board of count n exists iff n≤freeMax. |
+| `exists_perpetual_allMove_with_count_iff` | The same interval characterizes perpetual full movement from time zero. |
+| `exists_eventual_allMove_with_count_iff` | The same interval characterizes existence allowing an initial transient. |
+| `above_freeMax_never_staticFree` | Above capacity, no iterate can satisfy StaticFree. |
+| `freeMax_square`, `freeMax_square_attains_two_thirds_iff` | Square capacity is L⌊2L/3⌋; density two thirds is attained iff 3∣L. |
 
-**Evidence beyond the exhaustive tables.** `bml.freeflow_dp.max_free_exact` computes the
-maximum independently: a max-plus transfer matrix over rows, under the Lemma R conditions only.
-It agrees with the formula on 3×3, 4×4, 3×6, 5×5 (g = 5), 6×6 (g = 6) and 8×4
-(`tests/test_blueprint.py`).
+### Upper bound
 
-### Upper bound (≤)
+`PhaseCounts.lean` first proves that every phase fiber has exactly M cells.
+East shift bijects consecutive fibers, cyclic reachability makes their sizes
+equal, and the partition of all WH positions determines the common size.
+Let aᵢ and bᵢ be the actual east and north populations of class i, and cᵢ=aᵢ+bᵢ.
+The same-species adjacency rules and the actual shifts give
 
-Fix `StaticFree s`. Let A = {φ e : e an east car} and B = {φ q : q a north car}, as subsets of ℤ_g.
+```text
+cᵢ ≤ M,   aᵢ + aᵢ₊₁ ≤ M,   bᵢ + bᵢ₊₁ ≤ M.
+```
 
-**B4.1 (class constraints).** A ∩ B = ∅ and (A + 1) ∩ B = ∅. These are conjunct 3 of
-`StaticFree`, read on classes.
+For example, translate the east cars in class i into class i+1. Their targets
+are distinct and disjoint from its existing east cars. The two cross-species
+rules give aᵢ=0 or bᵢ=0, and aᵢ=0 or bᵢ₊₁=0.
 
-**B4.2 (ring cap).** On a cyclic ring of length L, a 0/1 sequence with no two cyclically
-adjacent 1s has sum ≤ ⌊L/2⌋.
-- Proof by double counting: Σₓ (zₓ + zₓ₊₁) ≤ L, and the left side is 2·Σ z.
-- For L = 1 the single cell is its own neighbour, so the sum is 0.
+`FreePacking.lean` proves the abstract weighted bound when g≥2:
 
-**B4.3 (segment cap).** On a linear segment of length r, a 0/1 sequence with no two adjacent
-1s has sum ≤ (r + 1)/2. Proof by induction on r, peeling two cells at a time.
+1. **Triple cap.** These five relations imply cᵢ+cᵢ₊₁+cᵢ₊₂≤2M.
+   If aᵢ>0, the first two north counts vanish, so use the east-pair cap and
+   the third total cap. If aᵢ=aᵢ₊₁=0, use the north-pair cap and the third
+   total cap. Otherwise aᵢ=0<aᵢ₊₁, the latter two north counts vanish,
+   and the east-pair cap on those classes plus bᵢ≤M suffices.
+2. **An empty class.** Rotate it to the last position. For g=3q+r,
+   group the first 3q entries into triples. The remainder contributes zero
+   when r=0 or 1, and at most M when r=2. Thus the total is at most M⌊2g/3⌋.
+3. **No empty class.** Any positive east count forces a positive east count
+   in the next class, so cyclic propagation forces one species throughout.
+   Summing the adjacent-pair caps yields 2n≤gM. Since g≤2⌊2g/3⌋ for g≥2,
+   the same bound follows.
 
-**B4.4 (g = 1).** Then φ is constant, so B4.1 forbids having both species. With only east cars,
-conjunct 1 is B4.2 on each row, so the count is ≤ h·⌊w/2⌋. With only north cars it is ≤ w·⌊h/2⌋.
+For g=1, the sole phase class forbids mixed species. `FreePureBound.lean`
+uses adjacent-pair double counting in each actual row or column to obtain
+max(h⌊w/2⌋,w⌊h/2⌋). A singleton lane has capacity zero because its site
+is its own successor. `FreeMaximum.lean` combines the two branches with the
+proved partition of the actual `carCount`.
 
-**B4.5 (one letter fills ℤ_g).** If A = ℤ_g, then B = ∅. Each row is a ring and B4.2 gives
-count ≤ h⌊w/2⌋ ≤ w·h/2 = M·g/2 ≤ M·⌊2g/3⌋. The last step is `omega` with cases g = 2, 3;
-it holds for every g ≥ 2. The case B = ℤ_g is symmetric.
+### Constructions and exact population spectrum
 
-**B4.6 (rows read the class word).** Assume g ≥ 2 and neither A nor B is ℤ_g. Label each
-c ∈ ℤ_g with a letter: `A` if c ∈ A, `B` if c ∈ B, `·` otherwise (well defined by B4.1).
-Then the word has a `·`:
-- if A and B are both nonempty, some A is followed by a non-A, which must be `·` by B4.1;
-- if only one of them is nonempty, it is not all of ℤ_g.
+`FreePattern.lean` builds a cyclic word from `N E ·` triples and `E ·` pairs:
 
-Rotate the word to start just after a `·`, so it ends in `·`. In row y, cell x has class
-(x + y) mod g. Read from the matching column, the row is that linear word repeated w/g times.
+| g | Pattern |
+|---|---|
+| 3q | q triples |
+| 3q+2 | q triples and one pair |
+| 3q+1≥4 | q−1 triples and two pairs |
 
-**B4.7 (block decomposition).** A linear word ending in `·` with no `A` immediately followed by
-`B` splits uniquely into blocks Bˢ Aʳ ·, each of length ℓ = s + r + 1. Induct on the list, cutting
-after each `·`.
+A finite bijection proves the exact occupied-class count ⌊2g/3⌋. Every E class
+is followed by an empty class, and every N class by an E class, including the
+cyclic seam. `FreeConstruction.lean` fills these classes and uses the proved
+fiber size for the exact count. For g=1 it chooses the larger alternating
+pure-species construction, omitting an unpaired final coordinate on odd lanes.
 
-**B4.8 (per-row and per-column caps).**
-- In each row, every block contributes at most ⌈r/2⌉ east cars, by B4.3 on its A-segment.
-  Summing over the w/g copies: east cars per row ≤ (w/g)·Σ_blocks ⌈r/2⌉.
-- Columns read the same word (class increases by 1 northwards). B4.3 with conjunct 2 gives
-  north cars per column ≤ (h/g)·Σ_blocks ⌈s/2⌉.
-- Summing rows and columns: carCount ≤ M·Σ_blocks (⌈s/2⌉ + ⌈r/2⌉).
+`FreeDeletion.lean` proves that arbitrary species-preserving deletion keeps all
+static conditions. Its executable `thinConfig` retains the first n occupied
+positions, with exact count min(n, original count). This completes every
+population from zero through the maximum.
 
-**B4.9 (block value).** ⌈s/2⌉ + ⌈r/2⌉ ≤ ⌊2ℓ/3⌋ for ℓ = s + r + 1.
-- ℓ = 1: the value is 0.
-- ℓ = 2: the value is ≤ 1.
-- ℓ ≥ 3: the integer value is ≤ ⌊(ℓ + 1)/2⌋ ≤ ⌊2ℓ/3⌋.
+Lemma R supplies the dynamic from-time-zero statement. For eventual free flow,
+necessity uses actual car-count conservation at entry into StaticFree, while
+sufficiency takes a constructed board with transient zero. None of these
+existence results says every board below capacity eventually flows freely.
 
-This is pure `omega` after writing ⌈k/2⌉ = (k + 1)/2. It is checked for ℓ < 40 in the tests.
+### Finite implementation evidence
 
-**B4.10 (superadditivity).** ⌊2a/3⌋ + ⌊2b/3⌋ ≤ ⌊2(a+b)/3⌋, by `omega`. Applied over the blocks:
-Σ_blocks ⌊2ℓ/3⌋ ≤ ⌊2g/3⌋ = V(g), since the block lengths sum to g.
+`scripts/check_free_max.py` evaluates the actual Lean constructor at every
+attainable count on all 144 rectangles with sides 1…12: 3,334 configurations
+and 146,348 full transitions through complete lcm windows. It independently
+checks the formula, exact counts, static constraints, both phase states and
+move counts, closure, domain completeness, and rejection controls. These finite
+checks accompany the universal proof. The independent max-plus DP in
+`bml.freeflow_dp` continues to agree on 3×3, 4×4, 3×6, 5×5, 6×6 and 8×4.
 
-Chaining B4.8, B4.9 and B4.10 gives carCount ≤ M·V(g).
-
-### Construction (≥)
-
-- **g ≥ 2.** Take k = ⌊g/3⌋ − ((⌊g/3⌋ − g) mod 2), so that k ≡ g (mod 2) and 3k ≤ g. Label ℤ_g
-  with k blocks `N E ·`, then (g − 3k)/2 blocks `E ·`. Put an east car on every cell of an
-  `E` class and a north car on every cell of an `N` class.
-  - Check `StaticFree` class by class:
-    - conjunct 1: the class east of an `E` class is `·`;
-    - conjunct 2: the class north of an `N` class is `E`;
-    - conjunct 3: `E` and `N` classes are distinct, and the class after an `E` class is `·`.
-  - Count: 2k + (g − 3k)/2 = (g + k)/2 = V(g) labelled classes, each with M cells (B4.11).
-- **g = 1.** Alternate east cars in each row (h⌊w/2⌋) or north cars in each column (w⌊h/2⌋).
-- **Every smaller n.** Deleting cars preserves `StaticFree`, so delete from a maximal configuration.
-
-**B4.11 (class size).** |φ⁻¹(c)| = M. Each row meets each class in exactly w/g cells: the
-cells (x, y) with x ≡ c − y (mod g) form an arithmetic progression of step g in ℤ_w.
+---
 
 ## B5. Theorem T: completed TRAIN formalization
 

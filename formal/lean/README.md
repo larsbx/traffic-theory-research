@@ -24,6 +24,8 @@ lake env lean Audit.lean
 lake env lean G2Audit.lean
 lake env lean CosetAudit.lean
 lake env lean FreeFlowAudit.lean
+lake env lean FreeMaxAudit.lean
+lake env lean AbsorptionAudit.lean
 .lake/build/bin/bml_replay 3 3
 ```
 
@@ -45,8 +47,12 @@ It does not embed Python-produced expected transitions.
 |---|---|
 | `BML/Kernel.lean` | Moving sources empty and destinations fill; other species remain in place; a half-step is fixed iff its cars are blocked; a full east-then-north step is fixed iff both local blocking conditions hold; equivalence with no movement in either phase; frozen-state persistence, including after a transient; full occupancy freezes; the empty state is fixed but is not a jam. |
 | `BML/Transport.lean` | Explicit bijection between each species' cars before and after its phase: survival, injectivity, and surjectivity. Nonemptiness is preserved by a full step and every iterate. Numerical CLASSIC conservation is derived in `BML/Counting.lean` and `BML/Lanes.lean`; the TRAIN library retains its own separate conservation proofs. |
+| `BML/Profiles.lean` | An explicit square-torus configuration realizes arbitrary positive E-row and N-column count vectors whenever every row-count/column-count sum is at most the side length. Exact executable lane counts follow from an involutive cyclic-coordinate bijection. The configuration is a nonempty CLASSIC jam, has no movement or full monochromatic lane, and is fixed by the actual kernel. Same-profile existence and rejection by universally sound profile-only jam-exclusion predicates are proved. |
 | `BML/Capture.lean` | Successor-closed occupied cores persist. A supplied occupied closed walk yields a core (distinct sites are not required by this Lean declaration). Full-round tagged transport is bijective. Explicit core obstacles on every row and column give a kernel-derived cyclic-distance rank, a bound `M = n_E*(W-1) + n_N*(H-1)` on every finite prefix of tagged moves, and a nonempty jam by full round M. |
 | `BML/Formation.lean` | Exact local initial predicate for an E site and adjacent N site after one round, conditional on the next N target being E after the east phase; simultaneous formation from initial predicates and a supplied successor geometry; construction of the formed occupied core. All are deterministic actual-kernel results. The transfer probability and torus winding/cover instantiation remain separate prose arguments. |
+| `BML/Absorption.lean` | All-time soundness of hit/safe/unresolved cutoff certificates for an absorbing target; finite natural-weight bounds, nested intervals, and exactness at zero unresolved weight. Instantiated with actual CLASSIC nonempty `Jam`, with a proved data-valued board refinement for executable probes. |
+| `BML/Delay.lean` | An initial eastbound run of length `T+2` blocks its original rear car at round `T`, regardless of the exterior. A permanent full-movement starting time must exceed `T`. Kernel-checked `4x4` vacant east/south cycle that disappears into a nonempty jam after one round. |
+| `BML/GuardedQueue.lean` | A main E run at offsets `0..T`, a hole at `T+1`, and a lower E guard at offsets `1..T` force the original rear tag's first move to occur in round `T`, regardless of the exterior. One-round and iterated shrinking follow from the actual two-phase kernel. Any nonempty jam time is strictly greater than `T`. Generic results assume east-next commutes with north-previous; torus specializations discharge this premise. |
 | `BML/Fixation.lean` | Eventual constancy of an original `carTrace` is equivalent to finitely many actual moves. An eventually permanent car has an eventually permanent successor, with the north proof using the post-east checkpoint. All permanent sites form a nonempty core at a common future time. A core that misses a row forces a full E-row; a missed column forces a full N-column. Consequently, some original car fixes iff eventual nonempty jam or an initial full monochromatic lane occurs. All cars fix iff the state is empty or eventually jams. Outside both exceptional events, every original car moves and every site becomes empty arbitrarily late. |
 | `BML/Torus.lean` | Positive finite cyclic coordinates with proved inverse shifts; the general kernel is instantiated on `Fin WIDTH × Fin HEIGHT`; executable base-three encoding, decoding, and counts. |
 | `BML/Counting.lean` | The position enumeration is complete and has no duplicates. Filtered species lists agree with the executable `speciesCount` sums; the occupied-list length is their sum. Transport induces a list permutation, proving numerical species conservation under every half-step, and total-count conservation under every full-step iterate. |
@@ -65,10 +71,17 @@ It does not embed Python-produced expected transitions.
 | `BML/FreeFlowConditions.lean` | Defines `StaticFree` by the two same-species adjacency exclusions and the forbidden equal/next phase classes for each east/north pair. |
 | `BML/FreeFlowNecessity.lean` | Full movement in the first lcm rounds implies every static condition, using rigid prefixes and bounded encounter witnesses. |
 | `BML/FreeFlow.lean` | Static conditions imply actual full movement and are invariant under the traffic step. Lemma R gives the static/perpetual equivalence, strict and inclusive finite-window criteria, and a blocked-round witness when a condition fails. Static-free configurations return after the lcm; eventual full movement is equivalent to eventual entry into the static-free set. |
+| `BML/FiniteSums.lean` | Duplicate-free finite sums, cyclic reindexing, rotation, interchange of coordinate sums, and adjacent-pair double counting. |
+| `BML/PhaseCounts.lean` | Each actual phase fiber has WH/g sites. Exact species/count partitions, adjacent-species class capacities, and cross-species exclusions connect StaticFree to weighted packing. Saturating a phase pattern multiplies its occupied-class count by WH/g. |
+| `BML/FreePacking.lean` | Universal weighted cyclic packing bound M⌊2g/3⌋ for g≥2. Three consecutive classes carry at most 2M; an empty class allows exact remainder rounding, and no empty class forces one species. |
+| `BML/FreePureBound.lean` | Same-species lane counts are bounded by half the lane length. On a coprime torus StaticFree forces one species, giving the sharp maximum of the two directional capacities. |
+| `BML/FreePattern.lean`, `BML/FreeConstruction.lean` | Explicit cyclic NE· and E· blocks attain ⌊2g/3⌋ occupied classes, with proved wraparound rules and exact counts. Phase-saturated and alternating pure-species boards give an executable maximizing configuration on every positive rectangle. |
+| `BML/FreeDeletion.lean` | Arbitrary species-preserving deletion preserves StaticFree. Executable row-major prefix deletion retains exactly min(n, original count) cars. |
+| `BML/FreeMaximum.lean` | Complete Theorem F: actual free-flow count is at most freeMax; freeWith attains every count through that maximum. Static, perpetual and eventual free-flow existence have the same exact population interval. Above capacity no orbit can enter StaticFree. On squares capacity is L⌊2L/3⌋, attaining density two thirds iff 3∣L. |
 | `BML/Lanes.lean` | An east-only mixed row or north-only mixed column preserves a car and a hole under each actual full step; cyclic reachability supplies a mover at every iterate, supporting G2. The absent species phase is the identity. Numerical species, east-row, and north-column counts are conserved through both phases and iterates. Full E-rows and full N-columns persist and reflect backward, cannot coexist, and have no hidden movement. Specified north-free columns, cyclic strips, and row-count bounds are invariant through every iterate. |
 | `BML/NonGridlock.lean` | Total executable `nonGridlockWith` has exactly n cars and never jams for every n<WIDTH*HEIGHT. Its column-major east prefix has a mixed first or last row when WIDTH≥2; width-one boards use a north prefix. The zero population remains empty and is not Jam. This completes G2. |
 | `BML/GridlockThresholds.lean` | Actual car count equals area iff every cell is occupied. On every positive torus and for every feasible n≤WIDTH*HEIGHT, every n-car configuration eventually jams iff n=WIDTH*HEIGHT. |
-| `BML/Arithmetic.lean` | Divisibility of positive winding lengths implies the `min(WIDTH, HEIGHT)` lower bound. The proposed class packing expression simplifies to `floor(2*g/3)` and attains exact `2/3` iff `3` divides `g`. These are arithmetic components of G1 and F. |
+| `BML/Arithmetic.lean` | Divisibility of positive winding lengths implies the `min(WIDTH, HEIGHT)` lower bound. The class packing expression simplifies to `floor(2*g/3)` and attains exact `2/3` iff `3` divides `g`. These are arithmetic components of G1 and F. |
 | `BML/Witnesses.lean` | A stronger nonmonotonicity example on width 4, height 2. State `3858` reaches jam `2048` after three steps. Adding one north car at `(0,0)` yields `3860 ↔ 4340`, which never jams. The added car remains blocked forever. An explicitly tracked original north car moves at every step. |
 
 The full-step fixed-point converse does not assume that two consecutive updates
@@ -296,6 +309,71 @@ The public invariant results include `speciesCount_iterate`,
 deterministic invariant; any use of distinct columns in a probability argument
 must separately require that the length not exceed the width.
 
+### B4: exact free-flow capacity
+
+`BML/FreeMaximum.lean` proves Theorem F on every positive rectangle. With
+`g=gcd(WIDTH,HEIGHT)`, `freeMax` is the maximum of the two pure-direction
+half-lane capacities when g=1, and `(WIDTH*HEIGHT/g)*floor(2*g/3)` otherwise.
+The phase-count bridge proves each fiber has `WIDTH*HEIGHT/g` cells and turns
+actual static-free configurations into the five weighted packing constraints.
+The cyclic packing theorem uses a triple cap and exact remainder rounding;
+its no-empty-class case forces one species and double-counts adjacent pairs.
+
+`maxFreeConfig` is an executable maximizing board. The phase pattern consists
+of `N E empty` and `E empty` blocks; the coprime branch selects a larger
+alternating pure-species board. `thinConfig` deletes a row-major occupied
+suffix, so `freeWith WIDTH HEIGHT hw n` has exactly n cars whenever
+`n≤freeMax`. Every component has an independent exact-count and StaticFree
+proof. No upper-bound theorem is used to justify the constructor's count.
+
+`exists_staticFree_with_count_iff`, `exists_perpetual_allMove_with_count_iff`,
+and `exists_eventual_allMove_with_count_iff` give the same interval of
+attainable populations. The eventual statement uses car-count conservation;
+it does not establish convergence for arbitrary boards below capacity.
+Singleton axes and the empty 1×1 maximum are included. The square corollaries
+prove capacity `L*floor(2*L/3)` and exact two-thirds density iff `3∣L`.
+
+`free_max_export --max-side 12` exports all 3,334 exact-count constructions
+on 144 rectangles, with 146,348 transitions through their full lcm windows.
+`scripts/check_free_max.py` checks the actual Lean formula, board and species
+counts, static decision, both phase snapshots and movement counts, closure,
+and complete coverage against independent scalar updates. Twenty-two
+rejection controls exercise corrupted output. `FreeMaxAudit.lean` audits the
+exporter separately from the universal theorems required by `Audit.lean`.
+These are finite implementation checks; all-size optimality comes from Lean.
+
+### Jammed representatives of prescribed lane profiles
+
+`Profiles.lean` treats a square of positive side length `L` and arbitrary vectors
+`r c : Fin L → Nat`. Its main hypotheses are `1 ≤ r y`, `1 ≤ c x`, and
+`r y + c x ≤ L` for every row and column. Equivalently, the sum of the two
+profile maxima is at most `L`. The caps interface
+`exists_jam_with_lane_profile_of_caps` accepts any proved upper bounds `R,C`
+with `R+C ≤ L`. Positivity makes `L=1` inadmissible and keeps every individual
+lane count strictly below `L`.
+
+The executable `laneProfileJam` puts E at `(x,y)` when the forward cyclic
+distance from `x` to `y` is below `r y`, and N when the distance from `y` to `x`
+is in `[1,c x]`. These are the modular placements `E(y-j,y)` for `0≤j<r y`
+and `N(x,x-i)` for `1≤i≤c x`. Disjointness and exact numerical counts are
+proved rather than assumed. `laneProfileJam_jam`, `laneProfileJam_no_moves`,
+`laneProfileJam_fixed`, and `laneProfileJam_no_full_lane` cover the actual
+CLASSIC dynamics and exclude a full-lane explanation of the constructed jam.
+
+`exists_jam_with_same_lane_profile` says that any configuration satisfying
+these profile bounds shares its exact conserved count vectors with an already
+jammed configuration. It does not assert that the original configuration
+evolves into that representative. The theorem
+`admissible_profile_cannot_certify_no_jam` explicitly assumes a predicate of
+only the two vectors is sound for excluding already jammed states, and proves
+that the predicate rejects every admissible profile. This applies in particular
+to universally sound certificates of eventual nonjamming. Probability estimates
+for typical iid profiles and their consequence for the acceptance probability
+of such certificates remain prose results in the
+[lane-profile note](../../docs/research/2026-11-18-lane-profile-obstruction.md).
+No bound on a jammed basin's conditional probability, and no fixed-density
+transition theorem, follows from representative existence alone.
+
 ## Audit and trust boundary
 
 `Audit.lean` traverses the imported CLASSIC `BML` declarations, the G1 exporter,
@@ -314,6 +392,55 @@ and Quint implementations. Such comparisons are not an all-size source
 refinement proof. The numerical counting identities and conservation have
 general Lean proofs; unrestricted encoding correctness and cross-language
 source correspondence remain separate obligations.
+
+## Certified eventual-gridlock bounds
+
+`BML/AbsorptionExport.lean` exports the verified cutoff probe:
+
+```sh
+.lake/build/bin/absorption_export 2 2 0,1,2,4,8,16
+.lake/build/bin/absorption_export 4 4 0,1,2 18626220
+```
+
+Rows are `initial_code,cutoff,terminal_code,verdict,population`, in cutoff-major
+order. Verdicts are `0 = hit`, `1 = safe`, and `2 = unresolved`. A nonempty
+terminal jam certifies a hit; exact recurrence of a non-target terminal state
+certifies all-time avoidance. An unresolved orbit retains its entire initial
+weight in the upper bound. A safe orbit need not reach full speed.
+
+The executable stores each board as data, and `boardConfig_iterate` proves
+that its updates agree with the original function-valued CLASSIC kernel.
+`AbsorptionAudit.lean` separately checks the exporter and its transitive
+axiom dependencies. The finite three-language gate is
+`python scripts/check_absorption.py` from the repository root; it checks
+22,320 exhaustive cutoff rows and larger targeted cases. See the
+[certificate note](../../docs/research/2026-11-18-certified-absorption-bounds.md)
+for exact probability accounting and the separate remaining asymptotic target.
+The unguarded queue's probability and logarithmic lower bound on permanent
+full-movement settling are prose results
+in the [relaxation note](../../docs/research/2026-11-18-relaxation-obstructions.md),
+not Lean probability theorems.
+
+`BML/GuardedQueue.lean` separately provides a local obstruction to early
+gridlock. Its `GuardedEastQueue` predicate specifies `T+1` east cars in the
+main row, an empty site immediately ahead, and `T` east cars in the preceding
+north row at offsets `1,...,T`. The guard is empty when `T=0`.
+`GuardedEastQueue.step` proves that a full CLASSIC round shortens both runs
+and advances the hole one site toward the rear. A guard car may itself move
+east: the proof needs only that the east phase cannot turn it into a north
+car, so it cannot fill the newly vacated main site in the following phase.
+
+`GuardedEastQueue.rear_first_move` states that the original tag's `carTrace`
+equals its initial coordinate at every time `t <= T`, equals its east
+successor at time `T+1`, and that this successor is a different coordinate.
+`GuardedEastQueue.jam_after` proves `T < U` whenever a nonempty jam occurs at
+time `U`. The public torus declarations
+`torus_guardedEastQueue_first_move`, `torus_guardedEastQueue_jam_after`, and
+`torus_guardedEastQueue_no_jam_through` use only positive dimensions and the
+supplied pattern; they impose no condition on the exterior. For the iid
+application, `H >= 2` and `T+2 <= W` ensure that the prescribed sites are
+distinct. The pattern probability, cyclic-window avoidance bound, and
+logarithmic lower bound on gridlock time are separate prose results.
 
 ## TRAIN library and executable
 
@@ -361,11 +488,12 @@ with the actual Quint interpreter and Python TRAIN implementation.
 
 ## Remaining obligations
 
-This package does **not** prove the full list G0–F. The missing general
-mathematics remains:
+The deterministic G0, G1, G2, Lemma R, and Theorem F statements now have
+kernel-checked proofs, with their nonempty/empty conventions and exact
+population scopes recorded above. Further obligations include:
 
-- Connect Lemma R to the cyclic class packing upper bound and all densest
-  constructions in F.
+- Formalize the CLASSIC low-density eventual-speed-one argument under
+  `2 * carCount < gcd(W,H)` in blueprint B7.
 - Formalize eventual periodicity/classifier correctness and unrestricted
   Python-to-Lean source correspondence.
 - Construct `RouteCover` witnesses directly from a mixed occupied blocker cycle

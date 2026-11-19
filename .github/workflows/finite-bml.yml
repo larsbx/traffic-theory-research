@@ -40,6 +40,12 @@ jobs:
         run: python scripts/check_capture.py --report .artifacts/capture-replay.json | tee .artifacts/capture-replay.log
       - name: Verify exact finite probability bounds and conserved-strip certificates
         run: python scripts/check_probability.py --report .artifacts/probability-replay.json | tee .artifacts/probability-replay.log
+      - name: Verify prescribed lane-profile jams and certificate acceptance bounds
+        run: python scripts/check_profiles.py --report .artifacts/profiles-replay.json | tee .artifacts/profiles-replay.log
+      - name: Verify disjoint-strip capacity and exact marginal probability laws
+        run: python scripts/check_capacity.py --report .artifacts/capacity-replay.json | tee .artifacts/capacity-replay.log
+      - name: Verify guarded queues against every small exterior and exact cyclic probabilities
+        run: python scripts/check_guarded_queue.py --report .artifacts/guarded-queue-replay.json | tee .artifacts/guarded-queue-replay.log
       - name: Verify exact one-round capture preimages on all 4x4 states
         run: python scripts/check_formation.py --report .artifacts/formation-replay.json | tee .artifacts/formation-replay.log
       - name: Verify tagged fixation and exact Palm probability identities
@@ -84,6 +90,7 @@ jobs:
           lake env lean G2Audit.lean | tee ../../.artifacts/g2-audit.log
           lake env lean CosetAudit.lean | tee ../../.artifacts/coset-audit.log
           lake env lean FreeFlowAudit.lean | tee ../../.artifacts/freeflow-audit.log
+          lake env lean FreeMaxAudit.lean | tee ../../.artifacts/free-max-audit.log
       - name: Compare both half-steps on every rectangle with at most nine cells
         run: python scripts/check_lean_replay.py --max-cells 9 --report .artifacts/lean-replay.json | tee .artifacts/lean-replay.log
       - name: Check actual Lean G1 constructions at every admissible population
@@ -94,6 +101,10 @@ jobs:
         run: python scripts/check_cosets.py --max-side 12 --report .artifacts/cosets.json --rows .artifacts/cosets.tsv | tee .artifacts/cosets.log
       - name: Check actual Lean free-flow predicates and full phase traces
         run: python scripts/check_freeflow.py --max-cells 9 --report .artifacts/freeflow.json --rows .artifacts/freeflow.tsv | tee .artifacts/freeflow.log
+      - name: Check actual Lean free-flow constructions at every attainable population
+        run: python scripts/check_free_max.py --max-side 12 --report .artifacts/free-max.json --rows .artifacts/free-max.tsv | tee .artifacts/free-max.log
+      - name: Check certified cutoff bounds against the actual Lean probe
+        run: python scripts/check_absorption.py --backend lean --report .artifacts/absorption-lean.json | tee .artifacts/absorption-lean.log
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
@@ -105,7 +116,7 @@ jobs:
   quint:
     name: Quint exhaustive replay and mutation controls
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -124,6 +135,8 @@ jobs:
           npm ci --ignore-scripts --prefix formal/quint
       - name: Quint tests, both half-steps, internal invariants, and mutations
         run: python formal/quint/check.py --max-cells 6 --report .artifacts/quint-replay.json | tee .artifacts/quint-replay.log
+      - name: Check certified cutoff bounds against the actual Quint probe
+        run: python scripts/check_absorption.py --backend quint --report .artifacts/absorption-quint.json | tee .artifacts/absorption-quint.log
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:

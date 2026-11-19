@@ -40,7 +40,7 @@ speed-one theorem remain separate obligations.
 
 | Suite | Proved constructions and checks | Detailed entry point |
 | --- | --- | --- |
-| `BML` / `BML.qnt` | Finite-torus update semantics, species transport bijections, numerical species/lane invariants, full-lane reflection and north-free-strip invariance, nonempty-jam boundaries, full G1/G2, the feasible-population forced-gridlock boundary, the geometric coset identity B2, and Lemma R for the actual phases with a finite moving-window criterion and lcm return. Also persistent cores, route-cover capture, the tagged-fixation/jam/full-lane identity, F arithmetic components, and a strong identity-aware non-monotonicity witness. General theorems are in Lean; separate finite replays compare actual implementations. | The register and commands below; [Lean package](lean/README.md). |
+| `BML` / `BML.qnt` | Finite-torus update semantics, species transport bijections, numerical species/lane invariants, full-lane reflection and north-free-strip invariance, nonempty-jam boundaries, full G1/G2, the feasible-population forced-gridlock boundary, the geometric coset identity B2, and Lemma R for the actual phases with a finite moving-window criterion and lcm return. Also the complete F free-flow capacity and exact-count constructions, persistent cores, route-cover capture, the tagged-fixation/jam/full-lane identity, and a strong identity-aware non-monotonicity witness. General theorems are in Lean; separate finite replays compare actual implementations. | The register and commands below; [Lean package](lean/README.md). |
 | `Traffic` / `traffic.qnt` | General-grid freezing, exact 21-Wang-tile recoding, a constructed infinite staircase for any supplied direction word, finite Fibonacci count and algebraic-length identities, and winding conditional on modular closure. Six finite grids are compared directly between Lean and Quint. | [Traffic coverage and acceptance](traffic-layer.md); [Traffic inventory](coverage.json). |
 | `BML.Train` / `Train.qnt` | Queue and ring movement, transport and trace coverage, numeric conservation, the full rectangular jam-population theorem, and eventual full speed on every N×N square with fewer than N/2 cars. Quint and cross-language checks retain finite domains. | [TRAIN coverage and acceptance](TRAIN.md); [TRAIN inventory](train-coverage.json). |
 
@@ -52,10 +52,12 @@ and described as a single common domain or theorem.
 
 The shared dependency-free Lean package pins Lean 4.34.1. It contains the
 `BML`, `Traffic`, and `Train` libraries, with their `bml_replay`, `g1_export`, `g2_export`, `coset_export`,
-`freeflow_export`, `traffic_export`, and `train_replay` executable targets. `Audit.lean` remains
+`freeflow_export`, `free_max_export`, `absorption_export`, `traffic_export`, and `train_replay` executable targets. `Audit.lean` remains
 the CLASSIC BML audit; `G2Audit.lean` separately checks the G2 exporter and its
 entry point; `CosetAudit.lean` separately checks the coordinate exporter.
-`FreeFlowAudit.lean` checks the free-flow exporter and its entry point.
+`FreeFlowAudit.lean` checks the free-flow predicate exporter and its entry point;
+`FreeMaxAudit.lean` checks the exact-count free-flow constructor exporter.
+`AbsorptionAudit.lean` checks the certified cutoff exporter.
 `TrafficAudit.lean` checks the Traffic declarations and
 exporter, and `TrainAudit.lean` checks the TRAIN layer.
 `formal/coverage.json` is the Traffic suite's inventory, not a replacement for
@@ -75,7 +77,12 @@ other suites.
 |---|---|---|
 | Half-step semantics, no collisions or created cars | Universal Lean proofs of source/destination behavior and an explicit bijection on each species' cars. The occupied-position list has no duplicates; its length equals the executable east-plus-north `speciesCount` sum. Both numerical species counts, and hence total car count, are conserved under every half-step and full-step iterate. | No unrestricted cross-language refinement follows from these Lean counting theorems. |
 | CLASSIC conserved lanes and strips | `BML/Lanes.lean` derives east-row and north-column numerical count conservation from actual kernel transport. Full E-rows, full N-columns, and specified north-free columns or cyclic strips are present at an iterate iff present initially; full monochromatic lanes have no hidden movement. | Mixed-cycle exclusion and the strip-crossing obstruction are proved in prose, not derived as Lean probability theorems. |
+| Jammed representatives of positive lane profiles | `BML/Profiles.lean` constructs a ringless actual-kernel jam with exact E-row and N-column counts whenever every count is positive and the two profile maxima sum to at most the square side. It also proves that every profile predicate soundly excluding jams rejects those profiles. | The [profile note](../docs/research/2026-11-18-lane-profile-obstruction.md) derives exact iid bounds and exponentially vanishing acceptance of such certificates at every fixed `0<p<1`. Those probability statements are prose proofs and do not measure basin probabilities. |
+| Disjoint-strip capacity | The [capacity note](../docs/research/2026-11-18-disjoint-strip-capacity.md) proves that `B` disjoint north-empty strips of width `k` exclude mixed cycles when `B > sum_y floor(r_y/k)`. Python validates supplied certificates and exact iid marginal laws. | The crossing and probability arguments remain prose mathematics. No Lean capacity theorem or fixed-positive-density bound is claimed. |
 | G0 local equivalence | Lean proves full-step fixed ⇔ local blockage ⇔ no movers in either phase, on the actual finite-torus kernel. Frozen states persist through every iterate. | General eventual periodicity and correctness of the orbit classifier are still separate obligations; the cycle-average formulation is explained in prose. |
+| Certified eventual-gridlock intervals | `BML/Absorption.lean` proves actual-kernel hit/safe soundness at every cutoff, all-time avoidance from nonjam recurrence, finite Nat-weight lower/upper bounds, nested intervals, and exactness at zero unresolved mass. Its data-valued board evaluator is proved equivalent to the original update. Actual Quint and Python counterparts are evaluated on explicit finite domains. | Initial iid normalization and analytic limits retain the scope in the [certificate note](../docs/research/2026-11-18-certified-absorption-bounds.md). No size-uniform unresolved-mass estimate, unrestricted source refinement or pointer-doubling correctness theorem is claimed. |
+| Relaxation obstructions | `BML/Delay.lean` proves an initial run of T+2 east cars blocks its original rear car through round T, regardless of exterior traffic. It also proves a specific winding vacant cut disappears into a nonempty jam after one round. | The [logarithmic iid consequence and late-defect criterion](../docs/research/2026-11-18-relaxation-obstructions.md) have prose proofs. HBK defect coercivity, probability integration and late expected-defect decay are not Lean theorems. |
+| Protected queues and early gridlock | `BML/GuardedQueue.lean` proves that a run of T+1 east cars followed by a hole, with T east guards in the row below, makes the original rear tag first move in round T. Its shrinking-queue induction uses the actual two-phase kernel and permits arbitrary exterior traffic. Any nonempty jam occurs strictly after T. | The [exact cyclic avoidance polynomial and logarithmic gridlock-time bound](../docs/research/2026-11-18-protected-queue-gridlock-delay.md) have prose proofs and exact finite Python checks. The companion bounded-local jam-completion construction is a prose theorem. These are not Lean probability theorems or bounds on the eventual jam probability. |
 | Full occupancy and the empty boundary | Lean proves full occupancy freezes; the empty state is fixed but is not a jam. Nonemptiness is invariant under evolution. | No missing local boundary lemma is claimed. |
 | Persistent occupied cores | `BlockingCore.persists` proves preservation under the actual two-phase kernel; `BlockerCycle.persists` derives a core from a supplied occupied closed walk. | The Capture closed walk may revisit sites. G1 separately extracts a simple occupied blocker cycle; the two certificate interfaces have not been identified by a general theorem. |
 | One-round staircase formation | `BML/Formation.lean` proves the exact local initial-site predicate for adjacent E/N targets, simultaneous formation from a supplied geometry, and construction of the resulting successor-closed core. The [formation note](../docs/research/2026-11-18-fixed-density-formation.md) integrates the independent initial cells into an exact transfer trace. | Probability integration, torus winding/cover instantiation, early-formation bounds, and large-size limits remain prose proofs. This is not a positive critical-density theorem. |
@@ -88,11 +95,11 @@ other suites.
 | B2, diagonal coset identity | Lean proves the signed action generated by the actual cyclic successor/predecessor has precisely the fibers of `phaseClass=(x+y) mod gcd(W,H)` as its orbits. It proves the origin kernel identity, the east-translated class-one criterion, and witnesses in both 0≤t<lcm(W,H) and 1≤t≤lcm(W,H). | B2 is complete for positive dimensions, including singleton axes. This is coordinate geometry; `diagonalStep` is not the traffic update. |
 | R, free-flow rigidity | Lean proves `StaticFree s ↔ ∀ t, AllMove (f^t s)` for the actual east-then-north kernel on every positive rectangle. The first `lcm(W,H)` rounds suffice; both strict and inclusive time-window formulations are proved. Static-free states return after the lcm and remain periodic. Failure of a static condition forces a blocked round before the lcm. | R is complete, including empty boards and singleton axes. Perpetual free flow starts at time zero; eventual free flow is equivalent to eventual entry into `StaticFree`, with no claim that such entry always occurs or has a uniform time bound. The lcm need not be the least configuration period. |
 | CLASSIC low-density eventual free flow (B7) | [Blueprint B7](blueprint.md#b7-classic-low-density-speed-one) gives a prose proof for every positive W,H under `2m < g`, where m is the car count and g=gcd(W,H). It bounds the number of rounds containing a blocked car by m(g−2) in every finite prefix. Release/survival and per-car bounds have finite computational checks. | Formalize the CLASSIC release, corrected-class, and block-count arguments. The proposed Lean signatures are specifications. The block-event bound is not an elapsed stabilization-time bound. |
-| F, maximal free flow | Prose packing proof and constructions; Lean proves V(g)=⌊2g/3⌋ and 3V(g)=2g iff 3 divides g. Lemma-level proof in [blueprint B4](blueprint.md); an independent max-plus DP (`bml.freeflow_dp`) confirms the formula on 3×3, 4×4, 3×6, 5×5, 6×6 and 8×4, i.e. up to g = 6. | Formalize class packing, the upper bound, and the maximizing constructions. The g=1 branch remains separate. |
+| F, maximal free flow | Lean proves the exact capacity on every positive W×H torus: max(H⌊W/2⌋,W⌊H/2⌋) when g=gcd(W,H)=1, and (WH/g)⌊2g/3⌋ otherwise. Actual phase-fiber counts feed a cyclic weighted packing bound; executable patterns attain the bound, and species-preserving deletion attains every smaller count. Static, perpetual, and eventual existence spectra are all proved. The square formula and exact two-thirds criterion 3∣L are corollaries. | F is complete for CLASSIC, including singleton axes and the empty board. This is an existential capacity theorem; it does not assert that every board below the capacity reaches free flow. Finite construction replays and independent max-plus DP checks remain separate implementation evidence. |
 | Strong non-monotonicity | Lean proves code 3858 reaches a jam, while adding a stationary N yields the perpetual two-cycle 3860↔4340. An explicitly tracked original car moves every step. Independent labeled Python replay also checks the identities. | No minimality or novelty claim. |
 | No initial simple loop, followed by gridlock | Reproducible identity-aware Python certificate on 3×2, compared against NumPy. | This witness is not currently a Lean theorem. |
 | Python/Lean/Quint correspondence | Actual implementations are evaluated and compared on the finite domains below, including both half-steps and separate move counts. | A finite replay is not unrestricted source refinement or proof of the classifier algorithm. |
-| Probability reductions and sparse no-gridlock window | The [probability note](../docs/research/2026-11-18-probabilistic-gridlock-bounds.md) gives prose proofs of `M = J intersect R-complement`, a uniform exponentially small ring exception, and no eventual gridlock with high probability when `p_L*L <= (2-epsilon)*log(log(L))`. Python checks finite iid probabilities and strip certificates. | The probability laws, analytic limits, mixed-cycle reduction, and strip-crossing argument are not an end-to-end Lean theorem. No fixed-positive-density nonjamming interval, sharp transition, or critical-density value is proved. |
+| Probability reductions and sparse no-gridlock window | The [probability note](../docs/research/2026-11-18-probabilistic-gridlock-bounds.md) gives prose proofs of `M = J intersect R-complement`, a uniform exponentially small ring exception, and no eventual gridlock with high probability when `p_L*L <= 2*log(log(L))-4*log(log(log(L)))-2` eventually. Python checks finite iid probabilities and strip certificates. | The probability laws, analytic limits, mixed-cycle reduction, and strip-crossing argument are not an end-to-end Lean theorem. No fixed-positive-density nonjamming interval, sharp transition, or critical-density value is proved. |
 
 ## Reproduce the BML suite
 
@@ -106,6 +113,9 @@ python scripts/check_capture.py --report .artifacts/capture-replay.json
 python scripts/check_probability.py --report .artifacts/probability-replay.json
 python scripts/check_formation.py --report .artifacts/formation-replay.json
 python scripts/check_fixation.py --report .artifacts/fixation-replay.json
+python scripts/check_profiles.py --report .artifacts/profiles-replay.json
+python scripts/check_capacity.py --report .artifacts/capacity-replay.json
+python scripts/check_guarded_queue.py --report .artifacts/guarded-queue-replay.json
 npm ci --ignore-scripts --prefix formal/quint
 cd formal/lean
 lake build
@@ -113,17 +123,21 @@ lake env lean Audit.lean
 lake env lean G2Audit.lean
 lake env lean CosetAudit.lean
 lake env lean FreeFlowAudit.lean
+lake env lean FreeMaxAudit.lean
 cd ../..
 python scripts/check_lean_replay.py --max-cells 9 --report .artifacts/lean-replay.json
 python scripts/check_g1_constructions.py --max-side 12 --report .artifacts/g1-constructions.json
 python scripts/check_g2_constructions.py --max-side 12 --report .artifacts/g2-constructions.json
 python scripts/check_cosets.py --max-side 12 --report .artifacts/cosets.json
 python scripts/check_freeflow.py --max-cells 9 --report .artifacts/freeflow.json --rows .artifacts/freeflow.tsv
+python scripts/check_free_max.py --max-side 12 --report .artifacts/free-max.json --rows .artifacts/free-max.tsv
 python formal/quint/check.py --max-cells 6 --report .artifacts/quint-replay.json
+python scripts/check_absorption.py --report .artifacts/absorption-acceptance.json
 ```
 
 The Lean package has no external library dependencies. Its transitive axiom
-audits check the imported `BML` declarations, the G1, G2, coset, and free-flow exporters with their
+audits check the imported `BML` declarations, the G1, G2, coset, free-flow predicate,
+free-flow construction, and absorption exporters with their
 separate global entry points, and the required theorem names. The only allowed
 axioms are Lean's standard `propext`, `Quot.sound`, and `Classical.choice`;
 incomplete proofs, `native_decide` result axioms, and new axioms are rejected.
@@ -151,14 +165,18 @@ checks passed at a given revision.
 | Python blocker-cycle extraction and independent certificate checks | All 93,387 states on those 23 rectangles are examined; all 22,235 nonempty CLASSIC frozen states yield valid simple occupied cycles with the required winding and count bounds. This is a finite extractor regression, not refinement of Lean's existence proof. |
 | Python Lemma R static predicate vs direct free-motion simulation | All states on those same 23 rectangles; additional randomized dimensions 2…8. |
 | Actual Lean `StaticFree`/`AllMove` decisions and full phase traces vs independent dynamics | All 93,387 initial states on the 23 ordered positive rectangles with WH≤9, with 622,362 full transitions over the first lcm(W,H) rounds. The gate checks both phase states and move counts against NumPy, and perpetual movement from time zero against independent scalar orbit following. It also checks rigid moving prefixes, lcm closure of static-free states, complete coverage, and corrupted-output rejection controls. |
+| Actual Lean F constructions and both phase traces | Every exact population 0≤n≤freeMax on all 144 ordered rectangles with 1≤W,H≤12: 3,334 configurations and 146,348 full transitions through their complete lcm windows. The independent checker validates the formula, static constraints, digit boards, counts, both phase states and movements, closure, full domain coverage, and corrupted-output rejection. |
 | Historical table reproduction | All 23 stored records with WH≤9, regenerated and compared in full. |
 | Actual Lean G1 constructor vs Python CLASSIC dynamics | All 5,578 admissible exact counts on all 144 positive rectangles with W,H≤12. Exported digits and numerical counts are checked independently, followed by both actual Python half-steps and the full step. This is bounded implementation evidence alongside the universal Lean G1 theorem. |
 | Actual Lean G2 constructor and traces vs Python CLASSIC dynamics | All sub-full counts 0≤n<WH on all 144 positive rectangles with W,H≤12, at times 0…2 max(W,H). Both actual Lean phases, numerical counts, trace continuity, the mixed-lane invariant, and the empty/nonempty jam boundary are checked independently. This finite trace domain supplements the universal Lean proof for all times. |
 | Actual Lean diagonal geometry vs an independent modular-coordinate oracle | All 6,084 positions on 144 ordered rectangles with W,H≤12. Complete cycles reconstructed from each starting point give 283,526 orbit visits. Both the same-class and east-translated class-one relations are checked on 422,500 ordered pairs each; 12 corrupted-output controls must be rejected. These coordinate observations are separate from the traffic-configuration gate for R. |
-| Python G1 and F constructions | Every positive W,H≤12. The Python constructor uses a different anchor/fill order from Lean's G1 constructor; no equality between their output arrays is asserted. F remains a prose theorem with these bounded checks. |
+| Python G1 and F constructions | Every positive W,H≤12. The Python constructor uses a different anchor/fill order from Lean's G1 constructor; no equality between their output arrays is asserted. The complete universal F theorem is proved separately in Lean; these checks evaluate Python constructions. |
 | Static cores and independent capture replay | All 34,344 states on 2×2, 3×2, 2×3, 4×2, 2×4, and 3×3 tori. All 831 states with a mixed core have independent tagged capture replay (964 edges, including frozen self-edges). These are separate from the kernel correspondence domains above. |
 | Eventual mixed-cycle formation, ring exceptions, and strip obstructions | All 565,785 states on those six tori plus 4×3. Eventual mixed-cycle occurrence is propagated from separately detected cycles through the successor graph and compared with the jam classifier. Every allowed strip width is checked. The 4×4 non-monotonicity example is a trajectory control, not an exhaustive 4×4 census. |
 | Specified winding staircase after one round | All 43,046,721 initial states on 4×4: the local preimage predicate is compared pointwise with the full-round kernel, and car-count coefficients are integrated under exact initial iid weights. This is a one-step event census, not an eventual-basin census on 4×4. |
+| Disjoint-strip capacity and exact marginal laws | All 565,785 states on the seven probability domains above; 8,821,224 predicates cover every strip width and cyclic partition offset. All 525 marginal evaluations match direct initial-state weights. The certificate union adds 696 states beyond all cyclic north-empty single-strip certificates in the same orientation. Separate 8×8 controls check both orientations; those controls and optimized 8×8/12×12 bounds are not basin censuses on the larger squares. |
+| Prescribed lane-profile jam witnesses | Every admissible ordered positive profile pair on square sides 2–5: 16,492 pairs, each checked for exact counts, actual zero movement, and an independent labeled fixed point. Nine larger profiles are targeted controls. The separate initial-law census contains every state on sides 1–3 (19,767 states), with 15 exact density evaluations and 75 shared-cell probability-mass checks. |
+| Protected queues with arbitrary exteriors | Every W,H≥2 with WH≤12, every 0≤T≤W−2, every exterior and every torus translation: 275,526 canonical boards, 3,263,850 translated tagged cases and 299,673 canonical tagged rounds compared with both production half-steps. The public verifier is separately called on 508 representatives. Initial-law checks cover all 2,278,206 states on those 12 tori, 6,208,974 finite-time predicates and 130 exact rational comparisons. These finite checks support the independent universal Lean theorem and prose probability derivation. |
 
 `scripts/check_freeflow.py` checks the actual Lean proposition decisions and
 complete phase traces, rather than relying only on a separately implemented
@@ -195,6 +213,22 @@ Its report records source hashes, domain sizes, and corrupted-witness controls.
 These finite calculations support the probability code; the universal
 deterministic identity is proved separately in `BML/Fixation.lean`.
 
+`scripts/check_profiles.py` separately checks the prescribed-profile constructor
+against exact lane counts and both production half-steps, and verifies finite
+initial-law certificate bounds. Its probability output concerns acceptance of
+sound profile-only certificates, not the actual eventual-gridlock event.
+`scripts/check_capacity.py` checks the stronger conserved obstruction against
+the complete finite basin classifier and integrates each marginal law directly.
+`scripts/check_guarded_queue.py` independently replays every small guarded
+pattern with every exterior and translation, checks both actual half-steps,
+and integrates selected-pattern avoidance and early gridlock under exact
+initial weights. It separately rejects guard omission, identity swaps and
+incorrect movement counts, and refutes multiplying vertically overlapping
+patterns or resetting the evolved law to iid. Its receipt binds source hashes
+before and after execution; it does not infer an eventual basin from a cutoff.
+The corresponding notes keep these finite checks separate from universal
+Lean construction theorems and prose probability arguments.
+
 Quint mutation controls execute actual altered specifications and require
 rejection for reversed phase order, asynchronous scanning, and invalid cell
 digits that preserve the encoded successor and move counts. The last control
@@ -214,14 +248,15 @@ context, not a new critical-density experiment.
 [`finite-bml.yml`](../.github/workflows/finite-bml.yml) runs three jobs:
 Python/orbit certificates, Lean build/audit/replay, and Quint tests/replay/mutation
 controls. The Lean job also runs the G1 and G2 construction exporters, the
-coset coordinate exporter, and the free-flow predicate/trace exporter, their
-audits, and rejection controls. G1 checks frozen boards at every admissible
+coset coordinate exporter, the free-flow predicate/trace exporter, and the
+F exact-count constructor exporter, with their audits and rejection controls. G1 checks frozen boards at every admissible
 count; G2 replays both phases from every sub-full construction and checks the
 persistent mixed lane. The coset gate reconstructs complete coordinate cycles
 and checks both phase-class relations against an independent modular oracle.
 The free-flow gate compares both actual traffic phases and formal predicate
 decisions with NumPy and independent scalar orbit following through its
-declared finite domain.
+declared finite domain. The F gate checks every attainable population through
+side length 12 against independent scalar phase updates and the exact formula.
 Each job checks out the PR's exact head and uploads its revision and
 logs. Replay reports include source hashes and the explicit enumerated domain.
 The existence of the workflow is not itself evidence of a successful run;

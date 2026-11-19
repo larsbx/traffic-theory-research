@@ -31,12 +31,12 @@ terminal cycle. This equivalence concerns **existence**, not every initial confi
 
 **Verification boundary.** The prose proofs below are distinct from the Lean theorems and
 bounded computational checks. [The formal coverage register](../formal/README.md) identifies
-the statements currently checked by Lean, the actual Quint replay bounds, and the remaining
-packing obligations for F. A bounded table does not prove a universal statement.
+the statements currently checked by Lean, the actual Quint replay bounds, and the
+remaining formal obligations beyond the completed deterministic capacity theorems. A bounded table does not prove a universal statement.
 
 The `BML` library supplies the finite-torus kernel, numerical species-count
-conservation, the complete G1 and G2 exact-count theorems, F arithmetic
-components, and the strong non-monotonicity theorem below. Its G1 proof extracts
+conservation, the complete G1 and G2 exact-count theorems, the full F capacity
+and exact-count constructions, and the strong non-monotonicity theorem below. Its G1 proof extracts
 an actual simple occupied blocker cycle, proves torus winding, and bounds the
 cycle length by the executable car count. Conservation then rules out a jam
 at any future time below `min(W,H)` cars. Executable row/column prefix
@@ -56,8 +56,9 @@ coordinates, with signed and bounded forward witnesses. Lemma R now connects
 those witnesses to the actual traffic kernel: the static conditions are
 equivalent to every car moving in every round from time zero. It also proves
 a finite moving-window criterion and return after `lcm(W,H)` rounds. The
-packing and maximizing constructions in F remain outside the current Lean
-coverage.
+packing upper bound, maximizing constructions, and every smaller population
+in F are also proved for the actual kernel. The same capacity characterizes
+existence of eventual free flow by population conservation.
 
 The `BML` and `Traffic` suites use **CLASSIC** old-state vacancy semantics.
 The separate [`BML.Train` Lean and `Train.qnt` Quint layer](../formal/TRAIN.md)
@@ -66,8 +67,8 @@ complete Theorem T in §5b, numeric conservation, and the distinction between
 fixed occupancy and zero movement. A full single-species TRAIN ring rotates
 while its occupancy is unchanged, so G0's fixed-point criterion cannot be
 transferred to that rule. The additional 3×4 non-monotonicity witness remains
-Python-only; the CLASSIC packing theorem F retains its stated
-prose/bounded-evidence boundary.
+Python-only; the CLASSIC packing theorem F has its own complete Lean proof
+and separately scoped finite construction checks.
 The sparse-square TRAIN speed-one result in §5c is also fully kernel-checked,
 including the actual diagonal dynamics and numerical movement conclusion.
 
@@ -392,8 +393,9 @@ Perpetual free flow here starts at time zero. The separate theorem
 `eventually_allMove_iff_reaches_staticFree` identifies eventual permanent
 full movement with eventual entry into the static-free set. It supplies no
 claim that every configuration reaches that set and no uniform entry-time
-bound. The class packing and maximizing constructions of F remain to be
-formalized.
+bound. The class packing, maximizing constructions, and complete attainable
+population spectrum of F are now proved in `BML/FreeMaximum.lean` and its
+supporting modules.
 
 The separate coset gate exports successors, phase classes, and east translates
 for all 6,084 positions on the 144 ordered rectangles with W,H≤12. Its declared
@@ -421,29 +423,59 @@ at a given revision.
 
 Free flow exists for exactly the n with 0 ≤ n ≤ n_free.
 
-*Proof of ≤.*
-1. Let A = φ(E cars) and B = φ(N cars) ⊆ ℤ_g. Lemma R gives B ∩ (A ∪ (A+1)) = ∅.
-2. If g = 1, this forces a single species, and condition 1 (or 2) caps each row at ⌊W/2⌋
-   (or each column at ⌊H/2⌋).
-3. If A = ℤ_g, then B = ∅ and n ≤ H⌊W/2⌋ ≤ WH/2 ≤ (WH/g)V(g). The case B = ℤ_g is symmetric.
-4. Otherwise the cyclic word over ℤ_g with letters A / B / · splits after each "·" into blocks
-   Bˢ Aʳ · of length ℓ = s + r + 1. An A-run cannot be followed by B (since B ∩ (A+1) = ∅); maximal
-   runs do the rest. There is at least one blank in this case: a cyclic word containing both
-   A and B with no blank necessarily has a forbidden A→B transition; if only one letter
-   appears with no blank, it occupies the whole circle, already handled in step 3.
-5. Count cars per block:
-   - In each row the cells of an A-run form W/g horizontal segments of length r, each holding at
-     most ⌈r/2⌉ E cars (condition 1).
-   - Likewise each B-run gives H/g vertical segments per column, at most ⌈s/2⌉ N cars each.
-6. So n ≤ (WH/g) Σ_blocks (⌈s/2⌉ + ⌈r/2⌉).
-7. Each term is ≤ (ℓ + ε)/2, where ε = 1 iff s and r are both odd. That needs ℓ ≥ 3, so the
-   number k of such blocks is ≤ ⌊g/3⌋. Integrality then gives Σ ≤ ⌊(g + ⌊g/3⌋)/2⌋ = V(g).
+*Proof of ≤.* If g=1, the phase map is constant, so Lemma R forbids mixed
+species. Double counting adjacent pairs bounds each east-only row by ⌊W/2⌋
+and each north-only column by ⌊H/2⌋.
 
-*Construction.* For g ≥ 2, label the classes with k blocks (N, E, ·) followed by blocks (E, ·).
-Here k ∈ {⌊g/3⌋, ⌊g/3⌋ − 1} is chosen so that k ≡ g (mod 2). For g = 1, alternate cars along the
-better direction. Fewer cars: delete cars, since conditions 1–3 are closed under deletion. ∎
+Now let g≥2 and M=WH/g. Every phase fiber has M cells: east shift bijects
+successive fibers, and the g equal fibers partition the torus. Let aᵢ,bᵢ be
+the species counts in class i, and cᵢ=aᵢ+bᵢ. Same-species adjacency and the
+shift bijections give
 
-(Verified by simulation for all W, H ≤ 12, and against the exhaustive data for WH ≤ 16.)
+\[
+c_i\le M,\qquad a_i+a_{i+1}\le M,\qquad b_i+b_{i+1}\le M.
+\]
+
+The cross-species conditions give aᵢ=0 or bᵢ=0, and aᵢ=0 or bᵢ₊₁=0.
+These five constraints imply cᵢ+cᵢ₊₁+cᵢ₊₂≤2M. If aᵢ>0, the first two north
+counts vanish. If aᵢ=aᵢ₊₁=0, the first two east counts vanish. In the remaining
+case, aᵢ=0<aᵢ₊₁, the last two north counts vanish. In each case an adjacent
+same-species cap and one total-class cap suffice.
+
+If a class is empty, rotate it to the last position and write g=3q+r.
+Group the first 3q entries into triples. The total is at most 2qM for r=0
+or 1, and at most (2q+1)M for r=2, because the final entry is zero. This is
+M⌊2g/3⌋. If no class is empty, any positive east count forces a positive east
+count in the next class, so cyclic propagation forces a single species.
+Summing adjacent caps gives 2n≤gM≤2M⌊2g/3⌋ for g≥2. This proves the upper bound.
+
+*Construction.* For g≥2, fill phase classes according to `N E ·` triples
+and `E ·` pairs. When g=3q, use q triples; when g=3q+2, use q triples and
+one pair; when g=3q+1≥4, use q−1 triples and two pairs. Each pattern has
+exactly ⌊2g/3⌋ occupied classes, every E class is followed by an empty class,
+and every N class by an E class, including the cyclic seam. Thus Lemma R
+holds and the total is M⌊2g/3⌋. For g=1, alternate cars along the direction
+with larger capacity, leaving an unpaired last coordinate empty on odd lanes.
+Deleting any subset of cars preserves all static conditions, giving every
+smaller population. ∎
+
+**Lean proof.** `staticFree_carCount_le_freeMax` proves the upper bound for
+actual configurations. `maxFreeConfig` attains it, and `freeWith` retains
+exactly n cars whenever n≤freeMax. The theorems
+`exists_staticFree_with_count_iff`, `exists_perpetual_allMove_with_count_iff`,
+and `exists_eventual_allMove_with_count_iff` prove the same population
+spectrum in all three formulations. Eventual necessity uses actual car-count
+conservation; sufficiency chooses a free board with transient zero. This does
+not assert that every board below the maximum eventually becomes free.
+
+The separate `scripts/check_free_max.py` acceptance gate evaluates the actual
+Lean constructor for all 3,334 attainable-count cases on the 144 rectangles
+with sides 1…12. Its complete lcm windows contain 146,348 transitions. It
+checks both phase snapshots and move counts against independent scalar
+updates, the exact formula and populations, static conditions, lcm closure,
+complete coverage, and 22 rejection controls. Source-bound receipts identify
+successful runs. The historical WH≤16 tables and independent max-plus DP
+checks remain separate computational evidence.
 
 On L×L: n_free = L · ⌊(L + ⌊L/3⌋)/2⌋, so the densest free flow has density → **2/3**, attained
 exactly when 3 ∣ L (L = 3m gives V = 2m). For W, H coprime, free flow is
@@ -613,7 +645,8 @@ acceptance from the all-size Lean proof.
 The table concerns feasible populations `0 ≤ n ≤ WH`. “Gridlock forced” means
 that every configuration at that count eventually reaches a nonempty jam.
 The G1 existence interval and the G2/full-occupancy forced boundary are proved
-in Lean; the general free-flow formula F remains a prose theorem.
+in Lean, together with the exact free-flow formula F and its constructions
+at every attainable population.
 
 | car count n | gridlock possible | gridlock forced | free flow possible |
 |---|---|---|---|
@@ -746,6 +779,15 @@ jam/free-flow representatives in typical conserved lane classes and a
 finite-time isolation bound showing that the size and time limits need not
 commute.
 
+**Finite iid monotonicity.** On every torus with W·H ≤ 16, the jam fraction among n-car
+configurations is nondecreasing in n. So q(p) = P_p(J) is nondecreasing in p, exactly, by a
+Bernstein-coefficient certificate. Each difference b_{n+1} − b_n equals (jam-creating minus
+jam-destroying single-car additions)/(number of pairs), so configurationwise non-monotonicity
+is outweighed level by level. See the
+[finite iid monotonicity note](research/2026-11-18-finite-iid-monotonicity.md). The fixed-count
+fraction is *not* monotone in general: exactly, b₇ < b₆ on 2×11, 2×12 and 2×14, while monotonicity
+of q itself is open there. This settles nothing asymptotically.
+
 ## 9. Next targets
 
 The [dated open questions and proof roadmap](research/2026-11-18-open-questions-and-proof-roadmap.md)
@@ -757,10 +799,12 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
 
 1. **Continue the CLASSIC Lean proof layer.** G0, numerical conservation, complete G1/G2,
    the feasible-population forced-gridlock boundary, the geometric coset identity B2,
-   the actual-kernel free-flow characterization R, and the concrete recurrent witnesses
-   have kernel-checked coverage. R includes a finite lcm-window criterion and lcm return.
-   The separate TRAIN threshold T and sparse-square speed-one theorem are fully proved.
-   Next formalize the class packing and maximizing constructions of F using R.
+   the actual-kernel free-flow characterization R, the complete F capacity and
+   exact-count constructions, and the concrete recurrent witnesses have kernel-checked
+   coverage. R includes a finite lcm-window criterion and lcm return; F includes
+   static, perpetual, and eventual existence spectra. The separate TRAIN threshold T
+   and sparse-square speed-one theorem are fully proved. The next CLASSIC obligation
+   is the low-density eventual-speed-one argument under `2m < gcd(W,H)` in blueprint B7.
    See the precise [coverage register](../formal/README.md).
 2. **Control formation of blocking loops under μ_p.** Section 8 gives the initial counting
    bound and explains the missing dynamical estimate. Do not treat a finite-time simulation

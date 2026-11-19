@@ -5,6 +5,22 @@ connections to tiling and dynamical-systems theory.
 
 ## Research notes
 
+- [Protected queues delay global gridlock](docs/research/2026-11-18-protected-queue-gridlock-delay.md)
+  (2026-11-18): a universal Lean proof shows that a short guarded east queue
+  forces its original rear car to make its first move at a prescribed round,
+  regardless of the exterior. Exact cyclic-pattern probabilities give a
+  logarithmic lower bound on gridlock time with high probability at every
+  fixed `0<p<1`. A separate prose construction shows that every bounded local
+  pattern has an eventually jammed completion on sufficiently large squares.
+  Neither statement establishes a positive critical density.
+- [Certified bounds for eventual gridlock](docs/research/2026-11-18-certified-absorption-bounds.md)
+  (2026-11-18): universal Lean soundness for hit/safe/unresolved cutoff
+  certificates, exact initial-weight probability intervals, and actual
+  Lean/Quint/Python replay. The complementary
+  [relaxation obstructions](docs/research/2026-11-18-relaxation-obstructions.md)
+  prove a queue-delay mechanism, a logarithmic settling-time obstruction,
+  failed vacancy/defect shortcuts, and a conditional late-defect criterion.
+  The fixed-positive-density transition remains open.
 - [Open questions and proof roadmap](docs/research/2026-11-18-open-questions-and-proof-roadmap.md)
   (2026-11-18): the post-TRAIN review, including an explicit periodic N-car
   family, the equality/gcd/time-bound extensions, CLASSIC rigidity and packing,
@@ -38,11 +54,24 @@ connections to tiling and dynamical-systems theory.
 - [Probabilistic gridlock bounds](docs/research/2026-11-18-probabilistic-gridlock-bounds.md)
   (2026-11-18): proves in prose that mixed-cycle formation agrees with eventual
   gridlock outside an exponentially rare initial full-lane event, and that
-  `p_L*L <= (2-epsilon)*log(log(L))` implies vanishing gridlock probability.
+  `p_L*L <= 2*log(log(L))-4*log(log(log(L)))-2` eventually implies vanishing
+  gridlock probability; the earlier leading-order window follows as a corollary.
   It also proves limits of conserved-lane and fixed-time arguments. Lean checks
   the underlying CLASSIC count invariants; exact finite Python probabilities
   and obstruction checks remain distinct from these asymptotic proofs. A
   fixed positive critical density is still unproved.
+- [Limits of deterministic lane-profile certificates](docs/research/2026-11-18-lane-profile-obstruction.md)
+  (2026-11-18): Lean constructs a ringless jam with any positive E-row and
+  N-column profiles whose two maxima sum to at most the side length. Exact
+  initial-law bounds show that such profiles occur with high probability at
+  every fixed `0<p<1`. Consequently every sound nonjamming certificate based
+  only on lane counts has vanishing acceptance probability. This does not
+  estimate the jam basin within a profile class.
+- [Disjoint-strip capacity bounds](docs/research/2026-11-18-disjoint-strip-capacity.md)
+  (2026-11-18): several disjoint north-empty strips can exceed the conserved
+  east-row capacity even when every single-strip test fails. An exact
+  convolution gives stronger finite iid gridlock bounds, with complete small
+  torus checks. The geometric and probability arguments have prose proofs.
 - [Fixed-density mixed-cycle formation](docs/research/2026-11-18-fixed-density-formation.md)
   (2026-11-18): initial-law exponential bounds on early capture formation and
   an exact one-round winding-cycle probability. A transfer calculation and a
@@ -72,8 +101,18 @@ connections to tiling and dynamical-systems theory.
   and separate formation/capture observations with explicit unresolved cutoffs.
 - `bml/probability.py` — exact finite iid basin probabilities, initial full-lane
   probabilities, and checked conserved-strip obstructions and probability bounds.
+- `bml/absorption.py` — verified finite traces and exact eventual-gridlock
+  intervals, with omitted initial probability retained as unresolved.
+- `bml/obstructions.py` — raw phase-aware defects and queue-delay bounds,
+  with actual-kernel controls for proposed fixed-density proof routes.
+- `bml/guarded_queue.py` — exterior-independent delayed movement certificates
+  and exact cyclic-pattern upper bounds on early global gridlock.
 - `bml/fixation.py` — independent labeled fixation counts and exact initial-iid
   Palm probabilities, including the car-weighted jam probability and ring error.
+- `bml/profiles.py` — explicit jams with prescribed lane counts and exact upper
+  bounds on acceptance of sound nonjamming certificates that use only those counts.
+- `bml/capacity.py` — checked disjoint-strip capacity obstructions and exact
+  marginal-law bounds on eventual gridlock.
 - `bml/analysis.py` — tables for all tori with WH ≤ 16, written to `data/exhaustive.json` (~6 min).
 - `bml/nonmonotone.py` — un-jamming pairs with car identities tracked.
 - `bml/montecarlo.py` — empirical jam curves (not a proof).
@@ -84,6 +123,9 @@ python -m pytest -q
 python scripts/check_capture.py --report .artifacts/capture-replay.json
 python scripts/check_probability.py --report .artifacts/probability-replay.json
 python scripts/check_fixation.py --report .artifacts/fixation-replay.json
+python scripts/check_profiles.py --report .artifacts/profiles-replay.json
+python scripts/check_capacity.py --report .artifacts/capacity-replay.json
+python scripts/check_guarded_queue.py --report .artifacts/guarded-queue-replay.json
 python -m bml.analysis 16    # regenerate data/exhaustive.json
 ```
 
@@ -120,7 +162,9 @@ fixed-point result does not transfer.
   permanent cores and route-cover capture bounds. Some original car eventually
   stops exactly when the state eventually jams or initially has a full E-row
   or N-column. Arithmetic components of F and the strong 4×2 non-monotonicity
-  witness are also proved. Finite replays compare Lean with NumPy on 93,387
+  witness are also proved. Exact jammed representatives of bounded positive
+  lane profiles and guarded-queue first-movement bounds are proved for the
+  actual kernel as well. Finite replays compare Lean with NumPy on 93,387
   states and Quint with NumPy on 3,720 states plus three witness rows; see the
   [BML evidence register](formal/README.md#finite-evidence-scopes).
 - **Traffic:** the exact 21-Wang-tile correspondence, an infinite blocked
@@ -167,9 +211,12 @@ Lean proof. The coset identity B2 is formalized on the actual torus coordinates;
 the general free-flow equivalence R is proved for the actual CLASSIC kernel,
 including a finite moving-window criterion and return after `lcm(W,H)` rounds.
 It characterizes perpetual free flow from the current state; it does not assert
-that every state eventually reaches free flow. The packing and maximizing
-constructions in F remain prose proofs with bounded computational support,
-including the independent max-plus DP checks.
+that every state eventually reaches free flow. Theorem F is also proved in
+Lean: the exact free-flow capacity, executable maximizing constructions,
+and constructions at every smaller population hold on every positive rectangle.
+The same capacity bounds eventual free flow by car-count conservation. Independent
+max-plus DP checks and actual Lean construction replays give finite implementation
+evidence alongside the universal proofs.
 The formal register states the exact
 replay domains and distinguishes regenerated data from inherited tables.
 

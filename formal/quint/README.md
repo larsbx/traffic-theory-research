@@ -1,16 +1,19 @@
 # Executable Quint BML models
 
-This directory contains three separately scoped suites using the same pinned
+This directory contains separately scoped suites using the same pinned
 Quint 0.33.1 interpreter and simultaneous finite-torus half-steps.
 `BML.qnt` provides the CLASSIC east-then-north replay against the NumPy kernel.
 `traffic.qnt` provides explicit half-step phases and the 21-tile Wang encoding,
 with a separate CLASSIC replay against Lean. `Train.qnt` implements TRAIN
 queue movement and full-ring rotation. The distinct filenames also work on
 filesystems that do not distinguish upper and lower case.
+`Absorption.qnt` extends the CLASSIC kernel with finite-cutoff certificates
+for eventual gridlock and all-time avoidance.
 
 | Suite | Entry points | Deterministic coverage |
 |---|---|---|
 | Finite BML replay | `BML.qnt`, `check.py`, `evaluate.py` | Ten Quint tests; every state of all 14 ordered positive rectangles with at most six cells, plus three `4x2` witness rows; three executed mutation controls. |
+| Eventual-gridlock certificates | `Absorption.qnt`, `absorption_evaluate.py` | Twenty deterministic tests including the imported BML tests; 22,320 exhaustive cutoff rows, 144 longer `3x3` rows, and ten larger witness rows compared with actual Lean and Python. |
 | Phase and Wang layer | `traffic.qnt`, `bml_tests.qnt`, `bml_model.qnt`, `bml_export.qnt`, `export.cjs` | 25 pure tests and four state-transition tests; 1,560 boards on six tori, with both phases for 3,120 half-step cases. |
 | TRAIN movement | `Train.qnt`, `train_tests.qnt`, `train_model.qnt`, `train_check.py`, `train_evaluate.py` | 19 pure tests and five stateful tests; 3,720 boards on 14 rectangles, 74 larger targeted boards, 96 constructor boards, and five executed mutation controls. |
 
@@ -128,6 +131,28 @@ actual Quint interpreter and validates every returned row. Full enumeration
 through the CLI is capped at nine cells; explicit state indices can use tori
 up to sixteen cells. `evaluate_rows` provides the same protocol as an importable
 Python function.
+
+## Eventual-gridlock certificates
+
+`Absorption.qnt` imports the actual CLASSIC kernel from `BML.qnt`. It checks
+the complete orbit prefix, both half-steps, species counts, state legality,
+and jam absorption. It returns a hit only for a nonempty terminal jam, a safe
+verdict only for exact non-target terminal recurrence, and unresolved otherwise.
+The adapter requires the model's internal verification flag before exposing
+`initial_code,cutoff,terminal_code,verdict,population` rows.
+
+From the repository root:
+
+```sh
+python scripts/check_absorption.py --backend quint --report .artifacts/absorption-quint.json
+```
+
+The default `--backend both` also builds, audits, and runs the Lean exporter.
+The adapter contains no Python traffic dynamics. These finite correspondence
+checks complement the universal soundness proofs in `BML/Absorption.lean`;
+they do not prove a positive critical density. Exact initial weights, omitted
+mass, cutoff scope, and rejection controls are documented in the
+[certificate note](../../docs/research/2026-11-18-certified-absorption-bounds.md).
 
 ## Phase and Wang layer
 
