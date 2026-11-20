@@ -56,6 +56,27 @@ def combined_barrier_formation_upper_bound(
                diagonal_formation_upper_bound(side, p, rounds, rule=rule))
 
 
+def coordinate_barrier_formation_upper_bound(
+    side: int, p: Rational, rounds: int = 0, *, rule: str = CLASSIC,
+) -> Fraction:
+    """Upper bound through T using the coordinate envelope of the revealed boxes.
+
+    At T>=1 the probe costs 4T+1 prescribed cars and one hole. Its stride
+    is 2T+2 and the union of the probe and revealed boxes fits in a single
+    torus period in each coordinate for all counted trials.
+    """
+    _classic(rule)
+    side = _natural(side, "side", 1)
+    rounds, p = _natural(rounds, "rounds"), _density(p)
+    if side == 1 or p == 0:
+        return Fraction()
+    if rounds == 0:
+        return guarded_barrier_formation_upper_bound(side, p)
+    trials = max(0, (side - rounds) // (2 * rounds + 2))
+    stop = (1 - p) * (p / 2) ** (4 * rounds + 1)
+    return min(Fraction(1), side * p / 2 * (1 - stop) ** trials)
+
+
 @dataclass(frozen=True)
 class BarrierPattern:
     """A lifted corner and its prescribed initial cells on a rectangular torus.
@@ -120,6 +141,23 @@ def guarded_barrier_pattern(
     return BarrierPattern(width, height, rounds, x0, y0,
                           2 * rounds if east_length is None else east_length,
                           2 * rounds if north_length is None else north_length)
+
+
+def coordinate_barrier_pattern(
+    side: int, rounds: int, x: int, y: int, direction: int,
+) -> BarrierPattern:
+    """Lift a probe beyond the upper coordinate bounds of the checkpoint (x,y)."""
+    rounds = _natural(rounds, "rounds", 1)
+    if not _integer(x) or not _integer(y):
+        raise ValueError("the lifted checkpoint must have integer coordinates")
+    if not _integer(direction) or direction not in (EAST, NORTH):
+        raise ValueError("the checkpoint direction must be EAST or NORTH")
+    dx = int(direction == EAST)
+    dy = int(direction == NORTH)
+    return guarded_barrier_pattern(
+        side, side, rounds, x0=int(x) + dx, y0=int(y) + dy,
+        east_length=rounds + 1 - dx, north_length=rounds + 1 - dy,
+    )
 
 
 def _pattern(value: BarrierPattern) -> BarrierPattern:

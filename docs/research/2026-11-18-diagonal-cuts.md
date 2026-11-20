@@ -17,6 +17,11 @@ horizon for `0<=p<=p0<1`. The original estimate below remains useful at
 small densities, since the new occupied-barrier weight is not monotone in
 density. Neither bound controls formation after its cutoff.
 
+The [tagged-wait follow-up](2026-11-20-late-tagged-waits.md) reduces the
+guarded probe to `4T+1` prescribed cars and one hole, improves the
+logarithmic coefficient, and gives a finite test for each conditional
+lap of an original tag after the cutoff.
+
 ## Model and bound
 
 Use the CLASSIC east-then-north round \(F\) on \(\mathbb Z_L^2\). The initial

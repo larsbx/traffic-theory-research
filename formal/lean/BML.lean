@@ -29,3 +29,4 @@ import BML.Fixation
 import BML.Profiles
 import BML.Locality
 import BML.Barrier
+import BML.Waiting

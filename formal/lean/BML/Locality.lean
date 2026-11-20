@@ -88,6 +88,34 @@ private theorem reduceCoordinate_prev (n : Nat) (hn : 0 < n) (x : Int) :
 def torusProject (w h : Nat) (hw : 0 < w) (hh : 0 < h) (z : LatticePosition) : Position w h :=
   (reduceCoordinate w hw z.1, reduceCoordinate h hh z.2)
 
+private theorem eq_of_reduceCoordinate_eq_of_short_gap (n : Nat) (hn : 0 < n) (x y : Int)
+    (lo : -(n : Int) < x-y) (hi : x-y < n)
+    (equal : reduceCoordinate n hn x = reduceCoordinate n hn y) : x = y := by
+  have npos : 0 < (n : Int) := by omega
+  have h := congrArg Fin.val equal
+  change (x % (n : Int)).toNat = (y % (n : Int)).toNat at h
+  have hx := Int.emod_nonneg x (by omega : (n : Int) ≠ 0)
+  have hy := Int.emod_nonneg y (by omega : (n : Int) ≠ 0)
+  have residues : x % (n : Int) = y % (n : Int) := by omega
+  by_cases hxy : y ≤ x
+  · have zero := Int.emod_eq_emod_iff_emod_sub_eq_zero.mp residues
+    rw [Int.emod_eq_of_lt (by omega) hi] at zero
+    omega
+  · have zero := Int.emod_eq_emod_iff_emod_sub_eq_zero.mp residues.symm
+    rw [Int.emod_eq_of_lt (by omega) (by omega : y-x < (n : Int))] at zero
+    omega
+
+/-- In a lifted rectangle shorter than one period in each coordinate,
+distinct lattice sites have distinct torus projections. -/
+theorem torusProject_eq_lift_of_short_spans (w h : Nat) (hw : 0 < w) (hh : 0 < h)
+    (q r : LatticePosition)
+    (hx : -(w : Int) < q.1-r.1 ∧ q.1-r.1 < w)
+    (hy : -(h : Int) < q.2-r.2 ∧ q.2-r.2 < h)
+    (equal : torusProject w h hw hh q = torusProject w h hw hh r) : q = r := by
+  apply Prod.ext
+  · exact eq_of_reduceCoordinate_eq_of_short_gap w hw _ _ hx.1 hx.2 (congrArg Prod.fst equal)
+  · exact eq_of_reduceCoordinate_eq_of_short_gap h hh _ _ hy.1 hy.2 (congrArg Prod.snd equal)
+
 /-- Heights in a window shorter than L identify disjoint layers on a square torus. -/
 theorem torusProject_ne_of_height_gap (L : Nat) (hL : 0 < L) (z q : LatticePosition)
     (positive : 0 < (q.1 + q.2) - (z.1 + z.2))
