@@ -314,6 +314,13 @@ with the horizon and its fresh-site trial count eventually becomes zero,
 so taking the supremum of the present finite-time bounds does not supply
 the missing uniform estimate.
 
+The subsequent [path-mass reduction](2026-11-19-maximal-core-and-path-mass.md#3-shorter-paths-give-a-weaker-sufficient-probability-obligation)
+weakens this sufficient input: conserved population allows an `o(1)`
+late-time or long-time-averaged root probability at each fixed positive
+density. It also identifies a monotone maximal-core fraction whose limiting
+expectation agrees with eventual gridlock up to the full-lane exception.
+The required decay estimate remains unproved.
+
 ### A long moving prefix can end in capture
 
 There is a useful explicit control. For `L>=4` and

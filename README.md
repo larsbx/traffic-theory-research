@@ -96,6 +96,15 @@ connections to tiling and dynamical-systems theory.
   Combining it with empty-origin cuts gives a uniform `log L/log log L`
   horizon for `0<=p<=p0<1`. Late formation and a positive nonjamming interval
   remain open; probability integration and limits have prose proofs.
+- [Maximal frozen cores and the path-mass estimate](docs/research/2026-11-19-maximal-core-and-path-mass.md)
+  (2026-11-19). Lean identifies the maximal occupied closed core by a finite
+  path test and proves that it increases to exactly the eventual permanent
+  sites. A population-weighted argument weakens the sufficient fixed-density
+  path estimate from uniform `o(1/L)` to late-time or averaged `o(1)`.
+  The normalized limiting core fraction equals gridlock probability up to
+  the exponentially small full-lane exception. An exact population envelope
+  converts a supplied mass estimate into a finite bound; proving the needed
+  decay under the evolved law remains open.
 - [Formal coverage and validation](formal/README.md): the CLASSIC finite-torus
   `BML` proofs, identity-preserving transport and non-monotonicity witness, together
   with the complementary `Traffic` tiling/staircase proofs, the complete
@@ -120,6 +129,8 @@ connections to tiling and dynamical-systems theory.
   and exact cyclic-pattern upper bounds on early global gridlock.
 - `bml/barriers.py` — arbitrary-exterior snapshot barriers, exact initial-law
   weights, and a logarithmic first-mixed-cycle bound.
+- `bml/path_core.py` — finite direct paths, maximal frozen-core pruning, and
+  exact population-law conversion of a supplied late-time mass bound.
 - `bml/fixation.py` — independent labeled fixation counts and exact initial-iid
   Palm probabilities, including the car-weighted jam probability and ring error.
 - `bml/profiles.py` — explicit jams with prescribed lane counts and exact upper
@@ -140,6 +151,7 @@ python scripts/check_profiles.py --report .artifacts/profiles-replay.json
 python scripts/check_capacity.py --report .artifacts/capacity-replay.json
 python scripts/check_guarded_queue.py --report .artifacts/guarded-queue-replay.json
 python scripts/check_barriers.py --report .artifacts/barriers-replay.json
+python scripts/check_path_core.py --report .artifacts/path-core-replay.json
 python -m bml.analysis 16    # regenerate data/exhaustive.json
 ```
 

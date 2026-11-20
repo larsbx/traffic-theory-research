@@ -55,6 +55,7 @@ It does not embed Python-produced expected transitions.
 | `BML/Delay.lean` | An initial eastbound run of length `T+2` blocks its original rear car at round `T`, regardless of the exterior. A permanent full-movement starting time must exceed `T`. Kernel-checked `4x4` vacant east/south cycle that disappears into a nonempty jam after one round. |
 | `BML/GuardedQueue.lean` | A main E run at offsets `0..T`, a hole at `T+1`, and a lower E guard at offsets `1..T` force the original rear tag's first move to occur in round `T`, regardless of the exterior. One-round and iterated shrinking follow from the actual two-phase kernel. Any nonempty jam time is strictly greater than `T`. Generic results assume east-next commutes with north-previous; torus specializations discharge this premise. |
 | `BML/Fixation.lean` | Eventual constancy of an original `carTrace` is equivalent to finitely many actual moves. An eventually permanent car has an eventually permanent successor, with the north proof using the post-east checkpoint. All permanent sites form a nonempty core at a common future time. A core that misses a row forces a full E-row; a missed column forces a full N-column. Consequently, some original car fixes iff eventual nonempty jam or an initial full monochromatic lane occurs. All cars fix iff the state is empty or eventually jams. Outside both exceptional events, every original car moves and every site becomes empty arbitrarily late. |
+| `BML/PathCore.lean` | The largest occupied successor-closed core is exactly the set of roots with `carCount + 1` occupied direct-path vertices. Its fixed spatial membership increases under the actual full rounds and eventually equals all eventual permanent sites. An original car eventually stops iff its trace eventually enters the core. Probability laws and the final count/expectation conversion are separate prose arguments. |
 | `BML/Locality.lean` | A radius-`T` lifted box determines the time-`T` torus color. Lifted points at height gaps in `(0,L)` have distinct projections on the square torus. Excluding compatible initial origins of both species forces time-`T` vacancy. |
 | `BML/Barrier.lean` | An N guard protects a descending hole from the E phase. The actual kernel preserves an E wall and a lower N wall aimed at the hole, producing an L-shaped barrier at any prescribed time with arbitrary exterior. General lengths may be zero; the torus adapter discharges the commutation premise. |
 | `BML/Torus.lean` | Positive finite cyclic coordinates with proved inverse shifts; the general kernel is instantiated on `Fin WIDTH × Fin HEIGHT`; executable base-three encoding, decoding, and counts. |
@@ -461,6 +462,36 @@ delay for each fixed `0<p<1`. A separate two-range argument combines this
 with empty-origin cuts for a uniform `log L/log log L` horizon. Those
 conditional probability, path geometry, and limit arguments are prose
 proofs; the eventual late-formation probability remains open.
+
+## Maximal cores and the path-mass reduction
+
+`BML/PathCore.lean` uses `OccupiedBlockerPath ... edges` for a direct
+snapshot path with `edges + 1` occupied vertices, including its root.
+`PathCoreMember` requires every finite prefix to be occupied. The
+`pathCore` construction is a `BlockingCore`, and `pathCore_maximal`
+contains every other occupied successor-closed core. It includes paths
+feeding a cycle as well as the cycle itself.
+
+`PathCoreMember.persists` fixes the species at a core site for every later
+round. `.iterate` proves spatial membership is monotone. On finite
+rectangles, `pathCoreMember_iff_occupiedBlockerPath_carCount` proves an
+exact finite test using `carCount` edges; it needs no jam or lane hypothesis.
+`pathCore_eventually_eq_permanent_sites` gives one common time after
+which the core equals precisely all eventual permanent sites.
+`tagEventuallyStopped_iff_eventual_pathCoreMember` relates this spatial
+observable to the actual trace of a specified original car. The existing
+`Fixation.lean` theorem retains its signature; a stronger helper exposes
+the full permanent-site predicate in its future-core construction.
+
+The [path-mass note](../../docs/research/2026-11-19-maximal-core-and-path-mass.md)
+uses the tagged bijection to identify the eventual core size with the
+number of stopped original cars. It then derives a normalized probability
+comparison, a late-time or averaged `o(1)` sufficient path estimate, and
+the optimal finite envelope retaining only the population law and a
+supplied mass budget. Those count/probability calculations have prose
+proofs. The new module does not prove decay under the evolved iid law,
+a fixed-positive-density nonjamming interval, or an effective time for
+the maximal core to reach its eventual size.
 
 ## TRAIN library and executable
 
