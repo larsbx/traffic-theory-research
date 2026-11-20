@@ -55,6 +55,17 @@ pattern extends to an eventually jammed state on a sufficiently large square.
 Finite-time survival remains compatible with a permanent capture core already
 present elsewhere. Neither result controls the eventual iid basin probability.
 
+**Further first-formation estimate — 19 November 2026:** the
+[guarded-barrier note](2026-11-19-guarded-barrier-formation.md) uses a
+kernel-checked L-shaped snapshot barrier to exclude a first mixed cycle
+through order `log L` at each fixed `0<p<1`. The new initial certificate
+requires `6T` cars and one hole. Combined with the earlier empty-origin cut,
+it also gives a uniform `log L/log log L` horizon over `0<=p<=p0<1`.
+The probability of first formation after that cutoff remains the step
+needed for fixed-positive-density nonjamming. A supplied family with all
+cars moving for order `L` rounds before a mixed staircase forms rejects
+the shortcut from a long free prefix to permanent noncapture.
+
 | Status at this snapshot | Consequence for this roadmap |
 | --- | --- |
 | [PR #9](https://github.com/larsbx/traffic-theory-research/pull/9) and [PR #11](https://github.com/larsbx/traffic-theory-research/pull/11) merged | The complete rectangular TRAIN jam theorem and strict sparse-square eventual-speed-one theorem are already in Lean. |

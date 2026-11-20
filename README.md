@@ -89,6 +89,13 @@ connections to tiling and dynamical-systems theory.
   (2026-11-18). This bounds mixed-cycle formation through order `sqrt(log L)`
   rounds at every fixed density below one. The proof explores a blocker path
   using only initial cells and identifies the late formation term still to control.
+- [Guarded barriers and logarithmic mixed-cycle delay](docs/research/2026-11-19-guarded-barrier-formation.md)
+  (2026-11-19). A Lean-proved queue produces an L-shaped path barrier from
+  `6T` prescribed cars and one hole. Its initial-law probability improves
+  first mixed-cycle exclusion to order `log L` at each fixed `0<p<1`.
+  Combining it with empty-origin cuts gives a uniform `log L/log log L`
+  horizon for `0<=p<=p0<1`. Late formation and a positive nonjamming interval
+  remain open; probability integration and limits have prose proofs.
 - [Formal coverage and validation](formal/README.md): the CLASSIC finite-torus
   `BML` proofs, identity-preserving transport and non-monotonicity witness, together
   with the complementary `Traffic` tiling/staircase proofs, the complete
@@ -111,6 +118,8 @@ connections to tiling and dynamical-systems theory.
   with actual-kernel controls for proposed fixed-density proof routes.
 - `bml/guarded_queue.py` — exterior-independent delayed movement certificates
   and exact cyclic-pattern upper bounds on early global gridlock.
+- `bml/barriers.py` — arbitrary-exterior snapshot barriers, exact initial-law
+  weights, and a logarithmic first-mixed-cycle bound.
 - `bml/fixation.py` — independent labeled fixation counts and exact initial-iid
   Palm probabilities, including the car-weighted jam probability and ring error.
 - `bml/profiles.py` — explicit jams with prescribed lane counts and exact upper
@@ -130,6 +139,7 @@ python scripts/check_fixation.py --report .artifacts/fixation-replay.json
 python scripts/check_profiles.py --report .artifacts/profiles-replay.json
 python scripts/check_capacity.py --report .artifacts/capacity-replay.json
 python scripts/check_guarded_queue.py --report .artifacts/guarded-queue-replay.json
+python scripts/check_barriers.py --report .artifacts/barriers-replay.json
 python -m bml.analysis 16    # regenerate data/exhaustive.json
 ```
 

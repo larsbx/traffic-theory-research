@@ -631,3 +631,10 @@ no proof to blueprint yet. The
 separately proves the mixed-cycle reduction, a shrinking-density no-gridlock
 window, and finite-time bounds in prose; see `docs/theorems.md` §§8–8c. Those
 results do not establish a positive critical density.
+
+The [guarded-barrier follow-up](../docs/research/2026-11-19-guarded-barrier-formation.md)
+adds a kernel-checked finite-time L-shaped barrier in `BML/Barrier.lean`.
+Its initial-law calculation extends first mixed-cycle exclusion to order
+`log L` at each fixed density, with a uniform `log L/log log L` version
+below any fixed density less than one. The remaining late-formation term
+is still the unresolved probability obligation.
