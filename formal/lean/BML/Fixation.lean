@@ -395,12 +395,13 @@ theorem allCarsEventuallyStopped_iff_empty_or_jam (s : Config (Position w h)) :
       exact False.elim (he ⟨p, by rw [hp]; exact sp.cell_ne_empty⟩)
     · exact fun sp p hp => eventuallyJammed_every_tag_stops east north s hj sp p hp
 
-/-- All eventually permanent sites simultaneously form a nonempty occupied
-successor-closed core at some actual future full-round state. -/
-theorem future_blockingCore_of_permanent_site (s : Config (Position w h))
-    (hs : HasPermanentSite east north s) :
+/-- All eventually permanent sites simultaneously form an occupied
+successor-closed core at some actual future full-round state. The exact site
+predicate is exposed so that a specified permanent site is retained. -/
+theorem future_blockingCore_of_eventually_permanent_sites
+    (s : Config (Position w h)) :
     ∃ start, ∃ core : BlockingCore east north (iterate (step east north) start s),
-      ∃ p, core.sites p := by
+      ∀ p, core.sites p ↔ ∃ sp, EventuallyPermanent east north s sp p := by
   classical
   let P := fun t p => ∀ sp, EventuallyPermanent east north s sp p →
     iterate (step east north) t s p = sp.cell
@@ -439,8 +440,18 @@ theorem future_blockingCore_of_permanent_site (s : Config (Position w h))
       have hsp : sp = .north := by cases sp <;> simp_all [Species.cell]
       subst sp
       exact eventuallyPermanent_north_successor east north s p hp }
+  exact ⟨start, core, fun _ => Iff.rfl⟩
+
+/-- All eventually permanent sites simultaneously form a nonempty occupied
+successor-closed core at some actual future full-round state. -/
+theorem future_blockingCore_of_permanent_site (s : Config (Position w h))
+    (hs : HasPermanentSite east north s) :
+    ∃ start, ∃ core : BlockingCore east north (iterate (step east north) start s),
+      ∃ p, core.sites p := by
+  obtain ⟨start, core, hsites⟩ :=
+    future_blockingCore_of_eventually_permanent_sites east north s
   obtain ⟨sp, p, hp⟩ := hs
-  exact ⟨start, core, p, sp, hp⟩
+  exact ⟨start, core, p, (hsites p).mpr ⟨sp, hp⟩⟩
 
 end Finite
 
