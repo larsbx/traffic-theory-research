@@ -15,10 +15,9 @@ theorem iterate_mem_of_closed (f : α → α) (carrier : List α)
   | zero => exact hp
   | succ t ih => exact hclosed _ ih
 
-/-- Pigeonhole principle specialized to a forward orbit in a finite carrier. -/
-theorem closed_orbit_repeats (f : α → α) (carrier : List α)
-    (hclosed : ∀ p, p ∈ carrier → f p ∈ carrier)
-    (p : α) (hp : p ∈ carrier) :
+/-- Pigeonhole principle for a finite orbit prefix in a supplied carrier. -/
+theorem orbit_prefix_repeats (f : α → α) (carrier : List α) (p : α)
+    (members : ∀ t ≤ carrier.length, iterate f t p ∈ carrier) :
     ∃ i j, i < j ∧ j ≤ carrier.length ∧ iterate f i p = iterate f j p := by
   classical
   apply Classical.byContradiction
@@ -28,7 +27,7 @@ theorem closed_orbit_repeats (f : α → α) (carrier : List α)
     intro x hx
     obtain ⟨i, hi⟩ := List.mem_ofFn.mp hx
     rw [← hi]
-    exact iterate_mem_of_closed f carrier hclosed p hp i.val
+    exact members i.val (by have := i.isLt; omega)
   have hnodup : orbit.Nodup := by
     apply List.nodup_iff_eq_of_getElem_eq.mpr
     intro i j hi hj heq
@@ -43,6 +42,13 @@ theorem closed_orbit_repeats (f : α → α) (carrier : List α)
   have hlen := hnodup.length_le_of_subset hsub
   simp only [orbit, List.length_ofFn] at hlen
   omega
+
+/-- A forward orbit in a finite closed carrier must repeat. -/
+theorem closed_orbit_repeats (f : α → α) (carrier : List α)
+    (hclosed : ∀ p, p ∈ carrier → f p ∈ carrier)
+    (p : α) (hp : p ∈ carrier) :
+    ∃ i j, i < j ∧ j ≤ carrier.length ∧ iterate f i p = iterate f j p :=
+  orbit_prefix_repeats f carrier p (fun t _ => iterate_mem_of_closed f carrier hclosed p hp t)
 
 /-- A witnessed natural-number property has a least witness no larger than this one. -/
 theorem exists_minimum_le (P : Nat → Prop) (n : Nat) (hn : P n) :
