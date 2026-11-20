@@ -10,6 +10,13 @@ The [guarded-queue bound](2026-11-18-protected-queue-gridlock-delay.md) gives a
 logarithmic delay for complete gridlock, which can occur after the first
 mixed cycle forms.
 
+**Follow-up:** the [guarded-barrier argument](2026-11-19-guarded-barrier-formation.md)
+improves first mixed-cycle exclusion to order `log L` at each fixed density.
+Combining the two certificates also gives a uniform `log L/log log L`
+horizon for `0<=p<=p0<1`. The original estimate below remains useful at
+small densities, since the new occupied-barrier weight is not monotone in
+density. Neither bound controls formation after its cutoff.
+
 ## Model and bound
 
 Use the CLASSIC east-then-north round \(F\) on \(\mathbb Z_L^2\). The initial
