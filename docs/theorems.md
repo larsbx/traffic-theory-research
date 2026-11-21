@@ -181,38 +181,54 @@ asserting equality between the two constructors.
 
 *CLASSIC transfer of Austin–Benjamini Proposition 1.*
 
-The paper's written rule is TRAIN, treated in §5c. The CLASSIC result B7
-is separately proved in Lean for all positive rectangles. If `2m < g`,
+The paper's written rule is TRAIN, treated in §5c. The CLASSIC result B7–B7.6
+is separately proved in Lean for all positive rectangles. If `2m ≤ g`,
 where `g = gcd(W,H)`, all cars eventually move in every complete CLASSIC
 round. In each finite prefix there are at most `g−2` blocks per original
 car and at most `m(g−2)` rounds containing a block. The proof uses actual
 two-phase transport, corrected diagonal classes, and empty pairs that
 persist backwards. See [blueprint B7](../formal/blueprint.md#b7-classic-low-density-speed-one).
 
-*Prior art, and the equality case 2m = g.* [Kozlov–Tatashev–Yashina][KTY], Theorem 1, proves
-free movement from every initial state when m ≤ d/2, with d = gcd(N₁, …, N_n), on n-dimensional
-tori. For their stochastic parameter q = 0 the model is "the classical version of the BML
-model": within a step, type 1 moves first, then type 2, and a type-2 particle may enter a cell
-that a type-1 particle has just vacated. That matches CLASSIC rounds. The paper's text does not
-make the within-type semantics explicit (CLASSIC versus queue/TRAIN movement), so the
-correspondence is checked only up to that point. B7's strict bound 2m < g is a special case of
-their m ≤ d/2.
+*Prior art and movement semantics.* [Kozlov–Tatashev–Yashina][KTY] is a 2023
+preprint. Its Theorem 1 already includes the equality threshold on rectangular
+tori of arbitrary dimension. Here `m` counts all particles; `q = 0` fixes their
+types. Section 1 specifies ECA184 within each type, and §2 evaluates a type's
+vacant destination after the earlier types have moved. With east first and
+north second, these stated rules match the CLASSIC pre-phase vacancy test.
+This is a source-level comparison; the Lean proofs derive movement directly
+from the executable kernel and do not import the paper as an axiom.
 
-The equality case also follows from the B7 argument with one more lemma, together with the
-same bound m(g−2):
-- **Alternating state.** Suppose 2m = g and there is no empty pair at time T. Then the occupied
-  corrected classes alternate and each holds exactly one car. Every car then has an empty class
-  ahead, so by release (B7.1) it moves. Corrected classes are unchanged, so the state stays
-  alternating, and every later round is free.
-- **Before that.** The alternating times therefore form a final segment [T*, ∞). Before T*, every
-  time has an empty pair, and B7.5's per-car bound g − 2 applies.
-- **Numerical check.** Every rooted configuration with m = g/2 on 4×4, 6×6, 4×8, 8×4 and 6×12
-  reaches speed one, with at most 2 blocks per car.
-- **Sharpness.** On 4×4, m = g/2 + 1 = 3 already admits non-free configurations
-  (`data/exhaustive.json`).
+The related published article by [Yashina–Tatashev][YT24], *Mathematical
+Methods in the Applied Sciences* 47 (2024), 14341–14352, also states the
+inclusive gcd threshold in its abstract. Its two-author journal citation
+is distinct from the three-author KTY preprint. The preprint's theorem gives
+finite expected stabilization time; the explicit blockage and lcm deadlines
+below are proved within this Lean development, without a claim of priority.
 
-This equality extension is prose and finite evidence only. It is recorded as blueprint
-obligation B7.6 for Lean.
+B7.6 now proves the equality case, preserving the same bound `m(g−2)`:
+
+- **Alternating state.** `corrected_alternating_of_no_emptyPair` uses exact
+  finite-list saturation to prove alternating singleton occupied classes.
+  `corrected_alternating_allMove` checks every car's actual movement; the
+  singleton condition prevents an east car from filling a north target.
+  `corrected_alternating_step` and
+  `corrected_no_emptyPair_perpetual_allMove` prove preservation and all future
+  rounds' movement.
+- **The final blocked round.** An empty pair at time `T` leaves its first
+  class vacant through `T+1`, even if the pair disappears. The positive-rank
+  argument therefore counts the transition into alternation as well. No
+  additional `+1` is needed in the `g−2` per-tag bound.
+- **Elapsed time.** `low_density_speed_one_deadline` gives permanent movement
+  by `lcm(W,H) * m * (g−2)` complete east-then-north rounds under `2m ≤ g`.
+  The natural-number subtraction includes the empty board and `g = 2`
+  single-car states, whose deadline is zero.
+- **Finite controls.** The replay checks 75,716 inclusive sparse boards on
+  16 ordered shapes, including 61,608 equality boards. Blocked prefixes
+  on 2×2, 3×3 and 4×4 with one car above the admitted population prevent
+  accidentally certifying states outside the theorem's hypotheses.
+
+See the [B7.6 source and verification note](research/2026-11-21-classic-inclusive-sparse-flow.md)
+for theorem interfaces, dependency changes, and the acceptance scope.
 
 ## 3. Theorem G2 (no forced gridlock below full density)
 
@@ -908,8 +924,9 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
    coverage. R includes a finite lcm-window criterion and lcm return; F includes
    static, perpetual, and eventual existence spectra. The separate TRAIN threshold T
    and sparse-square speed-one theorem are fully proved. CLASSIC B7 proves eventual
-   full movement and bounds blocked rounds under `2m < gcd(W,H)`. The inclusive case 2m ≤ g, which
-   is prior art in [KTY], is proved in prose (§2) and open for Lean as B7.6.
+   full movement and bounds blocked rounds under `2m ≤ gcd(W,H)`. B7.6 now
+   formalizes the inclusive case from the actual kernel (§2); the threshold
+   is prior art in [KTY].
    See the precise [coverage register](../formal/README.md).
 2. **Control formation of blocking loops under μ_p.** Section 8 gives the initial counting
    bound and explains the missing dynamical estimate. Do not treat a finite-time simulation
@@ -934,7 +951,8 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
 
 ## References checked on 2026-11-18
 
-- [KTY] A. Kozlov, A. Tatashev, M. Yashina, *Sufficient Loading Conditions for Self-organization in the n-dimensional Version of BML Model with Stochastic Direction Choice*, arXiv:2310.02291 (2023), Theorem 1 (m ≤ d/2); classical BML at q = 0. Checked 2026-11-21 from the arXiv HTML text.
+- [KTY] V. V. Kozlov, A. G. Tatashev, M. V. Yashina, *Sufficient Loading Conditions for Self-organization in the n-dimensional Version of BML Model with Stochastic Direction Choice*, arXiv:2310.02291v1 (2023), preprint. Theorem 1 includes `m ≤ d/2`; §§1–2 specify ECA184 and ordered type phases, with fixed types at `q = 0`. Checked 2026-11-21 against the PDF.
+- [YT24] M. V. Yashina, A. G. Tatashev, *Loading conditions for self-organization in the BML model with stochastic direction choice*, Mathematical Methods in the Applied Sciences 47 (2024), 14341–14352. DOI: 10.1002/mma.10276. Publisher abstract and publication metadata checked 2026-11-21; full journal text was not available through the retrieval used.
 
 - [BML] O. Biham, A. A. Middleton, D. Levine, *Self Organization and a Dynamical Transition
   in Traffic Flow Models*, Physical Review A 46 (1992), R6124–R6127. Model I, pp. 2–3;
@@ -962,3 +980,4 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
 [YT]: https://arxiv.org/pdf/2311.17120
 [HBK]: https://arxiv.org/abs/2601.01180
 [KTY]: https://arxiv.org/abs/2310.02291
+[YT24]: https://doi.org/10.1002/mma.10276

@@ -96,6 +96,7 @@ jobs:
           lake env lean FreeFlowAudit.lean | tee ../../.artifacts/freeflow-audit.log
           lake env lean FreeMaxAudit.lean | tee ../../.artifacts/free-max-audit.log
           lake env lean SparseSpeedAudit.lean | tee ../../.artifacts/sparse-speed-audit.log
+          lake env lean StoppedCoreAudit.lean | tee ../../.artifacts/stopped-core-audit.log
       - name: Compare both half-steps on every rectangle with at most nine cells
         run: python scripts/check_lean_replay.py --max-cells 9 --report .artifacts/lean-replay.json | tee .artifacts/lean-replay.log
       - name: Check actual Lean G1 constructions at every admissible population
@@ -110,6 +111,8 @@ jobs:
         run: python scripts/check_free_max.py --max-side 12 --report .artifacts/free-max.json --rows .artifacts/free-max.tsv | tee .artifacts/free-max.log
       - name: Replay CLASSIC sparse-speed deadlines and movement-rule controls
         run: python scripts/check_sparse_speed.py --report .artifacts/sparse-speed.json | tee .artifacts/sparse-speed.log
+      - name: Compare maximal-core and original-tag counts under exact initial weights
+        run: python scripts/check_stopped_core.py --report .artifacts/stopped-core.json | tee .artifacts/stopped-core.log
       - name: Compare gated constructions and tagged wraparound with CLASSIC Python
         run: python scripts/check_gated.py --report .artifacts/gated-replay.json | tee .artifacts/gated-replay.log
       - name: Check certified cutoff bounds against the actual Lean probe
