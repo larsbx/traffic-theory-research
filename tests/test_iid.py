@@ -101,3 +101,42 @@ def test_jams_agrees_with_classifier_on_every_state(h, w):
     c = classify_all(h, w)
     states = decode(np.arange(3 ** (h * w), dtype=np.int64), h, w)
     assert (jams(states) == (c.cls == JAM)).all()
+
+
+EXT = json.loads((ROOT / "data" / "exhaustive-17-22.json").read_text())
+
+
+@pytest.mark.parametrize("h,w", [(2, 3), (3, 3), (2, 4), (3, 4), (4, 4), (2, 8), (1, 7)])
+def test_native_classifier_matches_numpy_tables(h, w):
+    """bml/native/classify.c (translation quotient, Floyd per orbit) vs bml.exhaustive tables."""
+    from bml.native import classify_counts
+    r = next(r for r in TABLES if (r["h"], r["w"]) == (h, w))
+    assert classify_counts(h, w) == {int(n): v for n, v in r["table"].items()}
+
+
+@pytest.mark.parametrize("r", EXT, ids=lambda r: f"{r['h']}x{r['w']}")
+def test_extended_tables_17_to_22_cells(r):
+    """Exhaustive tables for every shape with 17–22 cells (bml.native): totals, G1, F, and the
+    monotonicity facts recorded in the finite iid monotonicity note."""
+    from bml.extremal import max_free, min_gridlock
+    from bml.iid import certify_positive_derivative
+    h, w = r["h"], r["w"]; N = h * w
+    t = {int(n): v for n, v in r["table"].items()}
+    assert sum(sum(v.values()) for v in t.values()) == 3 ** N
+    assert min(n for n in t if n > 0 and t[n]["jam"]) == min_gridlock(h, w)
+    assert max(n for n in t if t[n]["free"]) == max_free(h, w)
+    jam = {n: v["jam"] for n, v in t.items()}
+    not_free = {n: v["jam"] + v["mixed"] for n, v in t.items()}
+    assert certified_nondecreasing(not_free, N)
+    if (h, w) in {(2, 11), (11, 2)}:
+        b = level_fractions(jam, N)
+        assert b[7] < b[6] and not certified_nondecreasing(jam, N)
+        assert certify_positive_derivative(jam, N) is not None      # yet q(p) is increasing
+    else:
+        assert certified_nondecreasing(jam, N)
+
+
+def test_positivity_certificate_rejects_a_decreasing_polynomial():
+    """Negative control: the 3×3 mixed-cycle probability decreases near p = 1."""
+    from bml.iid import certify_positive_derivative
+    assert certify_positive_derivative({6: 384, 7: 1872, 8: 1062, 9: 174}, 9, max_elevations=300) is None

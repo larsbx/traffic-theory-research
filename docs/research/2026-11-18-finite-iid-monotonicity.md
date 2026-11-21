@@ -5,7 +5,7 @@ asks whether the iid-averaged jam probability q_L(p) is monotone in the density 
 [probability note](2026-11-18-probabilistic-gridlock-bounds.md#6-non-monotonicity-configurations-and-probabilities-are-different)
 disproves monotonicity configuration by configuration, and for the mixed-cycle event M. It
 leaves q_L itself open. This note settles the finite-size question exactly for every torus
-with W·H ≤ 16 and for 2×9: q is nondecreasing there. It also shows exactly that the stronger
+with W·H ≤ 22: q is strictly increasing there. It also shows exactly that the stronger
 fixed-count statement fails on 2×11, 2×12 and 2×14. It makes no asymptotic claim and no novelty
 claim.
 
@@ -51,7 +51,7 @@ ones that revive every original car. The identity measures how much creation out
 ## 3. Theorem (finite, exact)
 
 > On every torus with W·H ≤ 16 (all 50 ordered shapes), and on 2×9 (18 cells), b_n is
-> nondecreasing in n.
+> nondecreasing in n. (Extended to every shape with W·H ≤ 22 in §4, except 2×11 and 11×2.)
 > Hence q(p) = P_p(J) is nondecreasing on [0, 1]. The same holds for the event
 > "never reaches free flow" (jam or intermediate recurrent motion).
 
@@ -117,10 +117,26 @@ not monotone in the car count in general. The counts are in
 `data/level-counterexample.json`, and §3's theorem is sharp in this sense: it holds up to 16
 cells and on 2×9, and fails by 22 cells.
 
-**Still open at these sizes.** Whether the iid probability q(p) is nondecreasing. A dip in b
-makes one Bernstein coefficient of q′ negative, but q′ can stay positive everywhere. Deciding
-it exactly needs every level of 2×11, which is 3²² ≈ 3.1·10¹⁰ states, beyond the exhaustive
-method.
+**Settled for 2×11: q still increases.** The compiled classifier `bml/native/classify.c`
+(see the note below) covers every shape with up to 22 cells. On 2×11 and 11×2 it reproduces
+exactly the dip b₇ < b₆ found by `bml.levels`, and it gives every other level as well.
+- `bml.iid.certify_positive_derivative` factors the leading power of p out of q′ and raises
+  the degree of its Bernstein form until every coefficient is ≥ 0.
+- On both shapes one degree raise suffices. So **q′ > 0 on (0, 1]**: the iid jam probability
+  is strictly increasing in p, even though the fixed-count fraction dips.
+- Negative control: the certificate rejects the 3×3 mixed-cycle probability m₃, which
+  decreases near p = 1.
+
+**Theorem (extended).** On every torus with W·H ≤ 22, q(p) = P_p(J) is strictly increasing on
+(0, 1]. On every such shape except 2×11 and 11×2 the stronger fixed-count monotonicity of b
+also holds. The fraction "never reaches free flow" is nondecreasing in n on all of them.
+
+**The compiled classifier.** It stores two 32-bit masks per state, one for east cars and one
+for north cars, so a round is a handful of bit operations. It enumerates each translation
+orbit once (the representative has the least code among its W·H translates), weights it by
+the orbit size, and classifies it with Floyd cycle detection, storing nothing. It reproduces
+all 50 tables of `data/exhaustive.json` and the 2×9 table, at about 2.6·10⁸ states per second
+on 4 cores. The new tables are in `data/exhaustive-17-22.json`.
 
 ## 5. What this does and does not show
 

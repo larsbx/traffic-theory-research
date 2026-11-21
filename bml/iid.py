@@ -40,3 +40,29 @@ def derivative_bernstein(counts: dict, cells: int) -> list[Fraction]:
 def certified_nondecreasing(counts: dict, cells: int) -> bool:
     """Exact sufficient condition for P to be nondecreasing on [0, 1]: b is nondecreasing."""
     return all(c >= 0 for c in derivative_bernstein(counts, cells))
+
+
+def certify_positive_derivative(counts: dict, cells: int, max_elevations: int = 4000):
+    """Exact certificate that P′ > 0 on (0, 1], even when b dips.
+
+    P′ = N Σ_k d_k B_k^{N−1}, with d_k = b_{k+1} − b_k. Let k₀ be the first k with d_k ≠ 0.
+    Factor out p^{k₀}: P′ / p^{k₀} has Bernstein coefficients
+    d_k·C(N−1, k)/C(N−1−k₀, k−k₀) in degree N−1−k₀. Raise that degree until every coefficient
+    is ≥ 0. Nonnegative coefficients prove nonnegativity on [0,1], and the first coefficient
+    d_{k₀}·C(N−1, k₀) > 0 makes it strictly positive near 0. Returns the number of degree
+    raises used, or None if max_elevations is not enough.
+    """
+    d = [c / cells for c in derivative_bernstein(counts, cells)]        # d_k
+    m = cells - 1
+    k0 = next(k for k, v in enumerate(d) if v != 0)
+    if d[k0] < 0:
+        return None
+    c = [d[k] * comb(m, k) / comb(m - k0, k - k0) for k in range(k0, m + 1)]
+    deg = m - k0
+    for e in range(max_elevations + 1):
+        if all(v >= 0 for v in c):
+            return e
+        c = [(Fraction(i, deg + 1) * c[i - 1] if i else 0) +
+             (1 - Fraction(i, deg + 1)) * (c[i] if i <= deg else 0) for i in range(deg + 2)]
+        deg += 1
+    return None

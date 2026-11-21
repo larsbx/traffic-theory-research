@@ -849,9 +849,9 @@ configurations is nondecreasing in n. So q(p) = P_p(J) is nondecreasing in p, ex
 Bernstein-coefficient certificate. Each difference b_{n+1} − b_n equals (jam-creating minus
 jam-destroying single-car additions)/(number of pairs), so configurationwise non-monotonicity
 is outweighed level by level. See the
-[finite iid monotonicity note](research/2026-11-18-finite-iid-monotonicity.md). The fixed-count
-fraction is *not* monotone in general: exactly, b₇ < b₆ on 2×11, 2×12 and 2×14, while monotonicity
-of q itself is open there. This settles nothing asymptotically.
+[finite iid monotonicity note](research/2026-11-18-finite-iid-monotonicity.md). Exhaustively for W·H ≤ 22, q(p) is strictly increasing. The fixed-count
+fraction is *not* monotone in general: exactly, b₇ < b₆ on 2×11, 2×12 and 2×14. On 2×11, q itself is still strictly
+increasing (exact certificate); on 2×12 and larger it is open. This settles nothing asymptotically.
 
 ## 9. Next targets
 
@@ -879,8 +879,10 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
    formula and the scope of [HBK]. The 2/3 value and gcd obstruction have prior literature.
 4. ~~Why is un-jamming trivial on small tori?~~ Resolved by Theorem U (§4): genuine un-jamming
    exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4. Lean formalisation: blueprint B8.
-5. Extend the exhaustive tables to 4×5 (3²⁰ ≈ 3.5·10⁹ states). That needs a symmetry quotient
-   (translations × species-preserving symmetries).
+5. ~~Extend the exhaustive tables to 4×5.~~ Done for every shape with W·H ≤ 22, including 4×5
+   in 14 s. The tool is `bml/native/classify.c`, which uses a translation quotient, bitmask
+   dynamics and Floyd cycle detection; the tables are in `data/exhaustive-17-22.json`. G1 and F
+   hold on all of them. Reflections are not symmetries, because they reverse the flow.
 
 ## References checked on 2026-11-18
 
