@@ -364,6 +364,12 @@ original N car and H − 1 ≥ 1 holes, and that car moves at every round foreve
 y adds an E car at (0, 0). The same argument applies verbatim with the species swapped, and it
 does not use the order of the two phases. ∎
 
+**Lean classification.** `BML.Gated.genuine_unjamming_iff` proves the
+dimension criterion using the CLASSIC kernel and actual tagged transport.
+The singleton argument and both gated families are proved directly. The
+small-torus exclusion uses exhaustive certificates checked by the Lean
+kernel. [Formal proof guide](../formal/blueprint.md#b8-theorem-u-genuine-un-jamming-classification)
+
 **Evidence.**
 - `bml.nonmonotone.gated_witness` builds both families. `tests/test_nonmonotone.py` checks them
   exactly on every shape with sides 2–10 and max side ≥ 4: Floyd cycle detection for x and y,
