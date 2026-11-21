@@ -578,7 +578,15 @@ The g = 1 branch remains separate.
 **Prior art.** The square-density value 2/3 is already stated in footnote [7] of
 [BML 1992][BML]; it is not a novelty claim here. The mixed-species obstruction at g < 3
 also appears in [Yashina–Tatashev, Theorem 1][YT]. Whether the complete rectangular floor
-formula appears earlier remains unestablished by the present source check.
+formula appears earlier remains unestablished.
+- **Search of 2026-11-21:** general web searches for the maximal free-flow count on W×H tori
+  in terms of gcd(W,H), and for the BML density bound 2/3.
+- **Also read:** the Kozlov–Tatashev–Yashina line of work ([KTY], [YT]).
+- **Found:** only the 2/3 square value, the gcd ≥ 3 obstruction for mixed free flow, and the
+  m ≤ gcd/2 sufficient condition (B7 and B7.6). None of these sources states the complete
+  floor formula (W·H/g)·⌊2g/3⌋.
+
+A search can only show a statement was not found, not that it is new.
 
 ## 5b. The train rule: Austin–Benjamini Prop 6 on rectangles
 
@@ -901,8 +909,10 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
    bound and explains the missing dynamical estimate. Do not treat a finite-time simulation
    or an iid count at time zero as an eventual-probability bound.
 3. **Literature and novelty.** The Austin–Benjamini rule correspondence is resolved (§5b).
-   The remaining literature questions include the complete rectangular capacity
-   formula and the scope of [HBK]. The 2/3 value and gcd obstruction have prior literature.
+   The 2/3 value and the gcd obstruction have prior literature, and the sparse speed-one bound
+   is prior art in [KTY] (m ≤ gcd/2). The search for the complete rectangular capacity formula
+   (§5) found no earlier statement. Still open: an exhaustive bibliographic check, and the
+   scope of [HBK].
 4. ~~Why is un-jamming trivial on small tori?~~ Resolved by Theorem U (§4): genuine un-jamming
    exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4. Lean formalisation: blueprint B8.
 5. ~~Extend the exhaustive tables to 4×5.~~ Done for every shape with W·H ≤ 22, including 4×5
