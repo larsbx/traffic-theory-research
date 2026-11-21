@@ -89,7 +89,7 @@ require care when proposing a single sharp threshold. Primary-source checks give
 |---|---|
 | [Angel–Holroyd–Martin][AHM], *Electron. Comm. Probab.* 10 (2005), Theorems 1–2 | On ℤ², for p sufficiently close to 1, every car moves only finitely often a.s. The finite-torus theorem also gives eventual gridlock with probability tending to 1 as both dimensions grow and their ratio converges in (0,∞). |
 | [Austin–Benjamini][AB], arXiv:math/0607759v3 (2006), Propositions 1, 6, 8 | Prop 1: eventual speed one below N/2 cars. Prop 6: a stuck configuration of m cars exists ⟺ m ≥ 2N. **Different update rule (resolved in §5b):** their written rule moves same-species queues together and rotates a full ring (the *train rule*, `bml.model.TRAIN`). That explains 2N against the CLASSIC kernel's N. Prop 6 is re-proved and extended to rectangles in §5b. The full TRAIN Prop 1 Lean proof is described in §5c. The separate CLASSIC proof is kernel-checked for positive rectangles (§2 and blueprint B7). |
-| [Hertzberg Rabinovich–Biham–Katzav][HBK], arXiv:2601.01180v2 (2026) | Square lattices: free-flowing periodic states are the zero set of a distance D = D∥ + D⊥, and the zero set persists. The full text studies relaxation with numerical fits; it does not prove our fixed-positive-density probability target. |
+| [Hertzberg Rabinovich–Biham–Katzav][HBK], arXiv:2601.01180v2 (2026); Phys. Rev. E 113, 014127 | Same CLASSIC half-steps (blocking read from the start of each half-step), square L×L tori, equal species densities. Free-flowing periodic (FFP) states are described by four features: no adjacent same-species pairs along their direction, single-species counter-diagonals, and an adjacent-diagonal condition. On squares (g = L) these are our Lemma R conditions. The paper **asserts** that D = D∥ + D⊥ vanishes exactly on FFP states, and that the densest FFP state has L²/3 cars per species when 3 ∣ L, i.e. total density 2/3. Its appendix **proves** only one-step invariance of D = 0. Convergence of random states to FFP below p_c, τ⊥ ∝ L for p ≲ 0.125, and the fit D⊥ ~ t^{−1.1} e^{−t/τ⊥} are numerical. It gives no attraction or basin theorem, no derived p_c, no gcd condition and no rectangles. Lemma R and Theorem F here prove the characterization and the capacity for every rectangle, in Lean. |
 | [D'Souza][DS], *Phys. Rev. E* 71 (2005), 066112 | Numerical stable intermediate phases and dependence on lattice aspect ratio. |
 | [Yashina–Tatashev][YT], arXiv:2311.17120 (2023), Theorem 1 | For deterministic fixed directions and both species present, perpetual free motion requires gcd(W,H) ≥ 3; this overlaps a consequence of Lemma R. |
 
@@ -917,8 +917,9 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
 3. **Literature and novelty.** The Austin–Benjamini rule correspondence is resolved (§5b).
    The 2/3 value and the gcd obstruction have prior literature, and the sparse speed-one bound
    is prior art in [KTY] (m ≤ gcd/2). The search for the complete rectangular capacity formula
-   (§5) found no earlier statement. Still open: an exhaustive bibliographic check, and the
-   scope of [HBK].
+   (§5) found no earlier statement. The scope of [HBK] is recorded in §0: an asserted
+   square-lattice FFP characterization and L²/3 capacity, with numerical relaxation results.
+   Still open: an exhaustive bibliographic check.
 4. ~~Why is un-jamming trivial on small tori?~~ Resolved by Theorem U (§4): genuine un-jamming
    exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4. Lean formalisation: blueprint B8.
 5. ~~Extend the exhaustive tables to 4×5.~~ Done for every shape with W·H ≤ 22, including 4×5
@@ -945,7 +946,9 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
   BML model with stochastic direction choice*, arXiv:2311.17120 (2023), Theorem 1 for q=0.
 - [HBK] G. Hertzberg Rabinovich, O. Biham, E. Katzav, *Structure and dynamics in the
   low-density phase of a two-dimensional cellular automaton model of traffic flow*,
-  arXiv:2601.01180 (2026). Abstract only.
+  arXiv:2601.01180v2 (2026); Phys. Rev. E 113, 014127 (2026). Full text (arXiv HTML v2) read
+  2026-11-21: update rule Eqs. (2)–(3); FFP features §IV; distance Eqs. (6)–(13);
+  Appendix B (one-step invariance of D = 0); Figs. 2–4 (relaxation fits).
 
 [BML]: https://arxiv.org/pdf/cond-mat/9206001
 [AHM]: https://arxiv.org/pdf/math/0504001
