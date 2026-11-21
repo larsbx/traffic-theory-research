@@ -34,6 +34,7 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
 | B6 | TRAIN eventual speed one on sparse N×N squares | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `Train/Diagonals`, `Train/FreeFlow`, actual diagonal transport/release |
 | B7 | CLASSIC eventual speed one for 2m<gcd(W,H) | kernel-checked full movement from round lcm(W,H)·m(g−2) onward and at most m(g−2) blocked rounds per prefix | B2 geometry, B3 finite free window, CLASSIC transport and car count |
+| B8 | Theorem U: genuine un-jamming exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4 | prose proof (theorems.md §4) and lemma split below; finite parts are enumerations | Kernel, Transport, Lanes, Enumeration |
 
 ---
 
@@ -620,6 +621,67 @@ grows. The fixed-positive-density probability problem remains open.
 The [finite replay](../scripts/check_sparse_speed.py) independently checks
 every sparse board on 14 ordered shapes through its first board recurrence,
 with larger sparse queues and strict-density and phase-semantics controls.
+
+---
+
+## B8. Theorem U: genuine un-jamming (classification)
+
+**Statement** (CLASSIC). A pair (x, y) is *genuine* if `Jam` eventually holds for x, never for
+y, and some car of x, tracked by `transport`, moves in every round of some infinite tail
+of y's orbit.
+- (U1) min(w, h) = 1: no x that eventually jams has a single-car addition that never jams.
+- (U2) w, h ∈ {2, 3}: no genuine pair exists. This is a finite enumeration.
+- (U3) min(w, h) ≥ 2 and max(w, h) ≥ 4: a genuine pair exists. Use the gated construction
+  of `bml.nonmonotone.gated_witness`.
+
+```lean
+theorem single_lane_no_unjam (hh : h = 1) (x y : Config (Position w h)) (c : Position w h)
+    (hx : x c = .empty) (hy : y = Function.update x c sp) :
+    (∃ t, Jam E N (f^t x)) → (∃ t, Jam E N (f^t y))
+
+theorem gated_genuine (hw : 4 ≤ w) (hh : 2 ≤ h) :
+    (∃ t, Jam E N (f^t (gatedX w h))) ∧ (∀ t, ¬ Jam E N (f^t (gatedY w h))) ∧
+    (∀ t, CanMove N .north (halfStep E .east (f^t (gatedY w h))) (freeCar w h t))
+```
+
+`freeCar w h t = (1, t mod h)`. The third conjunct says the original column-1 N car moves at
+every round. Its position at round t is explicit, so no identity tracking is needed.
+
+**B8.1 (lanes are invariant).** E cars keep their row and N cars their column (`Lanes`). A full
+single-species ring is frozen and cannot be entered (`fully_occupied`-style lemma per lane).
+
+**B8.2 (y: the gate is closed).** By induction on t, C₀ and C₂ stay full N, and C₁ contains no
+E car. E cars can enter C₁ only from C₀ (B8.1). So C₁ is exactly {(1, t mod h)} plus holes, and
+that car's north cell is a hole. This proves the second and third conjuncts. Conjunct 2 also
+needs a mover in every round, which gives `¬ Frozen`.
+
+**B8.3 (x: finitely many E moves).** E cars exist only in C_{w−1}, C₀ and C₁ (B8.1 plus induction).
+C₂ stays full N, so E cars in C₁ are blocked forever. Hence the potential
+Σ_E (number of remaining possible moves) ≤ 2h decreases on each E move.
+
+**B8.4 (x: terminal-cycle contradictions).** Take t₀ beyond the last E move. With no further E
+motion:
+- (a) a column holding only N cars and holes, with at least one of each, has a car moving at
+  every round, and every one of its cells is empty at some later east phase;
+- (b) hence an E car of C_{w−1} or C₀ can stay blocked only if the cell ahead is occupied at
+  every later east phase, which (a) rules out;
+- (c) counting: there are h E cars in total, C₁ has h cells including its N car, and C₀ has
+  h − 1 N cars.
+
+So both C₀ and C₁ contain an E car from t₀ on.
+
+**B8.5 (x: freeze).** A column containing a stationary E car has N motion only finitely often,
+since each N car's distance to the obstacle decreases. After that, `Frozen` holds and the state
+is nonempty, so `Jam`.
+
+**B8.6 (transposed family).** For w < 4 and h ≥ 4, use the row version with E and N swapped. The
+lemmas B8.2–B8.5 are the same with rows for columns. None of them uses the phase order.
+
+**Evidence.**
+- `tests/test_nonmonotone.py` checks:
+  - (U3) on every shape with sides 2–10 and max side ≥ 4;
+  - (U1) on 1×n and n×1 with n ≤ 8, every addition;
+  - (U2), through the exhaustive identity census on 2×2, 2×3, 3×2 and 3×3.
 
 ---
 
