@@ -48,14 +48,16 @@ def certify_positive_derivative(counts: dict, cells: int, max_elevations: int = 
     P′ = N Σ_k d_k B_k^{N−1}, with d_k = b_{k+1} − b_k. Let k₀ be the first k with d_k ≠ 0.
     Factor out p^{k₀}: P′ / p^{k₀} has Bernstein coefficients
     d_k·C(N−1, k)/C(N−1−k₀, k−k₀) in degree N−1−k₀. Raise that degree until every coefficient
-    is ≥ 0. Nonnegative coefficients prove nonnegativity on [0,1], and the first coefficient
-    d_{k₀}·C(N−1, k₀) > 0 makes it strictly positive near 0. Returns the number of degree
-    raises used, or None if max_elevations is not enough.
+    is ≥ 0. Nonnegative coefficients, not all zero, prove positivity on (0, 1). The first
+    coefficient d_{k₀}·C(N−1, k₀) > 0 and the last d_{N−1} > 0 (which equals P′(1)/N and is
+    preserved by degree raising) make it positive at both endpoints, so P′ > 0 on (0, 1].
+    Returns the number of degree raises used, or None if P is constant, if P′(1) = 0, or if
+    max_elevations is not enough.
     """
     d = [c / cells for c in derivative_bernstein(counts, cells)]        # d_k
     m = cells - 1
-    k0 = next(k for k, v in enumerate(d) if v != 0)
-    if d[k0] < 0:
+    k0 = next((k for k, v in enumerate(d) if v != 0), None)
+    if k0 is None or d[k0] < 0 or d[-1] <= 0:      # constant P, or P′ ≤ 0 near 0 or at p = 1
         return None
     c = [d[k] * comb(m, k) / comb(m - k0, k - k0) for k in range(k0, m + 1)]
     deg = m - k0

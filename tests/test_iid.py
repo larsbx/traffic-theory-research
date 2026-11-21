@@ -141,3 +141,12 @@ def test_positivity_certificate_rejects_a_decreasing_polynomial():
     """Negative control: the 3×3 mixed-cycle probability decreases near p = 1."""
     from bml.iid import certify_positive_derivative
     assert certify_positive_derivative({6: 384, 7: 1872, 8: 1062, 9: 174}, 9, max_elevations=300) is None
+
+
+def test_positivity_certificate_edge_cases():
+    """Codex review on #32: constant probabilities and a vanishing derivative at p = 1."""
+    from bml.iid import certify_positive_derivative
+    assert certify_positive_derivative({}, 3) is None                       # impossible event
+    assert certify_positive_derivative({0: 1, 1: 4, 2: 4}, 2) is None       # certain event
+    assert certify_positive_derivative({1: 2, 2: 2}, 2) is None             # P = p − p²/2, P′(1) = 0
+    assert certify_positive_derivative({1: 2, 2: 4}, 2) is not None         # P = p, P′ = 1
