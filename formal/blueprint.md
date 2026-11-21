@@ -34,7 +34,7 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
 | B6 | TRAIN eventual speed one on sparse N×N squares | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `Train/Diagonals`, `Train/FreeFlow`, actual diagonal transport/release |
 | B7 | CLASSIC eventual speed one for 2m<gcd(W,H) | kernel-checked full movement from round lcm(W,H)·m(g−2) onward and at most m(g−2) blocked rounds per prefix | B2 geometry, B3 finite free window, CLASSIC transport and car count |
-| B8 | Theorem U: genuine un-jamming exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4 | prose proof (theorems.md §4) and lemma split below; finite parts are enumerations | Kernel, Transport, Lanes, Enumeration |
+| B8 | Theorem U: genuine un-jamming exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4 | existence proved in Lean for both orientations; exclusions remain prose and exhaustive Python evidence | Kernel, Transport, Lanes, Enumeration, Fixation |
 
 ---
 
@@ -626,62 +626,69 @@ with larger sparse queues and strict-density and phase-semantics controls.
 
 ## B8. Theorem U: genuine un-jamming (classification)
 
-**Statement** (CLASSIC). A pair (x, y) is *genuine* if `Jam` eventually holds for x, never for
-y, and some car of x, tracked by `transport`, moves in every round of some infinite tail
-of y's orbit.
-- (U1) min(w, h) = 1: no x that eventually jams has a single-car addition that never jams.
-- (U2) w, h ∈ {2, 3}: no genuine pair exists. This is a finite enumeration.
-- (U3) min(w, h) ≥ 2 and max(w, h) ≥ 4: a genuine pair exists. Use the gated construction
-  of `bml.nonmonotone.gated_witness`.
+A genuine CLASSIC pair adds one car to an eventually jammed board, prevents
+gridlock, and lets a specific original car move arbitrarily late. Lean's
+`BML.Gated.GenuineUnjamming` uses this identity-aware condition. The gated
+witnesses satisfy the stronger condition of that car moving every round.
 
-```lean
-theorem single_lane_no_unjam (hh : h = 1) (x y : Config (Position w h)) (c : Position w h)
-    (hx : x c = .empty) (hy : y = Function.update x c sp) :
-    (∃ t, Jam E N (f^t x)) → (∃ t, Jam E N (f^t y))
+| Clause | Status |
+| --- | --- |
+| U1, `min(w,h) = 1` | Prose proof in [Theorem U](../docs/theorems.md), with every addition checked on both orientations with sides up to 8. The general Lean exclusion is open. |
+| U2, `w,h ∈ {2,3}` | Exhaustive Python identity census on all four rectangles. A Lean-checked exclusion needs a verified finite enumeration with coverage of every single-car addition and recurrent original identity. |
+| U3, `2 ≤ w`, `2 ≤ h`, `4 ≤ max w h` | `BML.Gated.exists_genuine_unjamming` proves existence under these hypotheses in the actual CLASSIC kernel. |
 
-theorem gated_genuine (hw : 4 ≤ w) (hh : 2 ≤ h) :
-    (∃ t, Jam E N (f^t (gatedX w h))) ∧ (∀ t, ¬ Jam E N (f^t (gatedY w h))) ∧
-    (∀ t, CanMove N .north (halfStep E .east (f^t (gatedY w h))) (freeCar w h t))
-```
+**B8.1–B8.2, closed gate.**
+[`Gated.lean`](lean/BML/Gated.lean) defines `gatedX` and `gatedY` for
+`4 ≤ w` and `2 ≤ h` and proves the boards differ only by adding a north car
+at the origin. By `Lanes`, columns 0 and 2 of `gatedY` stay full of north
+cars. The west predecessor of every site in column 1 lies in column 0.
+`closed_gate` therefore preserves exactly one north car and otherwise holes
+in column 1. `freeCar_trace` identifies the actual original tag with
+`(1, t % h)`, and `freeCar_canMove` uses the east-phase intermediate board
+to prove that tag moves each round. `gatedY_never_jams` follows.
 
-`freeCar w h t = (1, t mod h)`. The third conjunct says the original column-1 N car moves at
-every round. Its position at round t is explicit, so no identity tracking is needed.
+**B8.3, eastbound movement.** The east cars of `gatedX` stay in columns
+`w−1`, 0 and 1, with respective remaining advances 2, 1 and 0. Column 2
+stays full of north cars. Under confinement and the full-wall hypothesis,
+`eastPotential_step_balance` sums the actual transport bijection and proves
+that potential drops by the kernel's exact east movement count.
+`gatedX_east_balance` discharges those hypotheses and gives the prefix
+identity `remaining potential + east moves = 2*h`. Attaining a minimum gives
+`gatedX_eventually_east_blocked`, with a finite move bound and an unspecified
+last-movement time.
 
-**B8.1 (lanes are invariant).** E cars keep their row and N cars their column (`Lanes`). A full
-single-species ring is frozen and cannot be entered (`fully_occupied`-style lemma per lane).
+**B8.4–B8.5, terminal gridlock.** After east movement stops, every east site
+lies in a future persistent blocking core. The conditional core argument
+shows why the core must meet column 0. The row of a north car in column 1
+has an east car elsewhere, either in column 0 or in the feeder pointing
+into column 0. Any core meeting column 0 has an east car there. Otherwise
+north successor closure fills the column with north cars, contradicting
+lane conservation from the initial hole. The successor of this east
+obstacle puts the core in column 1, where the same argument gives an east
+obstacle. `gatedX_terminal_obstacles` discharges the core premise on the
+actual orbit. Each original north car in those columns and in the full
+wall has a permanent obstacle on its route. Its cyclic distance decreases
+on each move, so all tags eventually stop and the nonempty state reaches
+`Jam` by `gatedX_eventually_jams`.
 
-**B8.2 (y: the gate is closed).** By induction on t, C₀ and C₂ stay full N, and C₁ contains no
-E car. E cars can enter C₁ only from C₀ (B8.1). So C₁ is exactly {(1, t mod h)} plus holes, and
-that car's north cell is a hole. This proves the second and third conjuncts. Conjunct 2 also
-needs a mover in every round, which gives `¬ Frozen`.
+**B8.6, transposed gate.**
+[`GatedTranspose.lean`](lean/BML/GatedTranspose.lean) proves that
+species-and-coordinate transposition exchanges the two half-steps. For the
+open gate, the initial north checkpoint preserves the lane hypotheses
+needed for the jamming proof. The north checkpoint intertwines the two
+phase orders, and the resulting jam is fixed by the remaining east
+half-step. For the closed gate, the east phase is always the identity on
+the orbit, so the reversed order produces the same full-round states.
+`gatedRow_genuine` then proves gridlock of the open row gate and perpetual
+motion of the tracked original east car in the closed row gate.
 
-**B8.3 (x: finitely many E moves).** E cars exist only in C_{w−1}, C₀ and C₁ (B8.1 plus induction).
-C₂ stays full N, so E cars in C₁ are blocked forever. Hence the potential
-Σ_E (number of remaining possible moves) ≤ 2h decreases on each E move.
-
-**B8.4 (x: terminal-cycle contradictions).** Take t₀ beyond the last E move. With no further E
-motion:
-- (a) a column holding only N cars and holes, with at least one of each, has a car moving at
-  every round, and every one of its cells is empty at some later east phase;
-- (b) hence an E car of C_{w−1} or C₀ can stay blocked only if the cell ahead is occupied at
-  every later east phase, which (a) rules out;
-- (c) counting: there are h E cars in total, C₁ has h cells including its N car, and C₀ has
-  h − 1 N cars.
-
-So both C₀ and C₁ contain an E car from t₀ on.
-
-**B8.5 (x: freeze).** A column containing a stationary E car has N motion only finitely often,
-since each N car's distance to the obstacle decreases. After that, `Frozen` holds and the state
-is nonempty, so `Jam`.
-
-**B8.6 (transposed family).** For w < 4 and h ≥ 4, use the row version with E and N swapped. The
-lemmas B8.2–B8.5 are the same with rows for columns. None of them uses the phase order.
-
-**Evidence.**
-- `tests/test_nonmonotone.py` checks:
-  - (U3) on every shape with sides 2–10 and max side ≥ 4;
-  - (U1) on 1×n and n×1 with n ≤ 8, every addition;
-  - (U2), through the exhaustive identity census on 2×2, 2×3, 3×2 and 3×3.
+**Finite correspondence.** The [Lean replay](../scripts/check_gated.py)
+compares both constructors to `bml.nonmonotone.gated_witness` on all sides
+2–10 with at least one side of length 4 or more. It checks both phase states,
+each movement count and the original tag against Python CLASSIC. The
+[boundary tests](../tests/test_nonmonotone.py) cover singleton obstacles,
+a 3×3 example where only the extra car moves, and tagged wraparound and
+phase-order sensitivity on 2×4 and 4×2.
 
 ---
 

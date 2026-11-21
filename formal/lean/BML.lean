@@ -31,3 +31,5 @@ import BML.Profiles
 import BML.Locality
 import BML.Barrier
 import BML.Waiting
+import BML.Gated
+import BML.GatedTranspose
