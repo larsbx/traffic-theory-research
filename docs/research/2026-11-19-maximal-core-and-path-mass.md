@@ -376,9 +376,14 @@ spatial membership for the actual CLASSIC kernel. It proves the exact
 `carCount`-edge cutoff, simultaneous eventual equality with the permanent
 sites, and the equivalence between an original tag stopping and its trace
 entering the core. The coverage register lists the public formal statements.
-Probability integration, the tag/site count
-argument, the population envelope and asymptotic implications above are
-prose proofs.
+As of 21 November, `BML/StoppedCore.lean` formalizes the numeric tag/site
+bridge and pointwise jam/full-lane count sandwich. `BML/CoreMass.lean`
+formalizes the normalized finite initial-Nat-weight comparison with an
+explicit positive common denominator, and exact eventual weighted-core
+stabilization on each finite support. See the [count/mass formalization
+note](2026-11-21-stopped-core-counts.md). The rational interpretation of the
+integer inequality, iid full-lane estimate, population envelope, sufficient
+path criteria, and asymptotic implications retain their prose scope.
 
 `bml/path_core.py` implements finite path masks, maximal-core pruning,
 an independent scalar path walk, and exact rational population envelopes.

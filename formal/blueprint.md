@@ -1,6 +1,6 @@
 # Blueprint: proof status and open formal obligations
 
-This hand-off document records the completed B0–B7 proofs and the remaining
+This hand-off document records the completed B0–B9 proofs and the remaining
 obligations of [the coverage register](README.md), with proofs decomposed into
 lemmas small enough to formalise one at a time.
 
@@ -33,8 +33,9 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B4 | Theorem F: densest free flow | kernel-checked exact capacity, all-count constructions, static/perpetual/eventual existence spectra, and square corollaries | B2, B3, Counting |
 | B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
 | B6 | TRAIN eventual speed one on sparse N×N squares | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `Train/Diagonals`, `Train/FreeFlow`, actual diagonal transport/release |
-| B7 | CLASSIC eventual speed one for 2m<gcd(W,H) | kernel-checked full movement from round lcm(W,H)·m(g−2) onward and at most m(g−2) blocked rounds per prefix | B2 geometry, B3 finite free window, CLASSIC transport and car count |
+| B7–B7.6 | CLASSIC eventual speed one for 2m≤gcd(W,H) | kernel-checked alternating equality regime, full movement from round lcm(W,H)·m(g−2) onward, and at most m(g−2) blocked rounds per prefix | B2 geometry, B3 finite free window, CLASSIC transport and car count |
 | B8 | Theorem U: genuine un-jamming exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4 | kernel-checked dimension classification, including both exclusions | Kernel, Transport, Lanes, Enumeration, Fixation |
+| B9 | Maximal-core cardinality, stopped original cars, and finite initial-weight gridlock reduction | kernel-checked tag/site count equality, eventual stopped-count identification, jam/full-lane count sandwich, and exact cleared-denominator initial-weight comparison | PathCore, Fixation, Capture, Counting, Absorption, FiniteSums |
 
 ---
 
@@ -580,7 +581,7 @@ commands, and source-bound acceptance status.
 
 **Status: kernel-checked for every positive rectangle.**
 
-For `g = gcd(W,H)` and `m = carCount`, the strict hypothesis is `2m < g`.
+For `g = gcd(W,H)` and `m = carCount`, the inclusive hypothesis is `2m ≤ g`.
 The proofs use the CLASSIC transport and counting kernel. Austin–Benjamini’s
 corrected-diagonal argument for the TRAIN rule motivates the construction.
 The correction subtracts the number of completed rounds from the diagonal
@@ -593,8 +594,8 @@ class modulo `g`.
 | B7.2 | `corrected_survival` | Every car survives via `roundTransport_preserves_car`. Its corrected class stays or moves to its predecessor. |
 | B7.3 | `corrected_emptyPair_backwards`, `corrected_emptyPair_before` | Survival excludes a predecessor-time occupant of the second class. Release then excludes one in the first class. Induction gives the same pair throughout a finite prefix. |
 | B7.4 | `corrected_emptyPair_of_sparse` | Without an empty pair, the occupied list and its cyclic predecessors would cover all `g` classes with at most `2m` entries. Conservation applies the argument at each time. |
-| B7.5 | `low_density_tag_block_bound` | Cut at the first class of an empty pair at time `T`. An original car's rotated class stays between 1 and `g−1` through `T`. Its distance drops by one for each blocked round, so its block count is at most `g−2`. |
-| B7.6 (open) | *not yet in Lean* | **Inclusive case 2m ≤ g.** If 2m = g and no empty pair exists at time T, the occupied corrected classes alternate with one car each. B7.1 then moves every car, corrected classes are preserved, and the state stays alternating. So alternating times form a final segment [T*,∞); before T* an empty pair exists at each time and B7.5 applies, giving the same bound m(g−2). Prior art: [KTY] Theorem 1 (m ≤ d/2, classical BML at q = 0). Evidence: every rooted m = g/2 configuration on 4×4, 6×6, 4×8, 8×4 and 6×12. |
+| B7.5 | `low_density_tag_block_bound` | The rotated corrected class of a tag stays between 1 and `g−1` while avoiding a cut, and each block decreases it by one. An empty pair at time `T` supplies its first class as a cut through `T+1`, so the last block before alternation is included. If no pair exists at `T`, B7.6 gives no new block. The bound `g−2` holds under `2m ≤ g`. |
+| B7.6 | `corrected_alternating_of_no_emptyPair`, `corrected_alternating_allMove`, `corrected_alternating_step`, `corrected_no_emptyPair_perpetual_allMove` | **Inclusive case 2m ≤ g, kernel-checked.** The actual car-class list and its predecessors cover all `g` classes using at most `g` entries. They form a permutation of all classes, so occupied classes alternate with vacant classes and are singly occupied. The actual CLASSIC phases then move every car, and absence of empty pairs plus conservation preserves the alternating state. Prior art: [KTY Theorem 1](https://arxiv.org/pdf/2310.02291), with fixed species at `q = 0`; see the [source and verification note](../docs/research/2026-11-21-classic-inclusive-sparse-flow.md). |
 
 [BML/SparseDynamics.lean](lean/BML/SparseDynamics.lean) proves the class and
 empty-pair lemmas. [BML/SparseSpeed.lean](lean/BML/SparseSpeed.lean) sums the
@@ -614,14 +615,18 @@ movement forces permanent free flow from that start.
 
 The bound `K` counts blocked rounds; `ell * K` bounds elapsed time to
 permanent free flow. The theorem includes the empty board, with deadline
-zero, and singleton dimensions. A nonempty state satisfying the strict
-hypothesis has `g ≥ 3`. No sharpness or equality-case extension is claimed.
+zero, and singleton dimensions. A nonempty state satisfying the inclusive
+hypothesis has `g ≥ 2`; when `g = 2`, the admitted single car moves from
+time zero. No sharpness or novelty of the inclusive threshold is claimed.
 The deterministic condition gives a shrinking density range as the torus
 grows. The fixed-positive-density probability problem remains open.
 
 The [finite replay](../scripts/check_sparse_speed.py) independently checks
-every sparse board on 14 ordered shapes through its first board recurrence,
-with larger sparse queues and strict-density and phase-semantics controls.
+every inclusive sparse board on 16 ordered shapes through its first board
+recurrence: 75,716 boards, including 61,608 equality boards. Fifteen targeted
+controls cover larger sparse queues, the transition from an empty pair to
+alternation, excessive blockage just above the boundary, and CLASSIC phase
+semantics. These finite comparisons supplement the all-size Lean proofs.
 
 ---
 
@@ -715,6 +720,38 @@ each movement count and the original tag against Python CLASSIC. The
 [boundary tests](../tests/test_nonmonotone.py) cover singleton obstacles,
 a 3×3 example where only the extra car moves, and tagged wraparound and
 phase-order sensitivity on 2×4 and 4×2.
+
+---
+
+## B9. Stopped original cars and finite initial core mass
+
+The [maximal-core note](../docs/research/2026-11-19-maximal-core-and-path-mass.md)
+left the numerical tag/site bridge and normalized probability comparison in
+prose. The deterministic count argument and its finite `Nat`-weight form are
+now proved for the actual CLASSIC kernel.
+
+| Part | Lean declarations | Argument |
+|---|---|---|
+| B9.0 | `pathCoreFlag_eq_true`, `pathCoreCount_eq_length_filter` | The existing `N`-edge test checks `N+1` occupied vertices. The executable two-species count equals spatial core cardinality. |
+| B9.1 | `speciesCells_carTrace_perm`, `pathCoreCount_eq_tracedCoreCount` | Actual trace preservation, injectivity, and surjectivity identify current core sites with original tags currently in the core at every checkpoint. |
+| B9.2 | `carTrace_eq_of_pathCoreMember`, `pathCoreCount_le_stoppedCarCount` | Core entry freezes that same original tag. A finite-time core count can underestimate the eventual stopped count. |
+| B9.3 | `pathCoreCount_eventually_eq_stoppedCarCount` | The stopped-tag/core-entry equivalence and finite-list uniformization give one time after which the counts agree permanently. |
+| B9.4 | `stoppedCarCount_jam_bounds` | All tags stop on eventual nonempty jam `J`; no tags stop off `J` and the initial full-lane event `R`; always `Z≤N`. Hence `N·1_J≤Z≤N·1_J+N·1_R`. |
+| B9.5 | `populationDenominator_pos`, `population_scale_exact`, `normalizedStoppedMass_gridlock_bounds` | Construct `D=(W*H)!>0`, prove exact cancellation for every nonzero population, and sum `D/N` times the count sandwich under finite initial weights. Empty boards contribute zero. |
+| B9.6 | `normalizedCoreMass_eventually_eq_stoppedMass`, `normalizedCoreMass_eventual_gridlock_bounds` | Uniformize the stabilization time over the finite initial support before summing. Initial weights and initial populations remain attached to initial boards. |
+
+`BML/StoppedCore.lean` imports `PathCore`; `BML/CoreMass.lean` additionally
+uses `Absorption` and `FiniteSums`. No external package, new axiom, kernel
+change, or effective core-stabilization deadline is introduced. Positive
+rectangles include singleton dimensions. The finite-weight theorem allows
+zero total weight, but its rational probability interpretation requires a
+positive total weight. The exact Lean conclusion has denominators cleared;
+there is no separate `Rat`/`Real` expectation layer.
+
+The [formalization and acceptance note](../docs/research/2026-11-21-stopped-core-counts.md)
+records the complete interfaces and independent controls. In particular,
+the needed large-size decay of the limiting normalized core mass remains
+open; B9 supplies the reduction, not that estimate.
 
 ---
 

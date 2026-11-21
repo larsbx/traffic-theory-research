@@ -11,7 +11,7 @@ from dataclasses import dataclass
 import hashlib
 from itertools import combinations, product
 import json
-from math import gcd, lcm
+from math import comb, gcd, lcm
 from pathlib import Path
 import subprocess
 
@@ -25,13 +25,13 @@ from bml.model import EAST, NORTH, TRAIN, step
 
 SHAPES = (
     (1, 1), (1, 5), (5, 1), (2, 2), (2, 4), (4, 2), (3, 3), (3, 6), (6, 3),
-    (4, 4), (5, 5), (5, 10), (10, 5), (6, 6),
+    (4, 4), (4, 8), (8, 4), (5, 5), (5, 10), (10, 5), (6, 6),
 )
 
 
 def sparse_codes(w: int, h: int):
     powers = [3**i for i in range(w*h)]
-    for m in range((gcd(w, h) - 1)//2 + 1):
+    for m in range(gcd(w, h)//2 + 1):
         for slots in combinations(powers, m):
             for species in product((EAST, NORTH), repeat=m):
                 yield sum(slot * sp for slot, sp in zip(slots, species))
@@ -46,6 +46,7 @@ class Trace:
     sparse: bool
     rounds: list[tuple[int, ...]]
     recurrence: int | None
+    alternating_checks: int
 
     def request(self) -> str:
         return f"{self.width} {self.height} {self.code} {len(self.rounds)}"
@@ -87,12 +88,12 @@ def trace_case(w: int, h: int, code: int, horizon: int | None = None) -> Trace:
     sites = [i for i, cell in enumerate(initial) if cell]
     species = [initial[p] for p in sites]
     g, population = gcd(w, h), len(sites)
-    sparse = 2 * population < g
+    sparse = 2 * population <= g
     per_car_budget = max(g-2, 0)
     round_budget = population * per_car_budget
     case = f"{w}x{h} board {code}"
     if horizon is None:
-        require(sparse, "density", f"{case}: automatic recurrence search requires 2m < g")
+        require(sparse, "density", f"{case}: automatic recurrence search requires 2m <= g")
     limit = horizon if horizon is not None else (round_budget + 1) * lcm(w, h)
     rows = []
     blocks = [0] * population
@@ -100,6 +101,7 @@ def trace_case(w: int, h: int, code: int, horizon: int | None = None) -> Trace:
     seen = {initial: 0}
     board = initial
     recurrence = None
+    alternating_checks = 0
     for t in range(limit):
         east, after, em, nm = scalar_round(board, w, h)
         all_move = int(em + nm == population)
@@ -120,8 +122,19 @@ def trace_case(w: int, h: int, code: int, horizon: int | None = None) -> Trace:
                 "tag-coverage", f"{case} round {t}: tag trace does not cover all cars")
         require(empty_pairs(after_classes, g) <= empty_pairs(classes, g),
                 "empty-pair", f"{case} round {t}: a new corrected vacancy pair appeared")
-        require(not sparse or bool(empty_pairs(after_classes, g)),
-                "empty-pair", f"{case} round {t}: sparse board has no empty pair")
+        if sparse and not empty_pairs(classes, g):
+            alternating_checks += 1
+            # Equality is the only sparse case without an empty pair. Covering
+            # all classes forces alternating singleton classes, and every tag
+            # keeps its corrected class because it moves in this round.
+            require(2 * population == g and len(set(classes)) == population
+                    and all((i + 1) % g not in classes for i in classes),
+                    "alternating", f"{case} round {t}: no empty pair without alternating singletons")
+            require(all_move == 1 and after_classes == classes,
+                    "alternating-invariant", f"{case} round {t}: alternating tags did not all move")
+        if 2 * population < g:
+            require(bool(empty_pairs(after_classes, g)),
+                    "empty-pair", f"{case} round {t}: strict sparse board has no empty pair")
         classes = after_classes
         rows.append(tuple(fields))
         if horizon is None and after in seen:
@@ -130,7 +143,7 @@ def trace_case(w: int, h: int, code: int, horizon: int | None = None) -> Trace:
         seen[after] = t + 1
         board = after
 
-    trace = Trace(w, h, code, population, sparse, rows, recurrence)
+    trace = Trace(w, h, code, population, sparse, rows, recurrence, alternating_checks)
     if horizon is None:
         require(recurrence is not None and all(row[2] for row in rows[recurrence:]),
                 "eventual-movement", f"{case}: no all-moving terminal cycle found")
@@ -149,11 +162,35 @@ def check_controls() -> tuple[list[Trace], dict]:
     # Complement empty and one-car exhaustive cases with larger genuine sparse queues.
     three = trace_case(7, 14, 3**6 + 1 + 3)
     four = trace_case(9, 9, 2*(1 + 3**9 + 3**18 + 3**27))
-    equality = trace_case(4, 4, 1 + 2*3**2, 1)
+    equality = trace_case(4, 4, 1 + 2*3**2)
+    equality_queue = trace_case(4, 4, 1 + 3)
+    equality_rectangles = [
+        trace_case(6, 12, 1 + 3 + 3**2),
+        trace_case(12, 6, 2*(1 + 3**12 + 3**24)),
+    ]
+    just_above = [
+        trace_case(2, 2, 1 + 3, 2),
+        trace_case(3, 3, 1 + 3, 4),
+        trace_case(4, 4, 1 + 3 + 3**2, 8),
+    ]
     jam = trace_case(3, 3, 1 + 3 + 3**2, 5)
     equality_classes = [p % 4 + p // 4 for p, c in enumerate(decode_scalar(equality.code, 16)) if c]
-    require(not equality.sparse and 2*equality.population == 4 and not empty_pairs(equality_classes, 4),
-            "density", "equality at 2m = g can leave no adjacent empty pair")
+    require(equality.sparse and 2*equality.population == 4 and not empty_pairs(equality_classes, 4)
+            and equality.blocked_rounds == 0 and equality.permanent_flow_entry == 0,
+            "density", "alternating equality must have no empty pair and move forever")
+    queue_classes = [p % 4 + p // 4 for p, c in enumerate(decode_scalar(equality_queue.code, 16)) if c]
+    require(bool(empty_pairs(queue_classes, 4)) and equality_queue.blocked_rounds == 1
+            and equality_queue.permanent_flow_entry == 1,
+            "equality-transient", "equality queue must block before entering alternating flow")
+    for trace in equality_rectangles:
+        require(trace.sparse and 2*trace.population == gcd(trace.width, trace.height)
+                and trace.blocked_rounds > 0 and trace.recurrence is not None,
+                "equality-rectangle", "rectangular equality queue did not complete its transient")
+    for trace in just_above:
+        g = gcd(trace.width, trace.height)
+        require(trace.population == g//2 + 1 and not trace.sparse and trace.deadline is None
+                and trace.blocked_rounds > trace.population * max(g-2, 0),
+                "density", "just-above-boundary persistent blockage must not receive a deadline")
     jam_budget = jam.population * (gcd(jam.width, jam.height) - 2)
     require(not jam.sparse and jam.blocked_rounds > jam_budget
             and all(row[1] == jam.code for row in jam.rounds),
@@ -186,13 +223,31 @@ def check_controls() -> tuple[list[Trace], dict]:
             and late.permanent_flow_entry == 10 > late_budget == 6
             and late.deadline == 60,
             "elapsed-time", "bad-round count or an initially moving prefix was used as permanent flow")
-    require(equality.deadline is None and jam.deadline is None and zero.deadline == 0,
-            "deadline-domain", "deadline guarantee escaped strict sparsity or excluded the empty board")
+    require(equality.deadline == 16 and equality_queue.deadline == 16
+            and jam.deadline is None and zero.deadline == 0,
+            "deadline-domain", "deadline guarantee escaped inclusive sparsity or excluded equality/empty boards")
     require(queue.permanent_flow_entry is None and vacated.permanent_flow_entry is None,
             "deadline-domain", "a targeted prefix was misrepresented as a complete orbit")
-    return [three, four, equality, jam, queue, vacated, filled, zero, late], {
+    return [three, four, equality, equality_queue, *equality_rectangles, *just_above,
+            jam, queue, vacated, filled, zero, late], {
         "larger_sparse_queues": [three.population, four.population],
-        "strict_equality_excluded": 2*equality.population,
+        "alternating_equality_included": {
+            "shape": [4, 4], "code": equality.code, "permanent_flow_entry": 0,
+            "deadline": equality.deadline,
+        },
+        "equality_transient": {
+            "shape": [4, 4], "code": equality_queue.code, "blocked_rounds": 1,
+            "permanent_flow_entry": 1, "deadline": equality_queue.deadline,
+        },
+        "rectangular_equality_queues": [
+            {"shape": [t.width, t.height], "code": t.code,
+             "blocked_rounds": t.blocked_rounds, "permanent_flow_entry": t.permanent_flow_entry,
+             "deadline": t.deadline} for t in equality_rectangles
+        ],
+        "just_above_boundary_excluded": [
+            {"shape": [t.width, t.height], "code": t.code, "population": t.population,
+             "blocked_rounds": t.blocked_rounds, "deadline": t.deadline} for t in just_above
+        ],
         "dense_fixed_row_blocked_rounds": jam.blocked_rounds,
         "train_queue_differs": True,
         "north_target_vacated_and_filled": True,
@@ -214,10 +269,13 @@ def main() -> None:
     args = parser.parse_args()
     binary = args.binary.resolve(strict=True)
     traces = [trace_case(w, h, code) for w, h in SHAPES for code in sparse_codes(w, h)]
+    expected_boards = sum(sum(comb(w*h, m) * 2**m for m in range(gcd(w, h)//2 + 1))
+                          for w, h in SHAPES)
+    require(len(traces) == expected_boards, "coverage", "inclusive exhaustive enumeration is incomplete")
     controls, control_results = check_controls()
     combined = traces + controls
     result = subprocess.run([binary], input="\n".join(t.request() for t in combined) + "\n",
-                            check=True, capture_output=True, text=True, timeout=180)
+                            check=True, capture_output=True, text=True, timeout=600)
     actual = result.stdout.splitlines()
     require(len(actual) == len(combined), "coverage", "missing or extra Lean trace rows")
     for line, expected in zip(actual, combined):
@@ -229,11 +287,22 @@ def main() -> None:
     status = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT,
                             text=True, capture_output=True)
     report = {
-        "schema": "bml.sparse-speed-replay.v2",
+        "schema": "bml.sparse-speed-replay.v3",
         "worktree_clean": status.returncode == 0 and not status.stdout,
         "lean_binary_sha256": hashlib.sha256(binary.read_bytes()).hexdigest(),
         "status": "passed", "revision": revision, "tree": tree,
+        "sparse_condition": "2m <= gcd(width,height)",
         "ordered_shapes": SHAPES, "exhaustive_sparse_boards": len(traces),
+        "exhaustive_equality_boards": sum(2*t.population == gcd(t.width, t.height) for t in traces),
+        "equality_boards_with_blockage": sum(
+            2*t.population == gcd(t.width, t.height) and t.blocked_rounds > 0 for t in traces),
+        "alternating_invariant_checks": sum(t.alternating_checks for t in traces),
+        "per_shape_coverage": [
+            {"shape": [w, h], "maximum_population": gcd(w, h)//2,
+             "boards": sum(comb(w*h, m) * 2**m for m in range(gcd(w, h)//2 + 1)),
+             "equality_boards": (comb(w*h, gcd(w, h)//2) * 2**(gcd(w, h)//2)
+                                 if gcd(w, h) % 2 == 0 else 0)} for w, h in SHAPES
+        ],
         "rounds_through_first_recurrence": sum(len(t.rounds) for t in traces),
         "sparse_boards_with_blockage": sum(t.blocked_rounds > 0 for t in traces),
         "deadline_checks": {

@@ -4,8 +4,9 @@ import BML.FiniteCycle
 import BML.FiniteSums
 
 /-!
-B7.5 and assembly for CLASSIC. A pair vacant at the end of a finite
-prefix supplies a cut every original car avoids throughout that prefix.
+B7.5–B7.6 and assembly for CLASSIC. An empty pair supplies a cut through
+the following update. Without an empty pair, inclusive sparsity forces
+the alternating, permanently moving regime.
 -/
 namespace BML
 
@@ -37,7 +38,7 @@ def blockedTagCount (s : Config (Position w h)) (sp : Species) (p : Position w h
 def blockedRoundCount (s : Config (Position w h)) (T : Nat) : Nat :=
   ((List.range T).filter fun t => decide (¬ AllMove E N (orbit t s))).length
 
-/-- An elapsed-time deadline for permanent CLASSIC free flow under the strict
+/-- An elapsed-time deadline for permanent CLASSIC free flow under the inclusive
 sparse hypothesis. The lcm converts a blocked-round budget into full rounds. -/
 def sparseSpeedDeadline (w h : Nat) (s : Config (Position w h)) : Nat :=
   Nat.lcm w h * (carCount w h s * (Nat.gcd w h - 2))
@@ -90,23 +91,17 @@ private theorem shift_from_cut_prev (cut y : Fin g) :
       cyclicPrev g hg (cyclicShift g hg (-(cut.val : Int)) y) := by
   simp only [← cyclicShift_neg_one, cyclicShift_add, Int.add_comm]
 
-/-- B7.5. Every original CLASSIC car is blocked at most g−2 times in any
-finite prefix. Its natural distance from the cut decreases by one for
-each block and never reaches zero. -/
-theorem low_density_tag_block_bound (s : Config (Position w h))
-    (hm : 2 * carCount w h s < g) (sp : Species) (p : Position w h) (hp : s p = sp.cell)
-    (T : Nat) : blockedTagCount hw hh s sp p T ≤ g - 2 := by
-  have hsize : 2 * carCount w h (orbit T s) < g := by
-    simpa only [iterate_torusStep_carCount] using hm
-  obtain ⟨cut, hcut⟩ := corrected_emptyPair_of_sparse hw (orbit T s) T hsize
+/-- The B7.5 rank argument only needs one corrected class avoided throughout
+the prefix. Each blocked round decreases the positive rank by one. -/
+private theorem tag_block_bound_of_avoids_cut (s : Config (Position w h))
+    (sp : Species) (p : Position w h) (T : Nat) (cut : Fin g)
+    (havoid : ∀ t ≤ T, correctedClass hw t (carTrace E N sp s t p) ≠ cut) :
+    blockedTagCount hw hh s sp p T ≤ g - 2 := by
   let Y := fun t => correctedClass hw t (carTrace E N sp s t p)
   let rank := fun t => (cyclicShift g hg (-(cut.val : Int)) (Y t)).val
   have hpos (t : Nat) (ht : t ≤ T) : 0 < rank t := by
     apply shift_from_cut_pos hw
-    intro h
-    have hempty := (corrected_emptyPair_before hw hh s ht cut hcut).1
-    have hcar := carTrace_preserves_car E N sp s p hp t
-    exact hempty ⟨_, fun he => sp.cell_ne_empty (hcar.symm.trans he), h⟩
+    exact havoid t ht
   have hstep (t : Nat) (ht : t < T) :
       rank (t + 1) + (if ¬ TraceCanMove hw hh s sp p t then 1 else 0) = rank t := by
     have hclass : Y (t + 1) = if TraceCanMove hw hh s sp p t then Y t
@@ -158,6 +153,52 @@ private theorem allMove_iff_traceCanMove (s : Config (Position w h)) (t : Nat) :
       obtain ⟨p, hp, htrace⟩ := carTrace_surjective_on_cars E N .north s t q hcar
       simpa only [TraceCanMove, RoundCanMove, htrace] using hm .north p hp
 
+/-- B7.5–B7.6. Under 2m ≤ gcd(w,h), each original CLASSIC car is blocked
+at most g−2 times in every finite prefix. An empty pair at time T keeps
+its first class empty through round T, including the possible last block
+before the alternating regime. Without a pair, every car already moves. -/
+theorem low_density_tag_block_bound (s : Config (Position w h))
+    (hm : 2 * carCount w h s ≤ g) (sp : Species) (p : Position w h) (hp : s p = sp.cell)
+    (T : Nat) : blockedTagCount hw hh s sp p T ≤ g - 2 := by
+  classical
+  induction T with
+  | zero => simp [blockedTagCount]
+  | succ T ih =>
+    by_cases hex : ∃ cut, CorrectedEmptyPair hw (orbit T s) T cut
+    · obtain ⟨cut, hcut⟩ := hex
+      apply tag_block_bound_of_avoids_cut hw hh s sp p (T + 1) cut
+      intro t ht
+      by_cases hbefore : t ≤ T
+      · intro he
+        have hempty := (corrected_emptyPair_before hw hh s hbefore cut hcut).1
+        have hcar := carTrace_preserves_car E N sp s p hp t
+        exact hempty ⟨_, fun hz => sp.cell_ne_empty (hcar.symm.trans hz), he⟩
+      · have htime : t = T + 1 := by omega
+        subst t
+        have hcar := carTrace_preserves_car E N sp s p hp T
+        have hocc : (orbit T s) (carTrace E N sp s T p) ≠ .empty :=
+          fun hz => sp.cell_ne_empty (hcar.symm.trans hz)
+        have hclass : correctedClass hw (T + 1) (carTrace E N sp s (T + 1) p) =
+            if TraceCanMove hw hh s sp p T then correctedClass hw T (carTrace E N sp s T p)
+            else cyclicPrev g hg (correctedClass hw T (carTrace E N sp s T p)) :=
+          correctedClass_roundTransport hw hh (orbit T s) sp T (carTrace E N sp s T p)
+        intro he
+        rw [he] at hclass
+        by_cases hmove : TraceCanMove hw hh s sp p T
+        · simp only [hmove, ↓reduceIte] at hclass
+          exact hcut.1 ⟨_, hocc, hclass.symm⟩
+        · simp only [hmove, ↓reduceIte] at hclass
+          have hnext := congrArg (cyclicNext g hg) hclass
+          simp only [cyclicNext_prev] at hnext
+          exact hcut.2 ⟨_, hocc, hnext.symm⟩
+    · have hsize : 2 * carCount w h (orbit T s) ≤ g := by
+        simpa only [iterate_torusStep_carCount] using hm
+      have hall := corrected_allMove_of_no_emptyPair hw hh (orbit T s) T hsize
+        (fun cut hpair => hex ⟨cut, hpair⟩)
+      have hmove := (allMove_iff_traceCanMove hw hh s T).mp hall sp p hp
+      rw [blockedTagCount_succ hw hh]
+      simpa only [hmove, not_true_eq_false, ↓reduceIte, Nat.add_zero] using ih
+
 private def carTags (s : Config (Position w h)) : List (Species × Position w h) :=
   (speciesCells w h .east s).map (fun p => (.east, p)) ++
   (speciesCells w h .north s).map (fun p => (.north, p))
@@ -194,7 +235,7 @@ private theorem blockedRound_le_blockedTags (s : Config (Position w h)) (t : Nat
 /-- Across any finite time prefix, at most m(g−2) complete CLASSIC rounds
 contain a blocked car. This counts blocked rounds, not elapsed time. -/
 theorem low_density_block_bound (s : Config (Position w h))
-    (hm : 2 * carCount w h s < g) (T : Nat) :
+    (hm : 2 * carCount w h s ≤ g) (T : Nat) :
     blockedRoundCount hw hh s T ≤ carCount w h s * (g - 2) := by
   calc
     _ = ((List.range T).map (fun t => if ¬ AllMove E N (orbit t s) then 1 else 0)).sum :=
@@ -258,10 +299,10 @@ theorem staticFree_of_blockedRoundCount_bound (s : Config (Position w h))
   have hbudget := hbound (ell * (K + 1))
   omega
 
-/-- Under 2m<gcd(w,h), the actual CLASSIC state is static-free at the
+/-- Under 2m≤gcd(w,h), the actual CLASSIC state is static-free at the
 executable deadline lcm(w,h)*m*(gcd(w,h)-2). -/
 theorem low_density_staticFree_deadline (s : Config (Position w h))
-    (hm : 2 * carCount w h s < g) :
+    (hm : 2 * carCount w h s ≤ g) :
     StaticFree w h hw hh (orbit (sparseSpeedDeadline w h s) s) :=
   staticFree_of_blockedRoundCount_bound hw hh s (carCount w h s * (g - 2))
     (low_density_block_bound hw hh s hm)
@@ -269,7 +310,7 @@ theorem low_density_staticFree_deadline (s : Config (Position w h))
 /-- Every full round at or after the sparse deadline moves every original
 car. The bound is on elapsed time, in addition to the B7 blockage budget. -/
 theorem low_density_speed_one_deadline (s : Config (Position w h))
-    (hm : 2 * carCount w h s < g) (t : Nat) (ht : sparseSpeedDeadline w h s ≤ t) :
+    (hm : 2 * carCount w h s ≤ g) (t : Nat) (ht : sparseSpeedDeadline w h s ≤ t) :
     AllMove E N (orbit t s) := by
   obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le ht
   rw [iterate_add]
@@ -277,18 +318,18 @@ theorem low_density_speed_one_deadline (s : Config (Position w h))
     (low_density_staticFree_deadline hw hh s hm) d
 
 /-- On an n by n square, the sparse deadline simplifies to n*m*(n-2)
-complete rounds, under the same strict population condition 2m<n. -/
+complete rounds, under the same inclusive population condition 2m≤n. -/
 theorem low_density_square_speed_one_deadline (n : Nat) (hn : 0 < n)
-    (s : Config (Position n n)) (hm : 2 * carCount n n s < n)
+    (s : Config (Position n n)) (hm : 2 * carCount n n s ≤ n)
     (t : Nat) (ht : n * (carCount n n s * (n - 2)) ≤ t) :
     AllMove (eastDirection n n hn) (northDirection n n hn)
       (iterate (torusStep n n hn hn) t s) := by
   apply low_density_speed_one_deadline hn hn s (by simpa only [Nat.gcd_self] using hm) t
   simpa only [sparseSpeedDeadline, Nat.lcm_self, Nat.gcd_self] using ht
 
-/-- If twice the car population is below the gcd of the positive side
+/-- If twice the car population is at most the gcd of the positive side
 lengths, the actual CLASSIC orbit eventually moves every car in every round. -/
-theorem low_density_speed_one (s : Config (Position w h)) (hm : 2 * carCount w h s < g) :
+theorem low_density_speed_one (s : Config (Position w h)) (hm : 2 * carCount w h s ≤ g) :
     ∃ T, ∀ t ≥ T, AllMove E N (orbit t s) := by
   let budget := carCount w h s * (g - 2)
   let count := blockedRoundCount hw hh s

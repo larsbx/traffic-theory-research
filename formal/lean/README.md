@@ -55,7 +55,9 @@ It does not embed Python-produced expected transitions.
 | `BML/Delay.lean` | An initial eastbound run of length `T+2` blocks its original rear car at round `T`, regardless of the exterior. A permanent full-movement starting time must exceed `T`. Kernel-checked `4x4` vacant east/south cycle that disappears into a nonempty jam after one round. |
 | `BML/GuardedQueue.lean` | A main E run at offsets `0..T`, a hole at `T+1`, and a lower E guard at offsets `1..T` force the original rear tag's first move to occur in round `T`, regardless of the exterior. One-round and iterated shrinking follow from the actual two-phase kernel. Any nonempty jam time is strictly greater than `T`. Generic results assume east-next commutes with north-previous; torus specializations discharge this premise. |
 | `BML/Fixation.lean` | Eventual constancy of an original `carTrace` is equivalent to finitely many actual moves. An eventually permanent car has an eventually permanent successor, with the north proof using the post-east checkpoint. All permanent sites form a nonempty core at a common future time. A core that misses a row forces a full E-row; a missed column forces a full N-column. Consequently, some original car fixes iff eventual nonempty jam or an initial full monochromatic lane occurs. All cars fix iff the state is empty or eventually jams. Outside both exceptional events, every original car moves and every site becomes empty arbitrarily late. |
-| `BML/PathCore.lean` | The largest occupied successor-closed core is exactly the set of roots with `carCount + 1` occupied direct-path vertices. Its fixed spatial membership increases under the actual full rounds and eventually equals all eventual permanent sites. An original car eventually stops iff its trace eventually enters the core. Probability laws and the final count/expectation conversion are separate prose arguments. |
+| `BML/PathCore.lean` | The largest occupied successor-closed core is exactly the set of roots with `carCount + 1` occupied direct-path vertices. Its fixed spatial membership increases under the actual full rounds and eventually equals all eventual permanent sites. An original car eventually stops iff its trace eventually enters the core. |
+| `BML/StoppedCore.lean` | Executable maximal-core cardinality; actual original-tag/current-site count equality at every checkpoint; eventual core count equals the stopped original-car count; pointwise nonempty-jam/full-lane count sandwich, including empty and singleton boards. |
+| `BML/CoreMass.lean` | Exact finite initial-Nat-weight normalized count/jam comparison, using a constructed positive common population denominator; one common time for eventual weighted core/stopped-count equality. Rational interpretation and asymptotic estimates retain their stated separate scope. |
 | `BML/Locality.lean` | A radius-`T` lifted box determines the time-`T` torus color. Lifted points at height gaps in `(0,L)` have distinct projections on the square torus. Excluding compatible initial origins of both species forces time-`T` vacancy. |
 | `BML/Barrier.lean` | An N guard protects a descending hole from the E phase. The actual kernel preserves an E wall and a lower N wall aimed at the hole, producing an L-shaped barrier at any prescribed time with arbitrary exterior. General lengths may be zero; the torus adapter discharges the commutation premise. |
 | `BML/Torus.lean` | Positive finite cyclic coordinates with proved inverse shifts; the general kernel is instantiated on `Fin WIDTH × Fin HEIGHT`; executable base-three encoding, decoding, and counts. |
@@ -483,15 +485,34 @@ observable to the actual trace of a specified original car. The existing
 `Fixation.lean` theorem retains its signature; a stronger helper exposes
 the full permanent-site predicate in its future-core construction.
 
-The [path-mass note](../../docs/research/2026-11-19-maximal-core-and-path-mass.md)
-uses the tagged bijection to identify the eventual core size with the
-number of stopped original cars. It then derives a normalized probability
-comparison, a late-time or averaged `o(1)` sufficient path estimate, and
-the optimal finite envelope retaining only the population law and a
-supplied mass budget. Those count/probability calculations have prose
-proofs. The new module does not prove decay under the evolved iid law,
-a fixed-positive-density nonjamming interval, or an effective time for
-the maximal core to reach its eventual size.
+`BML/StoppedCore.lean` now formalizes the numeric bridge: filtering the
+actual species-wise `carTrace` permutation proves core/tag count equality at
+every checkpoint. One finite common time then makes this count equal to
+`stoppedCarCount`, the number of stopped original cars. The initial full-lane
+exception gives `N * 1_J ≤ Z ≤ N * 1_J + N * 1_R` for nonempty eventual jam `J`.
+
+`BML/CoreMass.lean` constructs the positive common denominator `(W*H)!`,
+proves exact cancellation for every positive population, and sums the
+normalized count inequalities under arbitrary finite initial `Nat` weights.
+Empty boards contribute zero; repeated support and zero weights are allowed.
+One common time over the finite support yields exact eventual equality of
+weighted core mass and stopped-tag mass. The rational probability interval
+is obtained by dividing the proved integer inequality by the positive total
+weight times the denominator; a separate `Rat` or `Real` theorem is not added.
+
+The [count/mass note](../../docs/research/2026-11-21-stopped-core-counts.md)
+records the theorem interfaces, normalization, actual-kernel exporter
+refinement, and verification contract. The [path-mass note](../../docs/research/2026-11-19-maximal-core-and-path-mass.md)
+retains prose proofs of the late-time or averaged `o(1)` criterion, iid lane
+bound, and population envelope. No decay under the evolved iid law,
+fixed-positive-density nonjamming interval, or effective core-stabilization
+time is proved.
+
+```sh
+lake env lean StoppedCoreAudit.lean
+cd ../..
+python scripts/check_stopped_core.py --report .artifacts/stopped-core.json
+```
 
 ## TRAIN library and executable
 
@@ -546,13 +567,28 @@ of corrected vacancies at the end of a finite prefix persists backwards
 through that prefix. Conservation and `2 * carCount < gcd(w,h)` supply a
 pair at the end of every prefix.
 
+B7.6 extends the result to `2 * carCount ≤ gcd(w,h)`.
+`corrected_alternating_of_no_emptyPair` proves that without an empty pair,
+occupied corrected classes alternate with vacant classes and each occupied
+class contains exactly one actual car. `corrected_alternating_allMove`
+checks the next CLASSIC round, including the possible east entrant into a
+north target. `corrected_alternating_step` and
+`corrected_no_emptyPair_perpetual_allMove` establish the invariant and full
+movement at every later round. The proof uses exact finite-list saturation,
+the existing release geometry, backwards empty-pair persistence, and car
+conservation.
+
 `BML/SparseSpeed.lean` proves `low_density_tag_block_bound`,
 `low_density_block_bound`, and `low_density_speed_one`. These bound each
 original tag's block count by `g−2`, the number of blocked rounds by
 `carCount * (g−2)`, and give eventual `AllMove` for the actual torus orbit.
+All three now use the inclusive hypothesis. An empty pair at time `T`
+keeps its first class empty through `T+1`, so the positive-rank argument
+also counts the last blocked round before alternation, with no extra `+1`.
+If no pair exists at `T`, the next block indicator is zero.
 
 `low_density_speed_one_deadline` strengthens the time conclusion: under
-the same strict hypothesis, every round at or after
+the same inclusive hypothesis, every round at or after
 `sparseSpeedDeadline w h s = lcm(w,h) * carCount * (g−2)` has `AllMove`.
 `low_density_staticFree_deadline` proves entry into `StaticFree` by that
 deadline. The reusable `staticFree_of_blockedRoundCount_bound` accepts any
@@ -560,15 +596,24 @@ uniform finite-prefix blockage budget, without a sparsity hypothesis.
 This combines the finite blockage budget with
 `lemmaR_finite_lt`: `K+1` disjoint windows of length `lcm(w,h)` cannot
 all contain a blockage when every prefix has at most `K` blocked rounds.
-The empty board has deadline zero; a nonempty sparse board has `g ≥ 3`.
+The empty board has deadline zero; a nonempty sparse board has `g ≥ 2`.
+For `g = 2`, the admitted single-car states move from time zero.
 The deadline is a sufficient upper bound, with no sharpness claim.
 `low_density_square_speed_one_deadline` specializes it to `n * m * (n−2)`
-on an `n×n` square with `2m < n`.
+on an `n×n` square with `2m ≤ n`. These times count full east-then-north
+rounds, not individual species phases.
+
+The existing theorem names are retained with the weaker `≤` assumptions.
+External callers with a strict-inequality proof can pass `Nat.le_of_lt` of
+that proof. Lean remains pinned to 4.34.1 with no external packages; the
+only added module import is the existing `BML.Rigid` in `SparseDynamics`.
+The inclusive threshold is prior art, not a new mathematical claim; see
+the [source and verification note](../../docs/research/2026-11-21-classic-inclusive-sparse-flow.md).
 
 The BML audit checks these public theorem declarations. The separate replay
 compares both CLASSIC phases and original-tag traces with an independent
 scalar implementation. Its header exports the proved deadline formula for
-sparse boards and `-` outside the strict hypothesis. Complete recurrent
+sparse boards and `-` outside the inclusive hypothesis. Complete recurrent
 traces check permanent-flow entry by the deadline. A targeted `5×10`
 two-car orbit first becomes permanently free at round 10 despite having
 bad-round budget 6, distinguishing the two quantities.

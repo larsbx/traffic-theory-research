@@ -105,6 +105,12 @@ connections to tiling and dynamical-systems theory.
   the exponentially small full-lane exception. An exact population envelope
   converts a supplied mass estimate into a finite bound; proving the needed
   decay under the evolved law remains open.
+- [Stopped original cars and exact finite core mass](docs/research/2026-11-21-stopped-core-counts.md)
+  (2026-11-21). Lean now proves the eventual core/stopped-tag cardinality
+  identification and finite initial-weight jam/full-lane comparison with
+  exact population normalization. The actual exporter is proved to refine
+  the CLASSIC board and tagged traces; independent finite recurrence checks
+  cover empty boards, partial fixation, and unequal-population mixtures.
 - [Formal coverage and validation](formal/README.md): the CLASSIC finite-torus
   `BML` proofs, identity-preserving transport and non-monotonicity witness, together
   with the complementary `Traffic` tiling/staircase proofs, the complete
@@ -186,7 +192,8 @@ fixed-point result does not transfer.
   `lcm(W,H)` rounds suffices, and each such configuration returns after that
   many rounds, possibly with a smaller least period. B7 proves permanent full
   movement from round `lcm(W,H) * m * (gcd(W,H) - 2)` onward for every board
-  with `2m < gcd(W,H)`. Its separate blockage bound is at most
+  with `2m ≤ gcd(W,H)`, including the alternating singleton-class equality
+  regime formalized in B7.6. Its separate blockage bound is at most
   `m * (gcd(W,H) - 2)` blocked rounds in any finite prefix. The suite also
   proves permanent cores and route-cover capture bounds. Some original car eventually
   stops exactly when the state eventually jams or initially has a full E-row
