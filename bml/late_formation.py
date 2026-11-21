@@ -71,17 +71,18 @@ def formation_times(L: int, p: float, B: int, horizon: int, seed: int = 0) -> np
     return T
 
 
-def formation_sweep(L: int, p: float, B: int, horizon: int, every: int, seed: int = 0):
-    """T_M measured every `every` rounds (resolution `every`), plus frozen-at-horizon flags.
+def formation_sweep(L: int, p: float, B: int, horizon: int, every: int, seed: int = 0,
+                    initial: np.ndarray | None = None):
+    """T_M measured every `every` rounds and at the horizon (resolution `every`), plus
+    frozen-at-horizon flags. Pass `initial` (shape (B, L, L)) to replay given configurations.
 
     Returns (T, frozen): T[i] is the first checked round with a mixed cycle (−1 if none by the
     horizon), and frozen[i] says whether sample i is a nonempty fixed point at the horizon.
     """
-    rng = np.random.default_rng(seed)
-    s = sample(rng, B, L, p)
-    T = np.full(B, -1)
+    s = sample(np.random.default_rng(seed), B, L, p) if initial is None else initial.copy()
+    T = np.full(len(s), -1)
     for t in range(horizon + 1):
-        if t % every == 0:
+        if t % every == 0 or t == horizon:              # always check the horizon itself
             undetected = T < 0
             if undetected.any():
                 hit = mixed_cycle_present(s[undetected])

@@ -44,3 +44,12 @@ def test_recorded_formation_data_claims():
             assert not (f <= log(r["L"])).any()                # nothing within log L rounds
             early += int((f <= r["L"]).sum()); total += len(f)
     assert total == 1378 and early == 8
+
+
+def test_sweep_checks_the_horizon_when_not_divisible():
+    """Codex review on #34: with horizon % every != 0 the last round must still be checked."""
+    from bml.late_formation import formation_sweep
+    x = np.array([[[0, 0, 1], [0, 1, 2], [2, 2, 1]]], np.int8)
+    assert not mixed_cycle_present(x)[0] and mixed_cycle_present(step(x)[0])[0]   # forms at round 1
+    T, frozen = formation_sweep(3, 0.5, 1, horizon=1, every=2, initial=x)
+    assert T.tolist() == [1] and frozen.tolist() == [True]
