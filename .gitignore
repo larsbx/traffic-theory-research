@@ -9,3 +9,4 @@ formal/artifacts/
 *.pyc
 
 bml/native/classify
+bml/native/thin_mc

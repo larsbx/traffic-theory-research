@@ -464,7 +464,9 @@ Other distinct questions must stay separate:
 - Is the iid averaged jam probability monotone in density in the relevant
   setting? (Finite sizes W·H ≤ 22: yes, exactly, strictly increasing.
   The fixed-count version fails on 2×11 although q still increases there; see the
-  [finite iid monotonicity note](2026-11-18-finite-iid-monotonicity.md).) Configurationwise non-monotonicity does not settle that question.
+  [finite iid monotonicity note](2026-11-18-finite-iid-monotonicity.md). Not on every finite
+  torus: q is non-monotone on 2×W for all W ≥ 24, by
+  [thin-torus rigidity](2026-11-21-thin-torus-nonmonotonicity.md). Squares remain open.) Configurationwise non-monotonicity does not settle that question.
   The note separately gives finite-size non-monotonicity for the mixed-cycle
   event's iid probability; that event differs from the jam event by the ring
   exception.

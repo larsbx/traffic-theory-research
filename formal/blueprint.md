@@ -1,6 +1,6 @@
 # Blueprint: proof status and open formal obligations
 
-This hand-off document records the completed B0–B9 proofs and the remaining
+This hand-off document records the completed B0–B9 proofs, the open B10, and the remaining
 obligations of [the coverage register](README.md), with proofs decomposed into
 lemmas small enough to formalise one at a time.
 
@@ -36,6 +36,7 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B7–B7.6 | CLASSIC eventual speed one for 2m≤gcd(W,H) | kernel-checked alternating equality regime, full movement from round lcm(W,H)·m(g−2) onward, and at most m(g−2) blocked rounds per prefix | B2 geometry, B3 finite free window, CLASSIC transport and car count |
 | B8 | Theorem U: genuine un-jamming exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4 | kernel-checked dimension classification, including both exclusions | Kernel, Transport, Lanes, Enumeration, Fixation |
 | B9 | Maximal-core cardinality, stopped original cars, and finite initial-weight gridlock reduction | kernel-checked tag/site count equality, eventual stopped-count identification, jam/full-lane count sandwich, and exact cleared-denominator initial-weight comparison | PathCore, Fixation, Capture, Counting, Absorption, FiniteSums |
+| B10 | Thin-torus rigidity: jam structure on 2×W and W×2, and the bounds L_W ≤ q ≤ U_W behind Theorem M | prose proof and exact certificates; open for Lean | Kernel, Transport, Lanes, Fixation (G0), Counting |
 
 ---
 
@@ -752,6 +753,26 @@ The [formalization and acceptance note](../docs/research/2026-11-21-stopped-core
 records the complete interfaces and independent controls. In particular,
 the needed large-size decay of the limiting normalized core mass remains
 open; B9 supplies the reduction, not that estimate.
+
+## B10. Thin-torus rigidity and the non-monotonicity of q: open
+
+Prose proofs are in the [thin-torus note](../docs/research/2026-11-21-thin-torus-nonmonotonicity.md)
+§§1–2. Statements are for `h = 2` (2 rows, `W = w` columns); the `w = 2` case is the same
+with species and axes exchanged, and should be one statement up to the transport map.
+A *plug* is a column with both cells `north`; *lone* means exactly one `north` car in the
+column.
+
+| Part | Statement | Argument and dependencies |
+|---|---|---|
+| B10.1 | Rows of east cars, columns of north cars, and the column north counts are invariant under `f`; plug cells are fixed, and no east car ever occupies a plug column. | Species transport (`Transport`), lane invariants (`Lanes`). |
+| B10.2 | If `f x = x`, `x ≠ empty` and `carCount x < w`, then `x` has a plug column. | Blocker map on a fixed point (G0). A simple blocker cycle has east count ≡ 0 mod `w` and north count ≡ 0 mod 2, and a cycle in one column is a plug. A finite function has a cycle. |
+| B10.3 | Gap condition is necessary: jam with `carCount < w` implies a plug, and for each gap, east cars in the gap ≥ distance of the farthest lone column. | B10.1, B10.2. Follow the blocker orbit east from the other cell of the farthest lone column to the next plug, and count cars column by column (two in every lone column). |
+| B10.4 | A plug and no lone column implies eventual nonempty gridlock. | Potential: the sum of east-car positions along each gap path rises with every move and is bounded; then G0. |
+| B10.5 | Initial-law identities: `P(plug ∧ no lone) = (a+c)^w − c^w`, and `P(gap condition)` equals the cyclic renewal sum of `bml.thin.gap_event`. | Finite sums over iid columns (`FiniteSums`, `Counting`). With cleared denominators, as in B9.5. |
+| B10.6 | (Optional) the certificates: for each `24 ≤ w ≤ 79` the stored rationals satisfy `lower w p₁ > upper w p₂`, and the asymptotic inequality at `w = 80`. | Exact rational evaluation; heavy for `decide`. Python checks them exactly (`scripts/thin_certificates.py`), so the Lean value is in B10.1–B10.5. |
+
+`tests/test_thin.py` checks B10.3 and B10.4 on every state of 2×3 to 2×5 and their transposes, and
+B10.5 by enumeration.
 
 ---
 
