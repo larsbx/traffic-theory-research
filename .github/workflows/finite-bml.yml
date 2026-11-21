@@ -110,6 +110,8 @@ jobs:
         run: python scripts/check_free_max.py --max-side 12 --report .artifacts/free-max.json --rows .artifacts/free-max.tsv | tee .artifacts/free-max.log
       - name: Replay CLASSIC sparse-speed deadlines and movement-rule controls
         run: python scripts/check_sparse_speed.py --report .artifacts/sparse-speed.json | tee .artifacts/sparse-speed.log
+      - name: Compare gated constructions and tagged wraparound with CLASSIC Python
+        run: python scripts/check_gated.py --report .artifacts/gated-replay.json | tee .artifacts/gated-replay.log
       - name: Check certified cutoff bounds against the actual Lean probe
         run: python scripts/check_absorption.py --backend lean --report .artifacts/absorption-lean.json | tee .artifacts/absorption-lean.log
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
