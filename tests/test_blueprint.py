@@ -143,3 +143,25 @@ def test_B7_each_car_blocked_at_most_g_minus_2_times(seed):
         for i in set(range(m)) - moved:
             blocks[i] += 1
     assert blocks.max() <= g - 2
+
+
+@pytest.mark.parametrize("h,w", [(4, 4), (4, 8), (8, 4)])
+def test_B7_6_equality_case_2m_eq_g(h, w):
+    """B7.6 (inclusive case, prior art KTY Thm 1): with 2m = g every rooted configuration
+    reaches speed one, and each car is blocked at most g − 2 times."""
+    import itertools
+    from bml.nonmonotone import labelled_step
+    g = gcd(h, w); m = g // 2; N = h * w
+    assert 2 * m == g
+    for pos in itertools.combinations(range(1, N), m - 1):
+        for sp in itertools.product((EAST, NORTH), repeat=m):
+            s = np.zeros(N, np.int8); s[[0, *pos]] = sp; s = s.reshape(h, w)
+            ids = np.full(s.shape, -1); ids[s != 0] = np.arange(m)
+            blocks = np.zeros(m, int)
+            for _ in range(4 * m * g + 2 * N):
+                s, ids, moved = labelled_step(s, ids)
+                for i in set(range(m)) - moved:
+                    blocks[i] += 1
+            assert blocks.max() <= g - 2
+            _, _, moved = labelled_step(s, ids)
+            assert moved == set(range(m))          # speed one at the end of the window

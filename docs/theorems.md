@@ -189,6 +189,31 @@ car and at most `m(g−2)` rounds containing a block. The proof uses actual
 two-phase transport, corrected diagonal classes, and empty pairs that
 persist backwards. See [blueprint B7](../formal/blueprint.md#b7-classic-low-density-speed-one).
 
+*Prior art, and the equality case 2m = g.* [Kozlov–Tatashev–Yashina][KTY], Theorem 1, proves
+free movement from every initial state when m ≤ d/2, with d = gcd(N₁, …, N_n), on n-dimensional
+tori. For their stochastic parameter q = 0 the model is "the classical version of the BML
+model": within a step, type 1 moves first, then type 2, and a type-2 particle may enter a cell
+that a type-1 particle has just vacated. That matches CLASSIC rounds. The paper's text does not
+make the within-type semantics explicit (CLASSIC versus queue/TRAIN movement), so the
+correspondence is checked only up to that point. B7's strict bound 2m < g is a special case of
+their m ≤ d/2.
+
+The equality case also follows from the B7 argument with one more lemma, together with the
+same bound m(g−2):
+- **Alternating state.** Suppose 2m = g and there is no empty pair at time T. Then the occupied
+  corrected classes alternate and each holds exactly one car. Every car then has an empty class
+  ahead, so by release (B7.1) it moves. Corrected classes are unchanged, so the state stays
+  alternating, and every later round is free.
+- **Before that.** The alternating times therefore form a final segment [T*, ∞). Before T*, every
+  time has an empty pair, and B7.5's per-car bound g − 2 applies.
+- **Numerical check.** Every rooted configuration with m = g/2 on 4×4, 6×6, 4×8, 8×4 and 6×12
+  reaches speed one, with at most 2 blocks per car.
+- **Sharpness.** On 4×4, m = g/2 + 1 = 3 already admits non-free configurations
+  (`data/exhaustive.json`).
+
+This equality extension is prose and finite evidence only. It is recorded as blueprint
+obligation B7.6 for Lean.
+
 ## 3. Theorem G2 (no forced gridlock below full density)
 
 **Claim.** For every positive W,H and every 0 ≤ n < WH, some n-car configuration
@@ -559,7 +584,15 @@ The g = 1 branch remains separate.
 **Prior art.** The square-density value 2/3 is already stated in footnote [7] of
 [BML 1992][BML]; it is not a novelty claim here. The mixed-species obstruction at g < 3
 also appears in [Yashina–Tatashev, Theorem 1][YT]. Whether the complete rectangular floor
-formula appears earlier remains unestablished by the present source check.
+formula appears earlier remains unestablished.
+- **Search of 2026-11-21:** general web searches for the maximal free-flow count on W×H tori
+  in terms of gcd(W,H), and for the BML density bound 2/3.
+- **Also read:** the Kozlov–Tatashev–Yashina line of work ([KTY], [YT]).
+- **Found:** only the 2/3 square value, the gcd ≥ 3 obstruction for mixed free flow, and the
+  m ≤ gcd/2 sufficient condition (B7 and B7.6). None of these sources states the complete
+  floor formula (W·H/g)·⌊2g/3⌋.
+
+A search can only show a statement was not found, not that it is new.
 
 ## 5b. The train rule: Austin–Benjamini Prop 6 on rectangles
 
@@ -855,9 +888,9 @@ configurations is nondecreasing in n. So q(p) = P_p(J) is nondecreasing in p, ex
 Bernstein-coefficient certificate. Each difference b_{n+1} − b_n equals (jam-creating minus
 jam-destroying single-car additions)/(number of pairs), so configurationwise non-monotonicity
 is outweighed level by level. See the
-[finite iid monotonicity note](research/2026-11-18-finite-iid-monotonicity.md). The fixed-count
-fraction is *not* monotone in general: exactly, b₇ < b₆ on 2×11, 2×12 and 2×14, while monotonicity
-of q itself is open there. This settles nothing asymptotically.
+[finite iid monotonicity note](research/2026-11-18-finite-iid-monotonicity.md). Exhaustively for W·H ≤ 22, every 24-cell shape and 5×5, q(p) is strictly increasing. The fixed-count
+fraction is *not* monotone in general: exactly, b₇ < b₆ on 2×11, 2×12 and 2×14. On 2×11 and 2×12, q itself is still strictly
+increasing (exact certificate); on 2×14 it is open. This settles nothing asymptotically.
 
 ## 9. Next targets
 
@@ -875,20 +908,27 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
    coverage. R includes a finite lcm-window criterion and lcm return; F includes
    static, perpetual, and eventual existence spectra. The separate TRAIN threshold T
    and sparse-square speed-one theorem are fully proved. CLASSIC B7 proves eventual
-   full movement and bounds blocked rounds under `2m < gcd(W,H)`.
+   full movement and bounds blocked rounds under `2m < gcd(W,H)`. The inclusive case 2m ≤ g, which
+   is prior art in [KTY], is proved in prose (§2) and open for Lean as B7.6.
    See the precise [coverage register](../formal/README.md).
 2. **Control formation of blocking loops under μ_p.** Section 8 gives the initial counting
    bound and explains the missing dynamical estimate. Do not treat a finite-time simulation
    or an iid count at time zero as an eventual-probability bound.
 3. **Literature and novelty.** The Austin–Benjamini rule correspondence is resolved (§5b).
-   The remaining literature questions include the complete rectangular capacity
-   formula and the scope of [HBK]. The 2/3 value and gcd obstruction have prior literature.
+   The 2/3 value and the gcd obstruction have prior literature, and the sparse speed-one bound
+   is prior art in [KTY] (m ≤ gcd/2). The search for the complete rectangular capacity formula
+   (§5) found no earlier statement. Still open: an exhaustive bibliographic check, and the
+   scope of [HBK].
 4. ~~Why is un-jamming trivial on small tori?~~ Resolved by Theorem U (§4): genuine un-jamming
    exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4. Lean formalisation: blueprint B8.
-5. Extend the exhaustive tables to 4×5 (3²⁰ ≈ 3.5·10⁹ states). That needs a symmetry quotient
-   (translations × species-preserving symmetries).
+5. ~~Extend the exhaustive tables to 4×5.~~ Done for every shape with W·H ≤ 22, including 4×5
+   in 14 s, and for all 24-cell shapes and 5×5 (`data/exhaustive-24-25.json`). The tool is `bml/native/classify.c`, which uses a translation quotient, bitmask
+   dynamics and Floyd cycle detection; the tables are in `data/exhaustive-17-22.json`. G1 and F
+   hold on all of them. Reflections are not symmetries, because they reverse the flow.
 
 ## References checked on 2026-11-18
+
+- [KTY] A. Kozlov, A. Tatashev, M. Yashina, *Sufficient Loading Conditions for Self-organization in the n-dimensional Version of BML Model with Stochastic Direction Choice*, arXiv:2310.02291 (2023), Theorem 1 (m ≤ d/2); classical BML at q = 0. Checked 2026-11-21 from the arXiv HTML text.
 
 - [BML] O. Biham, A. A. Middleton, D. Levine, *Self Organization and a Dynamical Transition
   in Traffic Flow Models*, Physical Review A 46 (1992), R6124–R6127. Model I, pp. 2–3;
@@ -913,3 +953,4 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
 [DS]: https://doi.org/10.1103/PhysRevE.71.066112
 [YT]: https://arxiv.org/pdf/2311.17120
 [HBK]: https://arxiv.org/abs/2601.01180
+[KTY]: https://arxiv.org/abs/2310.02291
