@@ -26,3 +26,21 @@ def test_formation_time_is_first_appearance_and_cycle_persists():
     for t in range(horizon + 1):
         assert (mixed_cycle_present(s) == ((T >= 0) & (T <= t))).all()
         s = step(s)[0]
+
+
+def test_recorded_formation_data_claims():
+    """Claims of docs/research/2026-11-21-late-formation.md about data/late-formation.json."""
+    import json
+    from math import log
+    from pathlib import Path
+    R = json.loads((Path(__file__).parents[1] / "data" / "late-formation.json").read_text())
+    assert len(R) == 28
+    early = total = 0
+    for r in R:
+        T, frozen = np.array(r["T"]), np.array(r["frozen"])
+        assert ((T >= 0) == frozen).all()                     # formed by horizon ⟺ frozen at horizon
+        if r["p"] <= 0.5:
+            f = T[T >= 0]
+            assert not (f <= log(r["L"])).any()                # nothing within log L rounds
+            early += int((f <= r["L"]).sum()); total += len(f)
+    assert total == 1378 and early == 8
