@@ -10,16 +10,40 @@ cd app
 npm ci
 npm test          # rasterizer, engine, certificates, Python equivalence
 npm run build     # → dist/index.html (open it in a browser) and dist/artifact.html
+npm start         # serve the page + the OpenStreetMap API on http://localhost:8787 (PORT, OSM_USER_AGENT)
 npm run bake      # refresh data/presets.json from the OpenStreetMap API
 PYTHONPATH=. python app/scripts/bml_fixture.py   # (from the repo root) regenerate the Python orbits
 ```
 
 Modes:
-- **City:** six real places, or any place you type (live Overpass / OSM API). Exposes the named
+- **City:** six real places, or any place you type (through the OSM API below). Exposes the named
   traffic laws, the update rule, signal green time, density, dawdling and breakdowns, plus a
   measured fundamental diagram J(ρ).
 - **BML lab:** the plain torus, with live readouts of the theorems in
   [`docs/theorems.md`](../docs/theorems.md).
+
+## OpenStreetMap API
+
+`npm start` runs `server.mjs`. It serves the simulator at `/` and a JSON API at `/api/*`
+(`src/api.js`, transport-free and tested against a fake OSM). When the page is served this
+way, its LOAD box goes through the API, so any place works.
+
+| endpoint | parameters | returns |
+|---|---|---|
+| `GET /api/health` | | window size, law names, limits |
+| `GET /api/geocode` | `q` (a name, or `lat,lon`) | `{lat, lon, name, drive}`; drive side `R`/`L` |
+| `GET /api/roads` | `lat`,`lon` or `q` | OSM drivable centre-lines in local metres, plus `source` (`overpass` / `osm-api`) |
+| `GET /api/network` | `lat`,`lon` or `q`; `drive`; `edges=1` | lane graph: cells, edges, junctions, entries, exits, **girth**; with `edges=1`, the edge list |
+| `GET /api/simulate` | `lat`,`lon` or `q`; `rho` (0.3), `law` (`CITY CODE`…`BML LIGHTS`), `rule` (`classic`/`train`), `slow` (0.1), `steps` ≤ 6000 (1200), `samples` ≤ 500 (60), `seed` (1) | a time series of ρ, v̄, J, queue, frozen and jam loops; the final certificate with each core's cells |
+
+```sh
+curl 'localhost:8787/api/simulate?q=Nyhavn%20Copenhagen&law=BML%20LIGHTS&rho=0.4&steps=1200'
+```
+
+OSM etiquette is built in. Requests carry an identifying `User-Agent` (set `OSM_USER_AGENT`
+to your own contact). Nominatim gets at most one request per second. Places, roads and lane
+graphs are cached (LRU, 64 entries). Results are deterministic per seed. Errors are JSON:
+400 for a bad parameter, 404 for an unknown place or route, 502 for an OSM failure.
 
 ## The model
 

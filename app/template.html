@@ -220,6 +220,13 @@ footer { border-top: 3px double var(--maze); padding-top: 14px; margin-top: 10px
       </div>
     </details>
     <details name="info">
+      <summary>Any place: the OSM API</summary>
+      <div class="window">
+        <h3>ANY PLACE: THE OSM API</h3>
+        <p>Run <code>npm start</code> in <code>app/</code> and the simulator is served together with a small OpenStreetMap API: <code>/api/geocode</code> (Nominatim), <code>/api/roads</code> (Overpass, falling back to the OSM API), <code>/api/network</code> (the lane graph: cells, junctions, girth) and <code>/api/simulate</code> (a headless run with a time series and the final jam certificate). LOAD then works for any place on Earth. The server identifies itself to OpenStreetMap, sends Nominatim at most one request a second, and caches every result. This hosted copy cannot make outside requests, so it offers the six built-in places.</p>
+      </div>
+    </details>
+    <details name="info">
       <summary>Sources</summary>
       <div class="window">
         <h3>SOURCES</h3>

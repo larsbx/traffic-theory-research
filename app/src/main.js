@@ -3,7 +3,7 @@ import presets from '../data/presets.json';
 import { PLACES, WINDOW } from './presets.js';
 import { rasterize, torus, girth } from './raster.js';
 import { init, halfStep, breakDown, fromGrid, isStalled, greenAxis, CLASSIC, TRAIN, DEFAULTS, LAWS } from './sim.js';
-import { certificate, onStreet, isGridlock } from './analysis.js';
+import { certificate, onStreet, isGridlock, snapshot } from './analysis.js';
 import { drawMaze, drawFrame, drawDiagram, cellPx, COLORS } from './render.js';
 import { fetchRoads, locate, driveSide } from './fetch.js';
 import { makeRng } from './rng.js';
@@ -82,13 +82,10 @@ const stepSim = () => {
 const measure = () => {
   const v = view();
   const { sim, net } = v;
-  const cert = certificate(net, sim, v.opts);
-  const on = onStreet(sim);
   app.hist.push(sim.moved); if (app.hist.length > 2 * HZ) app.hist.shift();
-  const moves = app.hist.reduce((a, b) => a + b, 0) / Math.max(1, app.hist.length / 2);
-  const rho = on / net.roadCells;
-  const vbar = on ? Math.min(1, moves / on) : 0;
-  return { cert, on, rho, vbar, j: rho * vbar, queue: sim.pos.length - on };
+  const moves = app.hist.reduce((a, b) => a + b, 0) / Math.max(1, app.hist.length / 2); // per full step, averaged
+  const m = snapshot(net, sim, v.opts, moves);
+  return { ...m, on: m.onStreet, vbar: m.v };
 };
 
 // ---------- HUD ----------
@@ -229,7 +226,19 @@ $('l-p').addEventListener('input', (e) => { $('l-p-v').textContent = (+e.target.
 $('l-rule').addEventListener('change', labChange((t) => { app.lab.rule = t.value; }));
 $('l-reset').addEventListener('click', () => { app.lab.seed++; loadLab(); });
 
-// live place loading
+// live place loading: through this app's own /api when served by server.mjs, else directly
+const json = async (path) => {
+  const r = await fetch(path);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error ?? `HTTP ${r.status}`);
+  return body;
+};
+let osmClient = null;
+const osm = async () => (osmClient ??= await fetch('api/health').then((r) => r.ok && r.headers.get('content-type')?.includes('json'))
+  .catch(() => false)
+  .then((viaApi) => (viaApi
+    ? { locate: (q) => json(`api/geocode?q=${encodeURIComponent(q)}`), roads: (c) => json(`api/roads?lat=${c.lat}&lon=${c.lon}`) }
+    : { locate: (q) => locate(q), roads: (c) => fetchRoads(c) })));
 $('find').addEventListener('submit', async (e) => {
   e.preventDefault();
   const q = $('c-where').value.trim();
@@ -237,16 +246,16 @@ $('find').addEventListener('submit', async (e) => {
   const say = (t) => { $('find-msg').textContent = t; };
   try {
     say('Finding the place…');
-    const centre = await locate(q);
+    const centre = await (await osm()).locate(q);
     say(`Downloading streets around ${centre.name}…`);
-    const roads = await fetchRoads(centre);
+    const { roads } = await (await osm()).roads(centre);
     if (roads.length < 3) throw new Error('Too few drivable streets in this window. Try a busier spot.');
     const id = `live-${Date.now()}`;
-    places.set(id, { id, name: centre.name.slice(0, 22), lat: centre.lat, lon: centre.lon, drive: driveSide(centre), roads });
+    places.set(id, { id, name: centre.name.slice(0, 22), lat: centre.lat, lon: centre.lon, drive: centre.drive ?? driveSide(centre), roads });
     fillPlaces(); app.placeId = id; setMode('city');
     say(`Loaded ${roads.length} streets. Map data © OpenStreetMap contributors.`);
   } catch (err) {
-    say(`${err.message?.includes('fetch') || err.name === 'TypeError' ? 'This page cannot reach OpenStreetMap from here. Run the app locally (app/README.md) to load any place.' : err.message}`);
+    say(`${err.message?.includes('fetch') || err.name === 'TypeError' ? 'This copy cannot reach OpenStreetMap. Run `npm start` in app/ to load any place through the built-in OpenStreetMap API.' : err.message}`);
   }
 });
 
