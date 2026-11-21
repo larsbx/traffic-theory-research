@@ -27,6 +27,8 @@ import BML.Delay
 import BML.GuardedQueue
 import BML.Fixation
 import BML.PathCore
+import BML.StoppedCore
+import BML.CoreMass
 import BML.Profiles
 import BML.Locality
 import BML.Barrier

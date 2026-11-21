@@ -1,6 +1,7 @@
 import BML.Capture
 import BML.Counting
 import BML.Encounters
+import BML.Rigid
 
 /-!
 B7.0–B7.4 for CLASSIC. Corrected classes subtract the number of complete
@@ -185,6 +186,163 @@ theorem corrected_emptyPair_of_sparse (u : Config (Position w h)) (t : Nat)
   simp only [xs, List.length_finRange, List.length_append, List.length_map] at hlength
   change g ≤ carCount w h u + carCount w h u at hlength
   omega
+
+private theorem perm_of_nodup_cover {α : Type} (xs ys : List α)
+    (hn : xs.Nodup) (hcover : xs ⊆ ys) (hlen : ys.length ≤ xs.length) :
+    xs.Perm ys := by
+  classical
+  induction xs generalizing ys with
+  | nil =>
+    have hy : ys = [] := List.length_eq_zero_iff.mp (by simpa using hlen)
+    subst ys
+    exact List.Perm.refl []
+  | cons a xs ih =>
+    have hn' := List.nodup_cons.mp hn
+    have ha : a ∈ ys := hcover (List.mem_cons_self ..)
+    have hcover' : xs ⊆ ys.erase a := by
+      intro b hb
+      have hba : b ≠ a := fun he => hn'.1 (he ▸ hb)
+      exact (List.mem_erase_of_ne hba).mpr (hcover (List.mem_cons_of_mem a hb))
+    have hlen' : (ys.erase a).length ≤ xs.length := by
+      rw [List.length_erase]
+      simp only [ha, ↓reduceIte]
+      simp only [List.length_cons] at hlen
+      omega
+    exact ((ih (ys.erase a) hn'.2 hcover' hlen').cons a).trans
+      (List.perm_cons_erase ha).symm
+
+private theorem eq_of_nodup_map {α β : Type} (f : α → β) (xs : List α)
+    (hn : (xs.map f).Nodup) (p q : α) (hp : p ∈ xs) (hq : q ∈ xs)
+    (he : f p = f q) : p = q := by
+  induction xs with
+  | nil => simp at hp
+  | cons a xs ih =>
+    have hn' := List.nodup_cons.mp hn
+    rcases List.mem_cons.mp hp with rfl | hpTail
+    · rcases List.mem_cons.mp hq with rfl | hqTail
+      · rfl
+      · exact (hn'.1 (List.mem_map.mpr ⟨q, hqTail, he.symm⟩)).elim
+    · rcases List.mem_cons.mp hq with rfl | hqTail
+      · exact (hn'.1 (List.mem_map.mpr ⟨p, hpTail, he⟩)).elim
+      · exact ih hn'.2 hpTail hqTail
+
+/-- The equality regime has alternating occupied and empty corrected
+classes, with exactly one actual car in each occupied class. -/
+def CorrectedAlternating (u : Config (Position w h)) (t : Nat) : Prop :=
+  (∀ i, CorrectedOccupied hw u t i ↔
+    ¬ CorrectedOccupied hw u t (cyclicNext g hg i)) ∧
+  (∀ p q, u p ≠ .empty → u q ≠ .empty →
+    correctedClass hw t p = correctedClass hw t q → p = q)
+
+/-- B7.6 saturation. With at most g/2 cars and no empty adjacent pair,
+the car classes and their predecessors cover g classes using at most g
+entries. They therefore have no repetitions: occupied classes alternate,
+and two actual cars cannot share an occupied corrected class. -/
+theorem corrected_alternating_of_no_emptyPair (u : Config (Position w h)) (t : Nat)
+    (hm : 2 * carCount w h u ≤ g)
+    (hnone : ∀ i, ¬ CorrectedEmptyPair hw u t i) :
+    CorrectedAlternating hw u t := by
+  classical
+  let xs := (occupiedCells w h u).map (correctedClass hw t)
+  have hmem (i : Fin g) : i ∈ xs ↔ CorrectedOccupied hw u t i := by
+    simp only [xs, List.mem_map, mem_occupiedCells, CorrectedOccupied]
+  have hcover : List.finRange g ⊆ xs ++ xs.map (cyclicPrev g hg) := by
+    intro i _
+    by_cases hi : i ∈ xs
+    · exact List.mem_append_left _ hi
+    · have hj : cyclicNext g hg i ∈ xs := by
+        apply Classical.byContradiction
+        intro hj
+        exact hnone i ⟨mt (hmem i).mpr hi, mt (hmem _).mpr hj⟩
+      exact List.mem_append_right _ (List.mem_map.mpr ⟨_, hj, cyclicPrev_next g hg i⟩)
+  have hlen : (xs ++ xs.map (cyclicPrev g hg)).length ≤ (List.finRange g).length := by
+    simp only [xs, List.length_append, List.length_map, List.length_finRange]
+    change carCount w h u + carCount w h u ≤ g
+    omega
+  have hnodup := (List.nodup_finRange g).perm
+    (perm_of_nodup_cover _ _ (List.nodup_finRange g) hcover hlen)
+  obtain ⟨hxs, _, hdisjoint⟩ := List.nodup_append.mp hnodup
+  constructor
+  · intro i
+    constructor
+    · intro hi hj
+      exact hdisjoint i ((hmem i).mpr hi) i
+        (List.mem_map.mpr ⟨_, (hmem _).mpr hj, cyclicPrev_next g hg i⟩) rfl
+    · intro hj
+      exact Classical.byContradiction (fun hi => hnone i ⟨hi, hj⟩)
+  · intro p q hp hq he
+    exact eq_of_nodup_map (correctedClass hw t) (occupiedCells w h u) hxs p q
+      ((mem_occupiedCells w h u p).mpr hp) ((mem_occupiedCells w h u q).mpr hq) he
+
+/-- In an alternating singleton-class configuration every actual car
+moves in the following CLASSIC round. The north target is checked after
+the east phase; a potential east entrant would share the north car's
+corrected class, contradicting singleton occupancy. -/
+theorem corrected_alternating_allMove (u : Config (Position w h)) (t : Nat)
+    (ha : CorrectedAlternating hw u t) : AllMove E N u := by
+  classical
+  constructor
+  · intro p hp
+    have hempty := (ha.1 (correctedClass hw t p)).mp ⟨p, by simp [hp], rfl⟩
+    refine ⟨hp, Classical.byContradiction (fun htarget => hempty ?_)⟩
+    exact ⟨(E).next p, htarget, target_class hw t p ((E).next p) (phaseIndex_east w h hw p)⟩
+  · intro p hp
+    have hn : u p = .north :=
+      (other_species_unchanged E .east u p .north (by decide) (by decide)).mp hp
+    have hempty := (ha.1 (correctedClass hw t p)).mp ⟨p, by simp [hn], rfl⟩
+    have hq : u ((N).next p) = .empty := by
+      apply Classical.byContradiction
+      intro htarget
+      exact hempty ⟨(N).next p, htarget,
+        target_class hw t p ((N).next p) (phaseIndex_north w h hw hh p)⟩
+    have hsource : u ((E).prev ((N).next p)) ≠ .east := by
+      intro he
+      have heq := ha.2 ((E).prev ((N).next p)) p (by simp [he]) (by simp [hn])
+        (same_class_eastPrev_northNext hw hh t p)
+      rw [heq, hn] at he
+      cases he
+    exact ⟨hp, by simp [halfStep, Species.cell, hq, hsource]⟩
+
+/-- Inclusive sparse configurations without an empty corrected pair move
+every car in the next complete CLASSIC round. -/
+theorem corrected_allMove_of_no_emptyPair (u : Config (Position w h)) (t : Nat)
+    (hm : 2 * carCount w h u ≤ g)
+    (hnone : ∀ i, ¬ CorrectedEmptyPair hw u t i) : AllMove E N u :=
+  corrected_alternating_allMove hw hh u t
+    (corrected_alternating_of_no_emptyPair hw u t hm hnone)
+
+/-- Once all corrected adjacent pairs contain a car, no empty pair can
+appear in a later CLASSIC round. This is the contrapositive of B7.3. -/
+theorem corrected_no_emptyPair_step (u : Config (Position w h)) (t : Nat)
+    (hnone : ∀ i, ¬ CorrectedEmptyPair hw u t i) :
+    ∀ i, ¬ CorrectedEmptyPair hw (torusStep w h hw hh u) (t + 1) i :=
+  fun i hpair => hnone i (corrected_emptyPair_backwards hw hh u t i hpair)
+
+/-- The alternating singleton-class regime is preserved by the actual
+east-then-north CLASSIC update, under the inclusive population bound. -/
+theorem corrected_alternating_step (u : Config (Position w h)) (t : Nat)
+    (hm : 2 * carCount w h u ≤ g) (ha : CorrectedAlternating hw u t) :
+    CorrectedAlternating hw (torusStep w h hw hh u) (t + 1) := by
+  apply corrected_alternating_of_no_emptyPair hw _ (t + 1)
+  · simpa only [torusStep_carCount] using hm
+  · apply corrected_no_emptyPair_step hw hh u t
+    intro i hp
+    exact hp.1 ((ha.1 i).mpr hp.2)
+
+/-- At any time after an inclusive sparse state has no empty corrected
+pair, every car moves in every subsequent CLASSIC round. -/
+theorem corrected_no_emptyPair_perpetual_allMove (u : Config (Position w h)) (t : Nat)
+    (hm : 2 * carCount w h u ≤ g)
+    (hnone : ∀ i, ¬ CorrectedEmptyPair hw u t i) (n : Nat) :
+    AllMove E N (iterate (torusStep w h hw hh) n u) := by
+  have ha : CorrectedAlternating hw (iterate (torusStep w h hw hh) n u) (t + n) := by
+    induction n with
+    | zero => exact corrected_alternating_of_no_emptyPair hw u t hm hnone
+    | succ n ih =>
+      have hsize : 2 * carCount w h (iterate (torusStep w h hw hh) n u) ≤ g := by
+        simpa only [iterate_torusStep_carCount] using hm
+      exact corrected_alternating_step hw hh _ (t + n) hsize ih
+  exact corrected_alternating_allMove hw hh _ (t + n) ha
 
 end
 
