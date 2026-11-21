@@ -273,8 +273,82 @@ car of x moves infinitely often in y:
 |---|---|---|---|---|---|
 | genuine un-jamming pairs | **0** | 24 | 460 | 17 952 | 18 108 |
 
-On every torus with ≤ 6 cells (apart from 1×n, which never un-jams), un-jamming is only ever the
-added car itself; the 4×2 witness above lives on the smallest torus where a genuine pair occurs.
+On 2×2, 2×3, 3×2 and 3×3, un-jamming is only ever the added car itself. The boundary is side
+length, not cell count: 3×3 has 9 cells and only trivial pairs, while 2×4 (8 cells) already has
+genuine ones. Theorem U below gives the complete classification.
+
+**Theorem U (genuine un-jamming).** Call a pair (x, y = x + one car) *genuine* if x eventually
+gridlocks, y never does, and some original car of x moves infinitely often in y. On the W×H
+torus:
+
+1. if min(W, H) = 1, adding a car never turns a gridlocking configuration into a
+   non-gridlocking one;
+2. if W, H ∈ {2, 3}, un-jamming pairs exist but none is genuine;
+3. if min(W, H) ≥ 2 and max(W, H) ≥ 4, genuine pairs exist.
+
+*Proof of 1.* Say H = 1. Every N car's north cell is itself, so it never moves, and nothing can
+enter its cell.
+- If x has an N car, y has the same permanent obstacle. The E cars of the single ring then pile
+  up behind it, so y gridlocks.
+- If x has no N car, x is a single-species ring. Such a ring gridlocks only when it is full, so
+  no car can be added.
+
+W = 1 is symmetric. (`tests/test_nonmonotone.py` also checks every addition on 1×n and n×1,
+n ≤ 8.)
+
+*Proof of 2.* This is a finite enumeration: the identity-tracking census above covers every
+gridlocking x and every single-car addition on these four tori.
+
+*Proof of 3 (gated column, W ≥ 4).* Use columns C₀, C₁, C₂ and C_{W−1}, which are distinct
+because W ≥ 4. Let x be:
+- C₀: N cars in rows 1…H−1, with a hole at row 0;
+- C₁: a single N car at row 0;
+- C₂: full N;
+- C_{W−1}: full E;
+- every other cell empty.
+
+Let y be x plus an N car at (0, 0).
+
+*y never gridlocks.* In y, C₀ and C₂ are full N rings, so their cars never move and nothing
+enters them. E cars reach C₁ only from C₀, which never contains one. So C₁ holds only its
+original N car and H − 1 ≥ 1 holes, and that car moves at every round forever.
+
+*x gridlocks.*
+1. Cars never change their lane of travel. E cars move only from C_{W−1} into C₀ and from C₀
+   into C₁. Out of C₁ they are blocked forever by C₂, which stays full of N cars that never move.
+   So each E car moves at most twice, and on the terminal cycle of x no E car moves.
+2. Fix that cycle. Suppose C₁ held no E car on it. Then its N car would move at every round.
+   - Every cell of C₁ would be empty at some east phase. So no E car of C₀ could stay blocked,
+     and C₀ would hold no E car either.
+   - C₀ would then be H − 1 N cars and one hole, and that hole passes every row. So no E car of
+     C_{W−1} could stay blocked, and C_{W−1} would be empty.
+   - All H E cars would then be in C₁, a contradiction. So C₁ holds an E car on the cycle.
+3. If C₀ held no E car on the cycle, the same hole argument would empty C_{W−1}. Then C₁ would
+   hold all H E cars plus its N car, which is H + 1 > H cells.
+4. So both C₀ and C₁ contain a permanent E obstacle, and their N cars stop moving. In a ring
+   with a permanent obstacle, a car moving forever would have to pass through it. C_{W−1}'s
+   E cars and C₂ are stationary as well.
+5. The cycle is therefore a nonempty fixed point: x gridlocks.
+
+*Gated row, H ≥ 4.* Exchange rows with columns and E with N:
+- R₀: E cars in columns 1…W−1, with a hole at column 0;
+- R₁: a single E car at column 0;
+- R₂: full E;
+- R_{H−1}: full N.
+
+y adds an E car at (0, 0). The same argument applies verbatim with the species swapped, and it
+does not use the order of the two phases. ∎
+
+**Evidence.**
+- `bml.nonmonotone.gated_witness` builds both families. `tests/test_nonmonotone.py` checks them
+  exactly on every shape with sides 2–10 and max side ≥ 4: Floyd cycle detection for x and y,
+  plus identity replay for the original mover.
+- A random search additionally certified genuine witnesses on all 45 such shapes up to 8×8. On
+  many of them every original car revives, for example all 20 on 6×6.
+
+The gate needs four distinct lanes: the gate, the free lane, the blocker and the feeder. That
+explains why the smallest genuine examples need a side of length 4. Case 2 rules out any other
+mechanism on 3×3 by enumeration, not by a structural argument.
 
 On 3×4, one added E car keeps **all seven** original cars moving forever. Without it they all
 freeze. Rows below are printed north to south, `>` = E and `^` = N:
@@ -803,7 +877,8 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
 3. **Literature and novelty.** The Austin–Benjamini rule correspondence is resolved (§5b).
    The remaining literature questions include the complete rectangular capacity
    formula and the scope of [HBK]. The 2/3 value and gcd obstruction have prior literature.
-4. **Why is un-jamming trivial on tori with ≤ 6 cells?** Is there a structural reason (§4)?
+4. ~~Why is un-jamming trivial on small tori?~~ Resolved by Theorem U (§4): genuine un-jamming
+   exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4. Lean formalisation: blueprint B8.
 5. Extend the exhaustive tables to 4×5 (3²⁰ ≈ 3.5·10⁹ states). That needs a symmetry quotient
    (translations × species-preserving symmetries).
 
