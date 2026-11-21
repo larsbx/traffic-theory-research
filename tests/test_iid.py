@@ -103,7 +103,8 @@ def test_jams_agrees_with_classifier_on_every_state(h, w):
     assert (jams(states) == (c.cls == JAM)).all()
 
 
-EXT = json.loads((ROOT / "data" / "exhaustive-17-22.json").read_text())
+EXT = (json.loads((ROOT / "data" / "exhaustive-17-22.json").read_text())
+       + json.loads((ROOT / "data" / "exhaustive-24-25.json").read_text()))
 
 
 @pytest.mark.parametrize("h,w", [(2, 3), (3, 3), (2, 4), (3, 4), (4, 4), (2, 8), (1, 7)])
@@ -115,8 +116,8 @@ def test_native_classifier_matches_numpy_tables(h, w):
 
 
 @pytest.mark.parametrize("r", EXT, ids=lambda r: f"{r['h']}x{r['w']}")
-def test_extended_tables_17_to_22_cells(r):
-    """Exhaustive tables for every shape with 17–22 cells (bml.native): totals, G1, F, and the
+def test_extended_tables_17_to_25_cells(r):
+    """Exhaustive tables for every shape with 17–22 cells and the 24/25-cell shapes (bml.native): totals, G1, F, and the
     monotonicity facts recorded in the finite iid monotonicity note."""
     from bml.extremal import max_free, min_gridlock
     from bml.iid import certify_positive_derivative
@@ -128,7 +129,7 @@ def test_extended_tables_17_to_22_cells(r):
     jam = {n: v["jam"] for n, v in t.items()}
     not_free = {n: v["jam"] + v["mixed"] for n, v in t.items()}
     assert certified_nondecreasing(not_free, N)
-    if (h, w) in {(2, 11), (11, 2)}:
+    if (h, w) in {(2, 11), (11, 2), (2, 12), (12, 2)}:
         b = level_fractions(jam, N)
         assert b[7] < b[6] and not certified_nondecreasing(jam, N)
         assert certify_positive_derivative(jam, N) is not None      # yet q(p) is increasing

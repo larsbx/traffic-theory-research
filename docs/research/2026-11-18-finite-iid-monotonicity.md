@@ -5,8 +5,8 @@ asks whether the iid-averaged jam probability q_L(p) is monotone in the density 
 [probability note](2026-11-18-probabilistic-gridlock-bounds.md#6-non-monotonicity-configurations-and-probabilities-are-different)
 disproves monotonicity configuration by configuration, and for the mixed-cycle event M. It
 leaves q_L itself open. This note settles the finite-size question exactly for every torus
-with W·H ≤ 22: q is strictly increasing there. It also shows exactly that the stronger
-fixed-count statement fails on 2×11, 2×12 and 2×14. It makes no asymptotic claim and no novelty
+with W·H ≤ 22, on every 24-cell shape and on 5×5: q is strictly increasing there. It also shows exactly that the stronger
+fixed-count statement fails on 2×11, 2×12 and 2×14 (and their transposes). It makes no asymptotic claim and no novelty
 claim.
 
 CLASSIC rule throughout. The iid law μ_p puts E, N or nothing in each cell with probabilities
@@ -127,9 +127,24 @@ exactly the dip b₇ < b₆ found by `bml.levels`, and it gives every other leve
 - Negative control: the certificate rejects the 3×3 mixed-cycle probability m₃, which
   decreases near p = 1.
 
-**Theorem (extended).** On every torus with W·H ≤ 22, q(p) = P_p(J) is strictly increasing on
-(0, 1]. On every such shape except 2×11 and 11×2 the stronger fixed-count monotonicity of b
-also holds. The fraction "never reaches free flow" is nondecreasing in n on all of them.
+**Theorem (extended).** q(p) = P_p(J) is strictly increasing on (0, 1] on:
+- every torus with W·H ≤ 22;
+- all six 24-cell shapes 2×12, 12×2, 3×8, 8×3, 4×6 and 6×4;
+- the 5×5 torus (3²⁵ ≈ 8.5·10¹¹ states, 57 minutes).
+
+The stronger fixed-count monotonicity of b fails only on 2×11, 11×2, 2×12 and 12×2. On each of
+those the only decrease is at the step n = 6 → 7, and the 2×12 counts agree with `bml.levels`.
+There q is still certified increasing, after one degree raise on 2×11 and two on 2×12. The
+fraction "never reaches free flow" is nondecreasing in n on every one of these shapes.
+
+**5×5, the first exact square beyond 4×4.**
+- G1 gives a least gridlock of 5 cars and F a densest free flow of 15, as predicted.
+- q(p) crosses ½ at p ≈ 0.669, and q(0.3) ≈ 0.0012, q(0.5) ≈ 0.089, q(0.7) ≈ 0.600.
+- On this small torus, intermediate (MIXED) outcomes dominate far below jamming:
+  P(never free) ≈ 0.65 already at p = 0.3. So the ½-crossing of q is a finite-size number, not
+  an estimate of a large-L threshold.
+
+The 24- and 25-cell tables are in `data/exhaustive-24-25.json`.
 
 **The compiled classifier.** It stores two 32-bit masks per state, one for east cars and one
 for north cars, so a round is a handful of bit operations. It enumerates each translation
