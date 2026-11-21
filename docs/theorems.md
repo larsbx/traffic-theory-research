@@ -914,6 +914,11 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
 2. **Control formation of blocking loops under μ_p.** Section 8 gives the initial counting
    bound and explains the missing dynamical estimate. Do not treat a finite-time simulation
    or an iid count at time zero as an eventual-probability bound.
+   The [late-formation measurements](research/2026-11-21-late-formation.md) show the size of
+   the gap. At p ≤ 0.5 no mixed cycle formed within log L rounds (about 1,380 formations,
+   L ≤ 128), and formation takes order L rounds or longer near the threshold. At p ≥ 0.9 it is
+   logarithmic, the same order as the proven guarded-barrier delay. Evidence only.
+
 3. **Literature and novelty.** The Austin–Benjamini rule correspondence is resolved (§5b).
    The 2/3 value and the gcd obstruction have prior literature, and the sparse speed-one bound
    is prior art in [KTY] (m ≤ gcd/2). The search for the complete rectangular capacity formula
