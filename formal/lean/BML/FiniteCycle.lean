@@ -62,6 +62,28 @@ theorem exists_minimum_le (P : Nat → Prop) (n : Nat) (hn : P n) :
       exact ⟨k, hk, by omega, hminimal⟩
     · exact ⟨n, hn, Nat.le_refl n, fun j hj hjP => hsmaller ⟨j, hj, hjP⟩⟩
 
+/-- From an attained minimum of a natural-valued budget onward, no further
+movement can spend a positive unit of it. -/
+theorem eventually_zero_cost (rank cost : Nat → Nat)
+    (hbalance : ∀ t, rank (t+1) + cost t = rank t) :
+    ∃ start, ∀ t, cost (start + t) = 0 := by
+  obtain ⟨k, ⟨start, hs⟩, _, hmin⟩ :=
+    exists_minimum_le (fun k => ∃ t, rank t = k) (rank 0) ⟨0, rfl⟩
+  have hlow (t : Nat) : k ≤ rank t :=
+    Nat.le_of_not_gt (fun ht => hmin (rank t) ht ⟨t, rfl⟩)
+  have heq (t : Nat) : rank (start + t) = k := by
+    induction t with
+    | zero => exact hs
+    | succ t ih =>
+      have hb := hbalance (start + t)
+      have hl := hlow (start + t + 1)
+      change rank (start + t + 1) = k
+      omega
+  refine ⟨start, fun t => ?_⟩
+  have hb := hbalance (start+t)
+  rw [heq t, show start + t + 1 = start + (t+1) by omega, heq (t+1)] at hb
+  omega
+
 /-- A minimal positive return time gives a simple orbit, with no repeated vertex. -/
 theorem minimal_period_nodup (f : α → α) (p : α) (k : Nat)
     (hreturn : iterate f k p = p)

@@ -34,7 +34,7 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
 | B6 | TRAIN eventual speed one on sparse N×N squares | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `Train/Diagonals`, `Train/FreeFlow`, actual diagonal transport/release |
 | B7 | CLASSIC eventual speed one for 2m<gcd(W,H) | kernel-checked full movement from round lcm(W,H)·m(g−2) onward and at most m(g−2) blocked rounds per prefix | B2 geometry, B3 finite free window, CLASSIC transport and car count |
-| B8 | Theorem U: genuine un-jamming exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4 | existence proved in Lean for both orientations; exclusions remain prose and exhaustive Python evidence | Kernel, Transport, Lanes, Enumeration, Fixation |
+| B8 | Theorem U: genuine un-jamming exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4 | kernel-checked dimension classification, including both exclusions | Kernel, Transport, Lanes, Enumeration, Fixation |
 
 ---
 
@@ -633,9 +633,34 @@ witnesses satisfy the stronger condition of that car moving every round.
 
 | Clause | Status |
 | --- | --- |
-| U1, `min(w,h) = 1` | Prose proof in [Theorem U](../docs/theorems.md), with every addition checked on both orientations with sides up to 8. The general Lean exclusion is open. |
-| U2, `w,h ∈ {2,3}` | Exhaustive Python identity census on all four rectangles. A Lean-checked exclusion needs a verified finite enumeration with coverage of every single-car addition and recurrent original identity. |
+| U1, `min(w,h) = 1` | `BML.singleton_side_preserves_eventual_jam` proves that filling any initial hole preserves eventual gridlock. |
+| U2, `w,h ∈ {2,3}` | `BML.Gated.no_genuine_unjamming_small` checks an exhaustive finite certificate. `exists_ordinary_unjamming` gives a pair on each shape. |
 | U3, `2 ≤ w`, `2 ≤ h`, `4 ≤ max w h` | `BML.Gated.exists_genuine_unjamming` proves existence under these hypotheses in the actual CLASSIC kernel. |
+
+The combined theorem `BML.Gated.genuine_unjamming_iff` proves the two
+dimension inequalities are necessary and sufficient on positive CLASSIC
+tori. See [`TheoremU.lean`](lean/BML/TheoremU.lean).
+
+**Singleton sides.** A hole and the absence of the parked species would
+force an eventually jammed board to have both a moving-species car and a
+hole in a mixed lane. Such a lane always has a mover. Therefore a parked
+car is present and survives the addition. Its axis wraps back to itself.
+Every tag of the other species has a bounded cyclic distance to this
+obstacle, decreasing by one on each move. All tags eventually stop.
+[`ThinTorus.lean`](lean/BML/ThinTorus.lean)
+
+**Small tori.** Translating the addition to the origin gives 7,074 initial
+boards with an empty origin across the four shapes. Both added species are
+covered. Each certificate checks that a board fixed after round 12 was
+already fixed after round 11. Induction gives a cutoff for every eventual
+jam. For a board fixed at the cutoff, the modified board either jams by
+round 11 or the board and the added tag return between rounds 3 and 9.
+During these six rounds all movers are at the tracked tag. Recurrence and
+injectivity of the actual car trace exclude late motion by any original car.
+The packed transition agrees with both CLASSIC phases through verified
+read indices. Lean checks all four finite certificates in the kernel.
+[`SmallUnjamming.lean`](lean/BML/SmallUnjamming.lean)
+[`PackedKernel.lean`](lean/BML/PackedKernel.lean)
 
 **B8.1–B8.2, closed gate.**
 [`Gated.lean`](lean/BML/Gated.lean) defines `gatedX` and `gatedY` for
