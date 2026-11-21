@@ -189,6 +189,31 @@ car and at most `m(g−2)` rounds containing a block. The proof uses actual
 two-phase transport, corrected diagonal classes, and empty pairs that
 persist backwards. See [blueprint B7](../formal/blueprint.md#b7-classic-low-density-speed-one).
 
+*Prior art, and the equality case 2m = g.* [Kozlov–Tatashev–Yashina][KTY], Theorem 1, proves
+free movement from every initial state when m ≤ d/2, with d = gcd(N₁, …, N_n), on n-dimensional
+tori. For their stochastic parameter q = 0 the model is "the classical version of the BML
+model": within a step, type 1 moves first, then type 2, and a type-2 particle may enter a cell
+that a type-1 particle has just vacated. That matches CLASSIC rounds. The paper's text does not
+make the within-type semantics explicit (CLASSIC versus queue/TRAIN movement), so the
+correspondence is checked only up to that point. B7's strict bound 2m < g is a special case of
+their m ≤ d/2.
+
+The equality case also follows from the B7 argument with one more lemma, together with the
+same bound m(g−2):
+- **Alternating state.** Suppose 2m = g and there is no empty pair at time T. Then the occupied
+  corrected classes alternate and each holds exactly one car. Every car then has an empty class
+  ahead, so by release (B7.1) it moves. Corrected classes are unchanged, so the state stays
+  alternating, and every later round is free.
+- **Before that.** The alternating times therefore form a final segment [T*, ∞). Before T*, every
+  time has an empty pair, and B7.5's per-car bound g − 2 applies.
+- **Numerical check.** Every rooted configuration with m = g/2 on 4×4, 6×6, 4×8, 8×4 and 6×12
+  reaches speed one, with at most 2 blocks per car.
+- **Sharpness.** On 4×4, m = g/2 + 1 = 3 already admits non-free configurations
+  (`data/exhaustive.json`).
+
+This equality extension is prose and finite evidence only. It is recorded as blueprint
+obligation B7.6 for Lean.
+
 ## 3. Theorem G2 (no forced gridlock below full density)
 
 **Claim.** For every positive W,H and every 0 ≤ n < WH, some n-car configuration
@@ -869,7 +894,8 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
    coverage. R includes a finite lcm-window criterion and lcm return; F includes
    static, perpetual, and eventual existence spectra. The separate TRAIN threshold T
    and sparse-square speed-one theorem are fully proved. CLASSIC B7 proves eventual
-   full movement and bounds blocked rounds under `2m < gcd(W,H)`.
+   full movement and bounds blocked rounds under `2m < gcd(W,H)`. The inclusive case 2m ≤ g, which
+   is prior art in [KTY], is proved in prose (§2) and open for Lean as B7.6.
    See the precise [coverage register](../formal/README.md).
 2. **Control formation of blocking loops under μ_p.** Section 8 gives the initial counting
    bound and explains the missing dynamical estimate. Do not treat a finite-time simulation
@@ -885,6 +911,8 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
    hold on all of them. Reflections are not symmetries, because they reverse the flow.
 
 ## References checked on 2026-11-18
+
+- [KTY] A. Kozlov, A. Tatashev, M. Yashina, *Sufficient Loading Conditions for Self-organization in the n-dimensional Version of BML Model with Stochastic Direction Choice*, arXiv:2310.02291 (2023), Theorem 1 (m ≤ d/2); classical BML at q = 0. Checked 2026-11-21 from the arXiv HTML text.
 
 - [BML] O. Biham, A. A. Middleton, D. Levine, *Self Organization and a Dynamical Transition
   in Traffic Flow Models*, Physical Review A 46 (1992), R6124–R6127. Model I, pp. 2–3;
@@ -909,3 +937,4 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
 [DS]: https://doi.org/10.1103/PhysRevE.71.066112
 [YT]: https://arxiv.org/pdf/2311.17120
 [HBK]: https://arxiv.org/abs/2601.01180
+[KTY]: https://arxiv.org/abs/2310.02291

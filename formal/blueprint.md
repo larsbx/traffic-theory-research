@@ -594,6 +594,7 @@ class modulo `g`.
 | B7.3 | `corrected_emptyPair_backwards`, `corrected_emptyPair_before` | Survival excludes a predecessor-time occupant of the second class. Release then excludes one in the first class. Induction gives the same pair throughout a finite prefix. |
 | B7.4 | `corrected_emptyPair_of_sparse` | Without an empty pair, the occupied list and its cyclic predecessors would cover all `g` classes with at most `2m` entries. Conservation applies the argument at each time. |
 | B7.5 | `low_density_tag_block_bound` | Cut at the first class of an empty pair at time `T`. An original car's rotated class stays between 1 and `g−1` through `T`. Its distance drops by one for each blocked round, so its block count is at most `g−2`. |
+| B7.6 (open) | *not yet in Lean* | **Inclusive case 2m ≤ g.** If 2m = g and no empty pair exists at time T, the occupied corrected classes alternate with one car each. B7.1 then moves every car, corrected classes are preserved, and the state stays alternating. So alternating times form a final segment [T*,∞); before T* an empty pair exists at each time and B7.5 applies, giving the same bound m(g−2). Prior art: [KTY] Theorem 1 (m ≤ d/2, classical BML at q = 0). Evidence: every rooted m = g/2 configuration on 4×4, 6×6, 4×8, 8×4 and 6×12. |
 
 [BML/SparseDynamics.lean](lean/BML/SparseDynamics.lean) proves the class and
 empty-pair lemmas. [BML/SparseSpeed.lean](lean/BML/SparseSpeed.lean) sums the
