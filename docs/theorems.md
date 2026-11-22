@@ -910,7 +910,7 @@ increasing (exact certificate). This settles nothing asymptotically.
 
 **Theorem M (thin-torus non-monotonicity).** For every W ≥ 24, q(p) is *not* monotone on the
 2×W and W×2 tori. The argument has two parts:
-- **Structure.** A jam with fewer than W cars needs a plug, a short line of two short-axis cars.
+- **Structure.** A jam with fewer than W long-axis cars needs a plug, a short line of two short-axis cars.
   Plugs never form or dissolve. Every lone short-axis car must be caught by a queue, so each gap
   between plugs needs at least as many long-axis cars as its farthest lone car's distance.
 - **Bounds.** This gives exact bounds L_W ≤ q ≤ U_W. Exact certificates give L_W(p₁) > U_W(p₂)
@@ -920,6 +920,17 @@ See the [thin-torus note](research/2026-11-21-thin-torus-nonmonotonicity.md),
 `bml.thin`, `data/thin-nonmonotone.json` and `scripts/thin_certificates.py`. Monte Carlo with
 exact classification suggests that 2×15 (30 cells) is already non-monotone and 2×14 is not.
 The smallest non-monotone torus is unknown; it has between 23 and 48 cells.
+
+**Theorem P (no jammed phase on thin tori).** For every fixed p < 1, q_{2×W}(p) ≤ C·W·ρ^W with
+ρ < 1, so the jam probability tends to 0 and the thin-torus critical density is p_c = 1.
+- A blocking cycle other than a plug winds once around the torus and carries exactly W long-axis
+  cars. That has probability ≤ (p(2−p))^W.
+- With a plug present, the gap condition is necessary, and its probability decays by the renewal
+  bound.
+
+Explicit rates for p ≤ 49/50 are certified exactly. This contrasts with [AHM], where squares jam
+with probability → 1 at high density. See §5 of the
+[thin-torus note](research/2026-11-21-thin-torus-nonmonotonicity.md).
 
 ## 9. Next targets
 

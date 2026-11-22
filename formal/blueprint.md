@@ -765,11 +765,12 @@ column.
 | Part | Statement | Argument and dependencies |
 |---|---|---|
 | B10.1 | Rows of east cars, columns of north cars, and the column north counts are invariant under `f`; plug cells are fixed, and no east car ever occupies a plug column. | Species transport (`Transport`), lane invariants (`Lanes`). |
-| B10.2 | If `f x = x`, `x ≠ empty` and `carCount x < w`, then `x` has a plug column. | Blocker map on a fixed point (G0). A simple blocker cycle has east count ≡ 0 mod `w` and north count ≡ 0 mod 2, and a cycle in one column is a plug. A finite function has a cycle. |
-| B10.3 | Gap condition is necessary: jam with `carCount < w` implies a plug, and for each gap, east cars in the gap ≥ distance of the farthest lone column. | B10.1, B10.2. Follow the blocker orbit east from the other cell of the farthest lone column to the next plug, and count cars column by column (two in every lone column). |
+| B10.2 | If `f x = x` and `x ≠ empty`, then either `x` has a plug and every blocker cycle is a plug, or `x` has a winding cycle with exactly `w` east cars and no plug. In particular, fewer than `w` east cars implies a plug. | Blocker map on a fixed point (G0). A simple cycle has east count ≡ 0 mod `w` and north count ≡ 0 mod 2. A cycle in one column is a plug. A winding cycle has east count exactly `w`, meets every column, and is disjoint from plug cycles. |
+| B10.3 | Gap condition is necessary: a jam with fewer than `w` east cars implies a plug, and for each gap, east cars in the gap ≥ distance of the farthest lone column. | B10.1, B10.2. Follow the blocker orbit east from the other cell of the farthest lone column to the next plug, and count cars column by column (two in every lone column). |
 | B10.4 | A plug and no lone column implies eventual nonempty gridlock. | Potential: the sum of east-car positions along each gap path rises with every move and is bounded; then G0. |
 | B10.5 | Initial-law identities: `P(plug ∧ no lone) = (a+c)^w − c^w`, and `P(gap condition)` equals the cyclic renewal sum of `bml.thin.gap_event`. | Finite sums over iid columns (`FiniteSums`, `Counting`). With cleared denominators, as in B9.5. |
 | B10.6 | (Optional) the certificates: for each `24 ≤ w ≤ 79` the stored rationals satisfy `lower w p₁ > upper w p₂`, and the asymptotic inequality at `w = 80`. | Exact rational evaluation; heavy for `decide`. Python checks them exactly (`scripts/thin_certificates.py`), so the Lean value is in B10.1–B10.5. |
+| B10.7 | Theorem P: for `0 ≤ p < 1`, `q_w(p) → 0`. | B10.3, B10.5, then analysis: a Chernoff bound for `Bin(2w, p/2) ≥ w`, and the renewal bound `Γ_w ≤ w z^{-w}/(1-β(z))` with `β(1) < 1` and radius `> 1`. Real-analysis layer; can be stated for each rational `p` with the certified `(θ, z)` instead. |
 
 `tests/test_thin.py` checks B10.3 and B10.4 on every state of 2×3 to 2×5 and their transposes, and
 B10.5 by enumeration.

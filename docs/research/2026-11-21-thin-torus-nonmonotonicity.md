@@ -1,6 +1,6 @@
-# The jam probability is not monotone on thin tori
+# Thin tori: the jam probability is not monotone, and there is no jammed phase
 
-**Research note — 21 November 2026. Theorem with exact certificates; no novelty claim.**
+**Research note — 21 November 2026, extended 22 November (§5). Theorems with exact certificates; no novelty claim.**
 
 The [finite iid monotonicity note](2026-11-18-finite-iid-monotonicity.md) proves that the iid
 jam probability q(p) = P_p(J) is strictly increasing in p on every torus with W·H ≤ 22, on every
@@ -9,8 +9,11 @@ jam probability q(p) = P_p(J) is strictly increasing in p on every torus with W�
 > **Theorem M.** For every W ≥ 24, the iid jam probability q of the CLASSIC 2×W torus (and of
 > the W×2 torus) is not monotone on [0, 1]. Some p₁ < p₂ have q(p₁) > q(p₂).
 
-The cause is a rigidity of thin tori. On a torus two cells high, a jam with fewer than W cars
-needs a column holding two north cars, a **plug**. Plugs can neither form nor dissolve. Every
+> **Theorem P (§5).** For every fixed p ∈ [0, 1), q_W(p) → 0 exponentially fast as W → ∞. On
+> thin tori gridlock switches on only at p = 1.
+
+The cause is a rigidity of thin tori. On a torus two cells high, a jam with fewer than W east
+cars needs a column holding two north cars, a **plug**. Plugs can neither form nor dissolve. Every
 other north car must be caught by a queue reaching back from a plug, and long queues are
 improbable. So q rises to about e⁻²/W near p = 2/W, then falls exponentially in W at moderate p,
 and rises again only near p = 1.
@@ -39,14 +42,24 @@ cell, which stays occupied. An E car could enter a plug column only into an occu
 Following each car to the car ahead of it defines a map on a finite set, so every forward orbit
 ends in a cycle. A simple cycle with a east steps and b north steps has a ≡ 0 (mod W),
 b ≡ 0 (mod 2), and a + b cars. If a = 0, the cycle lies in one two-cell column, so b = 2 and the
-column is a plug. Otherwise it has at least W cars. **So in a fixed point with fewer than W cars
-every blocking cycle is a plug.** ∎
+column is a plug. Otherwise the cycle **winds**: a ≥ W. In fact a = W exactly. A simple cycle
+with a = 2W and b = 0 would stay in one row of W cells, and with b ≥ 2 it would need more than
+2W cells.
 
-**Lemma 3 (necessity).** If a configuration with n < W cars jams, it satisfies the gap condition.
+A winding cycle therefore holds exactly W east cars and passes through every column. It cannot
+share a column with a plug, because a plug's two cells already lie on the plug's own cycle.
+
+**So in a fixed point, either every blocking cycle is a plug, or there is a winding cycle, which
+carries W east cars, and then there is no plug.** In particular, with fewer than W east cars
+every blocking cycle is a plug. ∎
+
+**Lemma 3 (necessity).** If a configuration with fewer than W east cars jams, it satisfies the gap
+condition. (Fewer than W cars is a special case.)
 
 *Proof.* Let y be the nonempty fixed point it reaches.
-1. **There is a plug.** By Lemma 2, y has a plug, and by Lemma 1 the initial configuration has
-   the same plug columns, hence the same gaps.
+1. **There is a plug.** Row E counts are invariant (Lemma 1), so y also has fewer than W east cars.
+   By Lemma 2, y has a plug and every blocking cycle of y is a plug. By Lemma 1 the initial
+   configuration has the same plug columns, hence the same gaps.
 2. **The chain from the farthest lone column.** Take a gap with d = d_max ≥ 1, attained at the
    lone column c = x₀ − d. In y the lone N car of c is blocked, so the other cell of c holds a
    car, which is an E car because c holds one N car. Follow the orbit of that E car under the
@@ -70,7 +83,8 @@ All four lemmas use only the fixed-point structure, the invariants and a potenti
 depends on which species moves first. With axes and species exchanged they hold on W×2, and
 μ_p is symmetric in the species, so everything below holds for W×2 as well.
 `tests/test_thin.py` checks Lemmas 3 and 4:
-- on every state of 2×3, 2×4, 2×5 and their transposes;
+- on every state of 2×3, 2×4, 2×5 and their transposes, at every car count. Jams with W or more
+  east cars and no gap condition do occur there, so the exception in Lemma 3 is needed;
 - on 12,000 random sparse states of 2×9, 2×14 and their transposes.
 
 ## 2. Exact bounds
@@ -79,7 +93,7 @@ depends on which species moves first. With axes and species exchanged they hold 
 
 \[
 L_W(p)=\Bigl(1-p+\tfrac{p^2}{2}\Bigr)^{W}-\Bigl(1-\tfrac p2\Bigr)^{2W}\;\le\;q_W(p)\;\le\;
-P(\mathrm{Bin}(2W,p)\ge W)+\Gamma_W(p)=U_W(p),
+P(\mathrm{Bin}(2W,p/2)\ge W)+\Gamma_W(p)=U_W(p),
 \]
 
 where Γ_W(p) = μ_p(gap condition).
@@ -87,7 +101,7 @@ where Γ_W(p) = μ_p(gap condition).
 *Proof.* Under μ_p the columns are iid: plug with probability a = (p/2)², N-free with
 probability c = (1 − p/2)². By Lemma 4, q is at least the probability that every column is a
 plug or N-free, minus the probability that all are N-free, which is (a + c)^W − c^W. By Lemma 3,
-q ≤ P(n ≥ W) + μ_p(gap condition). ∎
+q ≤ P(#east cars ≥ W) + μ_p(gap condition). The east-car count is Bin(2W, p/2). ∎
 
 **Computing Γ.** Gap contents are iid columns conditioned to be non-plug, so Γ is a renewal sum:
 - **Gap probabilities.** G(g) is the probability that g iid non-plug columns satisfy
@@ -109,18 +123,18 @@ The bounds are tight at low density and loose at moderate density. Monte Carlo e
 | torus | p | L_W(p) | q (Monte Carlo) | U_W(p) |
 |---|---|---|---|---|
 | 2×24 | 0.085 | 0.00602 | 0.00684 | 0.00717 |
-| 2×24 | 0.245 | 0.00111 | 0.00349 | 0.00583 |
+| 2×24 | 0.245 | 0.00111 | 0.00349 | 0.00572 |
 | 2×30 | 0.068 | 0.00475 | 0.00529 | 0.00547 |
-| 2×30 | 0.265 | 0.00020 | 0.00106 | 0.00237 |
+| 2×30 | 0.265 | 0.00020 | 0.00106 | 0.00228 |
 | 2×50 | 0.040 | 0.00279 | 0.00298 | 0.00302 |
-| 2×50 | 0.285 | 6.1·10⁻⁷ | 1.6·10⁻⁵ | 8.3·10⁻⁵ |
+| 2×50 | 0.285 | 6.1·10⁻⁷ | 1.6·10⁻⁵ | 7.8·10⁻⁵ |
 
 ## 3. Proof of Theorem M
 
 **24 ≤ W ≤ 79: exact certificates.** For each W, `data/thin-nonmonotone.json` stores rationals
 p₁ < p₂ with L_W(p₁) > U_W(p₂), checked in exact arithmetic. Then q(p₁) ≥ L(p₁) > U(p₂) ≥ q(p₂).
-- At W = 24: p₁ = 17/200, p₂ = 49/200, with L = 0.00602 against U = 0.00583.
-- At W = 79: p₁ = 1/40, p₂ = 59/200, with L = 0.00175 against U = 4.8·10⁻⁷.
+- At W = 24: p₁ = 17/200, p₂ = 29/100, with L = 0.00602 against U = 0.00550.
+- At W = 79: p₁ = 1/40, p₂ = 9/25, with L = 0.00175 against U = 2.8·10⁻⁷.
 
 **W ≥ 80: one certificate for all.**
 
@@ -148,13 +162,13 @@ b=1-p+\tfrac{p\theta}{2},\ s=b^2,\ w_L=pb,\ w=s+w_L,\ r=w/\theta ,
 which sums in closed form when sz < 1 and rz < 1. Take p₂ = 7/20, θ = 7/5 and z = 117/100. With
 the first K = 60 terms of G exact and this tail, β(z) ≤ 0.7036 exactly.
 
-*Combining.* By Chernoff, P(Bin(2W, p₂) ≥ W) ≤ x^W with x = 4p₂(1 − p₂). It suffices that
+*Combining.* By Chernoff, P(Bin(2W, p₂/2) ≥ W) ≤ x^W with x = p₂(2 − p₂). It suffices that
 
 \[
 W x^{W}+\frac{W^2 z^{-W}}{1-\beta(z)}\ <\ e^{-2}\Bigl(1-\frac1{2W}\Bigr).
 \]
 
-- **At W = 80** this holds exactly: 0.118 < 0.1345, with e⁻² bounded below by a rational from its
+- **At W = 80** this holds exactly: 0.076 < 0.1345, with e⁻² bounded below by a rational from its
   series.
 - **For W ≥ 80** the left side does not increase, since (1 + 1/W)x ≤ 1 and (1 + 1/W)² ≤ z, while
   the right side increases.
@@ -201,15 +215,63 @@ all sit in k ≥ 1 plugs. Its k = 1 term is C(n,2)/((2W−1)·2ⁿ), which decre
 This is a plausible source of the b₆ > b₇ dips on 2×11, 2×12 and 2×14, but the lower bound alone
 does not prove them.
 
-## 5. What this does and does not show
+## 5. No jammed phase on thin tori (Theorem P)
+
+**Theorem P.** For every p ∈ [0, 1) there are C < ∞ and ρ < 1 with q_W(p) ≤ C·W·ρ^W for every W.
+So q_W(p) → 0 as W → ∞, while q_W(1) = 1.
+
+*Proof.* The case p = 0 is trivial, so let 0 < p < 1.
+1. **Bound.** By Theorem A, which holds at every car count, q_W(p) ≤ P(Bin(2W, p/2) ≥ W) + Γ_W(p).
+2. **Binomial term.** By Chernoff, P(Bin(2W, p/2) ≥ W) ≤ (p(2 − p))^W, and p(2 − p) = 1 − (1 − p)² < 1.
+3. **Renewal term.** By §3, Γ_W ≤ W·z^{−W}/(1 − β(z)) whenever β(z) < 1.
+4. **A radius z > 1 exists.**
+   - G counts only non-plug columns, so G(g) ≤ (1 − a)^g. Hence β converges on
+     [0, 1/(1 − a)), and as a power series with nonnegative coefficients it is continuous there.
+   - β(1) = Σ_g a·G(g) < Σ_g a(1 − a)^g = 1. The inequality is strict because G(1) < 1 − a: a
+     one-column gap that is lone with its other cell empty fails the condition, and it has
+     probability p(1 − p) > 0.
+   - So β(z) < 1 for some z > 1. ∎
+
+**Explicit rates.** `decay_certificate` fixes θ and z, and checks β(z) < 1 exactly with the
+tail bound of §3. That gives q_W(p) ≤ (p(2−p))^W + W·z^{−W}/(1 − β(z)) for **every** W. Stored
+in `data/thin-nonmonotone.json`:
+
+| p | θ | z | β(z) ≤ | decay base max(p(2−p), 1/z) |
+|---|---|---|---|---|
+| 1/2 | 3/2 | 29/25 | 0.881 | 0.862 |
+| 7/10 | 8/5 | 27/25 | 0.939 | 0.926 |
+| 9/10 | 11/10 | 51/50 | 0.978 | 0.990 |
+| 19/20 | 7/5 | 101/100 | 0.990 | 0.9975 |
+| 49/50 | 11/10 | 251/250 | 0.996 | 0.9996 |
+
+The bound is valid but loose near p = 1. Monte Carlo (exact classification, 2·10⁵ samples):
+
+| W | q(0.70) | q(0.80) | q(0.90) | q(0.95) | q(0.98) |
+|---|---|---|---|---|---|
+| 16 | 0.046 | 0.113 | 0.317 | 0.548 | 0.780 |
+| 32 | 0.0027 | 0.014 | 0.102 | 0.302 | 0.608 |
+| 64 | 0.0000 | 0.0001 | 0.010 | 0.091 | 0.371 |
+
+**Why thin tori differ from squares.** Angel, Holroyd and Martin prove that on L×L squares q → 1
+for p close enough to 1 ([AHM]). On 2×W, any blocking cycle other than a plug must carry W east
+cars, half of all cells. A plug must catch every lone north car behind it, and that needs a gap
+holding as many east cars as its length. Both requirements ask the iid law for a density of east
+cars it has only when p = 1. On a square, a winding cycle needs about L cars out of p·L², which
+is cheap. So the thin-torus "critical density" is p_c = 1. That answers "when does gridlock switch
+on?" for this geometry, and only for it.
+
+[AHM]: https://arxiv.org/pdf/math/0504001
+
+## 6. What this does and does not show
 
 - **Monotonicity fails for some finite tori.** Exact monotonicity of q holds on every torus
   checked, up to 25 cells,
   and fails on 2×W from 48 cells on. The smallest counterexample is not known; §4 suggests it is
   2×15.
-- **The failure is thin-torus rigidity, not a density threshold.** On 2×W at fixed p < 1/2,
-  q_W(p) → 0 exponentially as W grows (the renewal bound). Low-density jams there are single
+- **The failure is thin-torus rigidity, not a density threshold.** On 2×W at every fixed p < 1,
+  q_W(p) → 0 exponentially as W grows (Theorem P). Low-density jams there are single
   initial coincidences. Nothing here bears on squares, where blocking cycles can form
-  dynamically, or on p₋ > 0.
+  dynamically, or on p₋ > 0 there. Theorem P does not say what replaces jamming on thin tori
+  (free flow or intermediate motion).
 - **Only Lemmas 1–4 and the bounds are proved in prose.** The certificates are exact computer
   arithmetic. The Lean obligations are blueprint B10.

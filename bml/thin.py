@@ -157,9 +157,12 @@ def gap_event(W: int, p):
 
 
 def upper(W: int, p):
-    """P(n ≥ W) + P(gap_condition) ≥ q(p): a jam with n < W satisfies the gap condition."""
+    """P(#long-axis cars ≥ W) + P(gap_condition) ≥ q(p).
+
+    A jam with fewer than W long-axis movers satisfies the gap condition: a winding blocking
+    cycle needs W of them, and every other cycle is a plug. The count is Bin(2W, p/2)."""
     p = _num(p)
-    return gap_event(W, p) + binomial_tail(2 * W, p, W)
+    return gap_event(W, p) + binomial_tail(2 * W, p / 2, W)
 
 
 def certificate(W: int, p1, p2) -> dict:
@@ -220,13 +223,13 @@ def renewal_radius(p, theta, z, K: int = 60) -> Fraction:
 
 
 def asymptotic_certificate(p2, theta, z, W1: int, K: int = 60) -> dict:
-    """For every W ≥ W1:  q(2/W) ≥ e^-2(1/W − 1/(2W²)) > (4p2(1−p2))^W + W z^-W/(1−β(z)) ≥ q(p2).
+    """For every W ≥ W1:  q(2/W) ≥ e^-2(1/W − 1/(2W²)) > (p2(2−p2))^W + W z^-W/(1−β(z)) ≥ q(p2).
 
     Checked exactly at W1. Both terms on the right, multiplied by W, decrease from W1 on
     (the ratio conditions below), and the left side times W increases."""
     p2, z = Fraction(p2), Fraction(z)
     beta = renewal_radius(p2, theta, z, K)
-    x = 4 * p2 * (1 - p2)
+    x = p2 * (2 - p2)                     # Chernoff: P(Bin(2W, p/2) ≥ W) ≤ (4·(p/2)(1 − p/2))^W
     e2 = _e_minus_2_lower()
     lhs = e2 * (1 - Fraction(1, 2 * W1))
     rhs = W1 * x ** W1 + W1 ** 2 / (z ** W1 * (1 - beta))
@@ -234,3 +237,14 @@ def asymptotic_certificate(p2, theta, z, W1: int, K: int = 60) -> dict:
              and (1 + Fraction(1, W1)) * x <= 1 and lhs > rhs)
     return dict(W1=W1, p2=str(p2), theta=str(Fraction(theta)), z=str(z), K=K,
                 beta=float(beta), lhs=float(lhs), rhs=float(rhs), holds=bool(holds))
+
+
+def decay_certificate(p, theta, z, K: int = 60) -> dict:
+    """Exponential decay of q on 2×W at fixed density p, for every W:
+
+        q_W(p) ≤ (p(2−p))^W + W·z^−W/(1−β(z)),   valid when β(z) < 1 (checked exactly).
+    """
+    p, z = Fraction(p), Fraction(z)
+    beta = renewal_radius(p, theta, z, K)
+    return dict(p=str(p), theta=str(Fraction(theta)), z=str(z), K=K, beta=float(beta),
+                holds=bool(beta < 1), tail_base=float(p * (2 - p)), renewal_base=float(1 / z))

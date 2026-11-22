@@ -11,8 +11,10 @@ import numpy as np
 import pytest
 
 from bml.levels import jams
-from bml.thin import (asymptotic_certificate, certificate, gap_condition, gap_event, gap_ok,
-                      lower, plug_without_lone, renewal_radius, upper)
+from bml.model import EAST
+from bml.thin import (asymptotic_certificate, canonical, certificate, decay_certificate,
+                      gap_condition, gap_event, gap_ok, lower, plug_without_lone, renewal_radius,
+                      upper)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -26,16 +28,24 @@ def iid_weight(s, p):
     return (p / 2) ** n * (1 - p) ** (s.size - n)
 
 
+def long_movers(s):
+    return int((canonical(s) == EAST).sum())
+
+
 @pytest.mark.parametrize("shape", [(2, 3), (3, 2), (2, 4), (4, 2), (2, 5), (5, 2)])
 def test_structure_lemmas_exhaustive(shape):
-    """Jam with n < W ⇒ gap condition;  plug and no lone short-axis car ⇒ jam. Every state."""
+    """Every state, every car count: jam ⇒ (≥ W long-axis movers) or gap condition;
+    plug and no lone short-axis car ⇒ jam."""
     states = all_states(*shape)
     W = max(shape)
+    seen_winding = False
     for s, j in zip(states, jams(states)):
-        if j and (s != 0).sum() < W:
-            assert gap_condition(s), s
+        if j and not gap_condition(s):
+            assert long_movers(s) >= W, s
+            seen_winding = True
         if plug_without_lone(s):
             assert j, s
+    assert seen_winding            # the exception is real: winding cycles and full lanes occur
 
 
 @pytest.mark.parametrize("shape", [(2, 9), (9, 2), (2, 14), (14, 2)])
@@ -53,7 +63,7 @@ def test_structure_lemmas_random(shape):
     assert J.sum() > 20                                     # the test sees jams at all
     for s, j in zip(batch, J):
         if j:
-            assert gap_condition(s)
+            assert gap_condition(s)                         # n < W, so fewer than W movers
         if plug_without_lone(s):
             assert j
 
@@ -134,6 +144,22 @@ def test_certificates_and_data_claims():
         assert certificate(c["W"], c["p1"], c["p2"])["holds"]
     a = data["asymptotic"]
     assert asymptotic_certificate(a["p2"], a["theta"], a["z"], a["W1"], a["K"])["holds"]
+    assert [d["p"] for d in data["decay"]] == ["1/2", "7/10", "9/10", "19/20", "49/50"]
+    for d in data["decay"]:
+        assert decay_certificate(d["p"], d["theta"], d["z"], d["K"])["holds"]
+        assert d["tail_base"] < 1 and d["renewal_base"] < 1
+
+
+def test_decay_certificate_negative_control():
+    assert not decay_certificate(Fraction(9, 10), Fraction(11, 10), Fraction(103, 100))["holds"]
+
+
+def test_decay_bound_dominates_monte_carlo_and_shrinks():
+    """Theorem P numerically: U_W(p) ≥ q_W(p), and U_W(p) decreases in W at p = 0.9."""
+    from bml.native import thin_jam_count
+    j, n = thin_jam_count(32, 0.9, 100_000, seed=11)
+    assert j / n < float(upper(32, Fraction(9, 10)))
+    assert upper(64, 0.9) < upper(48, 0.9) < upper(32, 0.9)
 
 
 def test_bounds_do_not_separate_below_24():
