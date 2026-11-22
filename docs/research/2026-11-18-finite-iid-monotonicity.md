@@ -7,7 +7,9 @@ disproves monotonicity configuration by configuration, and for the mixed-cycle e
 leaves q_L itself open. This note settles the finite-size question exactly for every torus
 with W·H ≤ 22, on every 24-cell shape and on 5×5: q is strictly increasing there. It also shows exactly that the stronger
 fixed-count statement fails on 2×11, 2×12 and 2×14 (and their transposes). It makes no asymptotic claim and no novelty
-claim.
+claim. **Update (21 November 2026):** q itself is *not* monotone on every finite torus. It fails on
+2×W and W×2 for every W ≥ 24, by exact certificates; see the
+[thin-torus note](2026-11-21-thin-torus-nonmonotonicity.md).
 
 CLASSIC rule throughout. The iid law μ_p puts E, N or nothing in each cell with probabilities
 p/2, p/2 and 1 − p. J is eventual nonempty gridlock; F is eventual free flow.
@@ -155,7 +157,9 @@ on 4 cores. The new tables are in `data/exhaustive-17-22.json`.
 
 ## 5. What this does and does not show
 
-- It answers the roadmap's monotonicity question for W·H ≤ 16 and 2×9 only. The stronger
+- It answers the roadmap's monotonicity question for W·H ≤ 16 and 2×9 only; §4 extends this to
+  25 cells. Beyond that, q fails to be monotone on every 2×W with W ≥ 24, and very likely from
+  2×15 on ([thin-torus note](2026-11-21-thin-torus-nonmonotonicity.md)). The stronger
   fixed-count monotonicity fails on 2×11 (§4), so no proof can establish it in general. Nothing here
   implies monotonicity of q_L for large L, or the existence of a threshold.
 - Configurationwise non-monotonicity (§4 of theorems.md, and the 13→14-car square
@@ -171,4 +175,6 @@ on 4 cores. The new tables are in `data/exhaustive-17-22.json`.
   over n built into the iid law.
 - On thin 2×W tori the decrease appears at the step n = 6 → 7 on widths 11, 12 and 14, and
   the Monte Carlo z-scores are worst at even n. Why this level is special is not understood.
-  The data alone don't support a parity rule: width 11 is odd.
+  The data alone don't support a parity rule: width 11 is odd. The thin-torus note gives a
+  plausible mechanism: plug-only jams, a fraction C(n,2)/((2W−1)·2ⁿ) at leading order, which
+  decreases in n.

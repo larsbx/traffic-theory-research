@@ -54,6 +54,8 @@ jobs:
         run: python scripts/check_formation.py --report .artifacts/formation-replay.json | tee .artifacts/formation-replay.log
       - name: Verify tagged fixation and exact Palm probability identities
         run: python scripts/check_fixation.py --report .artifacts/fixation-replay.json | tee .artifacts/fixation-replay.log
+      - name: Verify exact thin-torus non-monotonicity certificates (2xW, every W >= 24)
+        run: python scripts/thin_certificates.py | tee .artifacts/thin-certificates.log
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
