@@ -70,3 +70,10 @@ test('real presets: no head-on 2-cycles, every lane edge a unit step', async () 
     assert.ok(girth(net) >= 3, p.id);
   }
 });
+
+test('edge headings keep their fractional radians (regression: they were stored as integers)', () => {
+  const net = rasterize([{ o: 1, c: 4, pts: [-300, -200, 300, 200] }], { cols: 20, rows: 12, cell: 7.5 }); // bearing atan2(2, 3)
+  const want = Math.atan2(2, 3);
+  assert.ok([...net.outHeading].every((h) => Math.abs(h - want) < 1e-6), [...new Set(net.outHeading)].join(' '));
+  assert.ok([...torus(3, 3).outHeading].some((h) => Math.abs(h - Math.PI / 2) < 1e-6), 'torus north edges point at π/2');
+});

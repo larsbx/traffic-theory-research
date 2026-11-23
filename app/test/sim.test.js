@@ -121,3 +121,12 @@ test('a broken-down car holds its cell for exactly its stall time, then drives o
   for (let t = 0; t < 60 && s.pos[k] === cell; t++) s = halfStep(net, s, { green: 6, box: true });
   assert.notEqual(s.pos[k], cell, `stalled from ${t0}`);
 });
+
+test('lab JAM status is rule-aware: a full eastbound ring on a 3×3 torus is all-blocked yet rotates under TRAIN', () => {
+  const net = torus(3, 3);
+  const s = fromGrid(net, [[1, 1, 1], [0, 0, 0], [0, 0, 0]]);
+  assert.ok(isGridlock(net, s), 'every target occupied');
+  assert.equal(certificate(net, s, { rule: CLASSIC }).count, 3, 'CLASSIC: frozen');
+  assert.equal(certificate(net, s, { rule: TRAIN }).count, 0, 'TRAIN: not frozen');
+  assert.equal(halfStep(net, s, { rule: TRAIN }).moved, 3, 'TRAIN: the ring moves');
+});

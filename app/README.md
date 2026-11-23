@@ -102,7 +102,7 @@ signals, with dawdling and breakdowns.
 
 - Pure BML on real maps locks in seconds. Its every-tick phase flip fills each crossing's 2×2
   box from both axes. Signals plus the box rule plus a ban on cross-traffic turns keep all six
-  presets free-flowing up to ρ ≈ 0.45.
+  presets free-flowing up to ρ ≈ 0.3, and five of them up to ρ ≈ 0.45. Shibuya locks there.
 - Grids are robust. Midtown (girth 58) and Eixample (girth 52) did not jam in any law tested,
   even with breakdowns: a core needs a block-sized loop of committed cars. Irregular centres
   (Étoile, Bank, Shibuya) jam once the laws are repealed.

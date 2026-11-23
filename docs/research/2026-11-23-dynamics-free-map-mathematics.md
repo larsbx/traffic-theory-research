@@ -77,7 +77,7 @@ path. Such cycles are certified by P1, but they need not be cycles of J, so P2's
 direct cores only.
 
 **R1 (parity).** Every arc of G changes x + y by ±1, so G is bipartite and every cycle has even
-length. The girths observed are 4, 18, 26, 52, 58, 80 and 108, all even. A jam loop of length 4
+length. The girths observed are 4, 18, 52, 58, 62, 106 and 140, all even. A jam loop of length 4
 is exactly a 2×2 box. Anything longer must go around at least one non-road cell, which is a
 building, at 7.5 m.
 
@@ -140,16 +140,16 @@ and reports whether it finished.
 
 | map | girth(G) | J, city code: girth · cycles ≤ g+8 · R(0.3) | J, BML lights: girth · cycles · R(0.3) | Φ ≤ (CLASSIC / TRAIN) | jams seen in simulation |
 |---|---|---|---|---|---|
-| Midtown | 58 | ∞ · 0 · 0 | 80 · 1 · ≈0 | 13 / 26 | none |
-| Eixample | 52 | 108 · 0 · 0 | 52 · 65 · 2·10⁻²⁹ | 16 / 32 | none |
+| Midtown | 58 | 140 · 0 · 0 | 58 · 1 · 1·10⁻³² | 13 / 26 | none |
+| Eixample | 52 | 106 · 4 · 2·10⁻⁵⁷ | 52 · 65 · 8·10⁻³⁰ | 16 / 32 | none |
 | Grachten | ∞ | ∞ · 0 · 0 | ∞ · 0 · 0 | 12 / 24 | none |
-| Étoile | 18 | 26 · 1 · 5·10⁻¹⁵ | 18 · 3 · 2·10⁻¹¹ | 20 / 40 | once laws are repealed |
-| Bank | 4 | 4 · 2 · 9·10⁻⁴ | 4 · 2 · 1·10⁻³ | 26 / 42 | yes |
-| Shibuya | 4 | 4 · 1 · 7·10⁻⁴ | 4 · 1 · 1·10⁻³ | 25 / 48 | yes |
+| Étoile | 18 | 62 · 3 · 5·10⁻³⁴ | 18 · 4 · 1·10⁻¹¹ | 20 / 40 | once laws are repealed |
+| Bank | 4 | 4 · 2 · 7·10⁻⁴ | 4 · 2 · 2·10⁻³ | 26 / 42 | once laws are repealed |
+| Shibuya | 4 | 4 · 1 · 5·10⁻⁴ | 4 · 1 · 1·10⁻³ | 25 / 48 | at ρ ≈ 0.45 even under the city code |
 
 The ordering by R matches the simulations in `app/README.md`. Under the city code J still has
-Bank's and Shibuya's 4-cycles: the box rule and signals prevent them in time, and J cannot see
-timing.
+Bank's and Shibuya's 4-cycles. The box rule and signals keep Bank clear in time, which J cannot
+see. Shibuya still locks at ρ ≈ 0.45 even so.
 
 **Deadlock detection on real fleets.** P1 needs only positions and committed next links. Given
 those from connected vehicles, AGVs or a block-signalled railway, a cycle of the wait-for graph

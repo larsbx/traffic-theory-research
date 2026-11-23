@@ -3,7 +3,7 @@ import presets from '../data/presets.json';
 import { PLACES, WINDOW } from './presets.js';
 import { rasterize, torus, girth } from './raster.js';
 import { init, halfStep, breakDown, fromGrid, isStalled, greenAxis, CLASSIC, TRAIN, DEFAULTS, LAWS } from './sim.js';
-import { certificate, onStreet, isGridlock, snapshot } from './analysis.js';
+import { certificate, onStreet, snapshot } from './analysis.js';
 import { texture, drawGround, drawFrame, drawDiagram, COLORS } from './render.js';
 import { camera, unproject } from './camera.js';
 import { fetchRoads, locate, driveSide } from './fetch.js';
@@ -112,7 +112,8 @@ const labReadout = (m) => {
   const nE = sim.species.reduce((a, s) => a + (s === 1), 0);
   const gg = gcd(W, H);
   const fmax = gg >= 2 ? (W * H / gg) * Math.floor((2 * gg) / 3) : Math.max(H * Math.floor(W / 2), W * Math.floor(H / 2));
-  const status = isGridlock(view().net, sim) ? 'JAM' : m.vbar >= 0.999 && app.hist.length >= 4 ? 'FREE' : 'MIXED';
+  // JAM = every car certified frozen under the active rule (a full TRAIN ring rotates, so it is not)
+  const status = n > 0 && m.cert.count === n ? 'JAM' : m.vbar >= 0.999 && app.hist.length >= 4 ? 'FREE' : 'MIXED';
   const rows = [
     ['STATE', `${status} · n = ${n} (E ${nE}, N ${n - nE}) · v̄ = ${m.vbar.toFixed(2)}`],
     ['G1', n < Math.min(W, H) ? `n < min(W,H) = ${Math.min(W, H)}: no configuration can ever gridlock.` : `n ≥ min(W,H) = ${Math.min(W, H)}: some ${n}-car gridlock exists.`],

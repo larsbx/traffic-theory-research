@@ -62,19 +62,19 @@ const lanes = ({ o, pts }, cell, drive) => {
 /** Compressed adjacency from an edge set; also the reverse lists and each edge's lane heading
  * (radians, the street's true direction — a staircase step still has its street's heading). */
 const csr = (n, edges) => {
-  const build = (key, val) => {
+  const build = (key, val, Typed = Int32Array) => {
     const start = new Int32Array(n + 1);
     edges.forEach((e) => start[key(e) + 1]++);
     for (let i = 0; i < n; i++) start[i + 1] += start[i];
     const fill = start.slice(0, n);
-    const list = new Int32Array(edges.length);
+    const list = new Typed(edges.length);
     edges.forEach((e) => { list[fill[key(e)]++] = val(e); });
     return [start, list];
   };
   const [outStart, outList] = build(([a]) => a, ([, b]) => b);
-  const [, outHeading] = build(([a]) => a, ([, , , h]) => h);
+  const [, outHeading] = build(([a]) => a, ([, , , h]) => h, Float32Array);
   const [inStart, inList] = build(([, b]) => b, ([a]) => a);
-  return { outStart, outList, outHeading: Float32Array.from(outHeading), inStart, inList };
+  return { outStart, outList, outHeading, inStart, inList };
 };
 
 export const network = ({ W, H, road, edges, exit = new Uint8Array(W * H), entries = [], drive = 'R', wrap = false }) => {
