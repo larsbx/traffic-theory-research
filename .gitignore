@@ -10,3 +10,5 @@ formal/artifacts/
 
 bml/native/classify
 bml/native/thin_mc
+app/node_modules/
+app/dist/

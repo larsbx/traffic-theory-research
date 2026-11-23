@@ -1,0 +1,254 @@
+<title>Gridlock City</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Press+Start+2P&display=swap">
+<style>
+/* Layout: one arcade cabinet column — marquee, screen, readouts, then a footer of links that open explanation windows. */
+:root {
+  --void: #050510; --panel: #0c0c26; --maze: #2b3bff; --ink: #e8e6ff; --dim: #9896c8;
+  --pac: #ffd23f; --hot: #ff3b3b; --cool: #4de3ff; --peach: #ffb8ae; --hazard: #ff8c1a;
+  --arcade: "Press Start 2P", ui-monospace, "Courier New", monospace;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { background: var(--void); color: var(--ink); }
+body { margin: 0; font: 15px/1.6 var(--mono); padding-block: 20px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.cab { max-width: 1160px; margin: 0 auto; display: grid; gap: 14px; }
+header { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; }
+h1 { font: 22px/1.2 var(--arcade); margin: 0; color: var(--pac); letter-spacing: 1px; text-shadow: 3px 3px 0 var(--maze); text-wrap: balance; }
+h1 small { display: block; font: 9px/1.6 var(--arcade); color: var(--dim); text-shadow: none; margin-top: 6px; letter-spacing: 1.5px; }
+nav { display: flex; flex-wrap: wrap; gap: 8px; }
+button, select, input { font: 10px/1 var(--arcade); }
+button { background: var(--void); color: var(--ink); border: 2px solid var(--maze); padding: 9px 11px; cursor: pointer; }
+button:hover { border-color: var(--pac); color: var(--pac); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--pac); outline-offset: 2px; }
+button:disabled { opacity: .4; cursor: progress; }
+body[data-mode="city"] [data-mode="city"], body[data-mode="lab"] [data-mode="lab"] { background: var(--maze); color: var(--ink); }
+#stage { position: relative; background: var(--void); border: 3px double var(--maze); padding: 6px; display: grid; place-items: center; min-width: 0; }
+canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; max-width: 100%; touch-action: none; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 2px; font: 9px/1.5 var(--arcade); }
+.stats div { background: var(--panel); padding: 8px 10px; display: grid; gap: 6px; }
+.stats span { color: var(--dim); letter-spacing: 1px; }
+.stats b { font-weight: 400; font-size: 13px; font-variant-numeric: tabular-nums; }
+.stats div[data-alert="true"] b { color: var(--hot); }
+#place { font: 10px/1.6 var(--arcade); color: var(--peach); margin: 0; }
+.bar { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; justify-content: space-between; }
+.bar-ctl { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font: 9px var(--arcade); color: var(--dim); }
+.bar-ctl input { accent-color: var(--pac); width: 110px; }
+canvas#screen { cursor: grab; } canvas#screen:active { cursor: grabbing; }
+.bar-ctl output { color: var(--cool); min-width: 4em; }
+.panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.panel { background: var(--panel); border-left: 3px solid var(--maze); padding: 14px 16px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.panel h2 { font: 11px/1.4 var(--arcade); color: var(--pac); margin: 0; letter-spacing: 1px; }
+.panel p { margin: 0; color: var(--dim); }
+.row { display: grid; grid-template-columns: 9.5em 1fr 4.2em; gap: 10px; align-items: center; font-size: 13px; }
+.row output { font: 9px var(--arcade); color: var(--cool); text-align: right; }
+.row input[type="range"] { width: 100%; accent-color: var(--pac); }
+.row select, .row input[type="number"] { background: var(--void); color: var(--ink); border: 1px solid var(--maze); padding: 6px; width: 100%; }
+.checks { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; }
+.checks input { accent-color: var(--pac); }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+#find { display: flex; gap: 8px; flex-wrap: wrap; }
+#find input { flex: 1 1 12em; min-width: 0; background: var(--void); color: var(--ink); border: 1px solid var(--maze); padding: 8px; font: 13px var(--mono); }
+#find-msg { font-size: 12px; color: var(--peach); min-height: 1.2em; }
+#diagram { width: 100%; max-width: 480px; aspect-ratio: 2 / 1; }
+dl#lab-readout { margin: 0; display: grid; grid-template-columns: 4em 1fr; gap: 6px 10px; font-size: 13px; }
+dl#lab-readout dt { font: 10px/1.9 var(--arcade); color: var(--pac); }
+dl#lab-readout dd { margin: 0; }
+.legend { display: grid; gap: 6px; font-size: 13px; margin: 0; padding: 0; list-style: none; }
+.legend i { display: inline-block; width: 12px; height: 12px; margin-right: 8px; vertical-align: -1px; }
+kbd { font: 9px var(--arcade); border: 1px solid var(--dim); padding: 2px 5px; }
+footer { border-top: 3px double var(--maze); padding-top: 14px; margin-top: 10px; display: grid; gap: 12px; }
+.links { display: flex; flex-wrap: wrap; gap: 6px 18px; position: relative; }
+.links summary { list-style: none; cursor: pointer; font: 9px/2 var(--arcade); color: var(--cool); letter-spacing: 1px; text-decoration: underline; text-underline-offset: 4px; }
+.links summary::-webkit-details-marker { display: none; }
+.links summary::after { content: " +"; color: var(--dim); }
+.links details[open] summary { color: var(--pac); }
+.links details[open] summary::after { content: " −"; }
+.links summary:focus-visible { outline: 2px solid var(--pac); outline-offset: 2px; }
+/* An open link becomes a window spanning the footer, above the credit line. */
+.window { position: absolute; left: 0; right: 0; bottom: calc(100% + 10px); background: var(--panel); border: 3px double var(--maze);
+  box-shadow: 6px 6px 0 #000; padding: 14px 18px; max-height: min(60vh, 520px); overflow: auto; z-index: 5; }
+.window h3 { font: 10px/1.6 var(--arcade); color: var(--pac); margin: 0 0 8px; letter-spacing: 1px; }
+.window p, .window ol { margin: 0; max-width: 72ch; }
+.window code, .math { font-family: var(--mono); color: var(--peach); }
+.window a { color: var(--cool); }
+.sources { font-size: 13px; color: var(--dim); padding-left: 1.2em; }
+.credit { font-size: 12px; color: var(--dim); margin: 0; }
+.credit a { color: var(--dim); }
+</style>
+
+<div class="cab">
+  <header>
+    <h1>GRIDLOCK CITY<small>BML TRAFFIC ON REAL STREETS</small></h1>
+    <nav>
+      <button type="button" data-mode="city">CITY</button>
+      <button type="button" data-mode="lab">BML LAB</button>
+    </nav>
+  </header>
+
+  <div id="stage">
+    <canvas id="screen" aria-label="City traffic simulation"></canvas>
+  </div>
+
+  <div class="bar">
+    <p id="place"></p>
+    <div class="bar-ctl">
+      <button type="button" id="view-3d">3D</button>
+      <button type="button" id="view-top">TOP</button>
+      <label for="tilt">TILT</label><input id="tilt" type="range" min="18" max="90" step="1">
+      <label for="turn">TURN</label><input id="turn" type="range" min="-180" max="180" step="1">
+      <label for="zoom">ZOOM</label><input id="zoom" type="range" min="1" max="8" step="0.05">
+      <button type="button" id="pause">PAUSE</button>
+      <label for="speed">SPEED</label><input id="speed" type="range" min="1" max="60" step="1"><output id="speed-v"></output>
+    </div>
+  </div>
+  <div class="stats">
+    <div><span>DENSITY ρ</span><b id="s-rho">0</b></div>
+    <div><span>MEAN SPEED</span><b id="s-v">0</b></div>
+    <div><span>FLOW J</span><b id="s-j">0</b></div>
+    <div id="s-frozen-cell"><span>FROZEN</span><b id="s-frozen">0%</b></div>
+    <div><span>JAM LOOPS</span><b id="s-loops">0</b></div>
+    <div><span>GIRTH</span><b id="s-girth">0</b></div>
+    <div><span>QUEUE</span><b id="s-queue">0</b></div>
+    <div><span>GREEN</span><b id="s-signal">E–W</b></div>
+  </div>
+
+  <div class="panels">
+    <section class="panel" data-show="city">
+      <h2>LEGEND</h2>
+      <ul class="legend">
+        <li><i style="background:var(--hot)"></i>Moving car (colour by id; dim while waiting)</li>
+        <li><i style="background:#2a2aff"></i>Frozen: proved never to move again</li>
+        <li><i style="background:#f4f2ff;outline:3px solid #2a2aff;outline-offset:-3px"></i>Jam loop core (flashing): a β-cycle</li>
+        <li><i style="background:var(--hazard)"></i>Broken-down car</li>
+        <li><i style="background:var(--peach)"></i><i style="background:var(--cool)"></i>Junction lamps: green for E–W or N–S</li>
+      </ul>
+      <p>Cars point toward their next cell, with a headlight on the front. Drag the map to turn and tilt it, shift-drag (or right-drag) to pan, scroll to zoom. <kbd>SPACE</kbd> pauses.</p>
+    </section>
+
+    <section class="panel" data-show="city">
+      <h2>CITY CONTROLS</h2>
+      <div class="row"><label for="c-place">Place</label><select id="c-place"></select><span></span></div>
+      <div class="row"><label for="presets-law">Traffic law</label><select id="presets-law"></select><span></span></div>
+      <div class="row"><label for="c-rule">Update rule</label><select id="c-rule"><option value="classic">CLASSIC</option><option value="train">TRAIN</option></select><span></span></div>
+      <div class="row"><label for="c-green">Green time</label><input id="c-green" type="range" min="1" max="16" step="1"><output id="c-green-v"></output></div>
+      <div class="row"><label for="c-rho">Cars per lane cell</label><input id="c-rho" type="range" min="0.02" max="0.8" step="0.02"><output id="c-rho-v"></output></div>
+      <div class="row"><label for="c-slow">Dawdle p</label><input id="c-slow" type="range" min="0" max="0.5" step="0.05"><output id="c-slow-v"></output></div>
+      <div class="checks">
+        <label><input id="c-box" type="checkbox"> Don’t block the box</label>
+        <label><input id="c-cross" type="checkbox"> Turns across traffic</label>
+      </div>
+      <div class="btns">
+        <button type="button" id="reset">NEW CARS</button>
+        <button type="button" id="incident">BREAK DOWN A CAR</button>
+        <button type="button" id="sweep">MEASURE J(ρ)</button>
+      </div>
+      <form id="find">
+        <input id="c-where" type="text" placeholder="Any place, or lat, lon" aria-label="Place to load" autocomplete="off">
+        <button type="submit">LOAD</button>
+      </form>
+      <p id="find-msg"></p>
+    </section>
+
+    <section class="panel" data-show="city">
+      <h2>FUNDAMENTAL DIAGRAM</h2>
+      <canvas id="diagram" width="240" height="120" aria-label="Flow against density"></canvas>
+    </section>
+
+    <section class="panel" data-show="lab">
+      <h2>BML LAB</h2>
+      <div class="row"><label for="l-w">Width W</label><input id="l-w" type="number" min="1" max="96"><span></span></div>
+      <div class="row"><label for="l-h">Height H</label><input id="l-h" type="number" min="1" max="64"><span></span></div>
+      <div class="row"><label for="l-p">Density p</label><input id="l-p" type="range" min="0.02" max="0.9" step="0.02"><output id="l-p-v"></output></div>
+      <div class="row"><label for="l-rule">Rule</label><select id="l-rule"><option value="classic">CLASSIC</option><option value="train">TRAIN</option></select><span></span></div>
+      <div class="btns"><button type="button" id="l-reset">NEW SEED</button></div>
+    </section>
+    <section class="panel" data-show="lab">
+      <h2>WHAT IS PROVED HERE</h2>
+      <dl id="lab-readout"></dl>
+    </section>
+  </div>
+
+  <footer>
+    <nav class="links" aria-label="How it works">
+    <details name="info">
+      <summary>Streets to lanes</summary>
+      <div class="window">
+        <h3>STREETS TO LANES</h3>
+        <p>Each map is a 720 × 480 m window of OpenStreetMap, cut into 96 × 64 cells of 7.5 m, one car length. One-way streets become one lane. Two-way streets become two, on the side the country drives on. Lanes are offset by <span class="math">(s/2)(|cos θ|+|sin θ|)</span> so the staircases of diagonal streets cannot interlock. Any loop shorter than 12 cells that is not a real crossing box is a rasterising artefact and is removed.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>The rule: BML on a map</summary>
+      <div class="window">
+        <h3>THE RULE: BML ON A MAP</h3>
+        <p>Every move is one cell, horizontal or vertical. Half-steps alternate: horizontal movers, then vertical movers. That is the east-then-north update of Biham, Middleton and Levine (1992), and a two-phase signal at every junction. On a torus whose cars only go east or north, the engine reproduces <code>bml.model.step</code> exactly. The tests replay 80 Python orbits under both rules. <b>CLASSIC</b> moves a car only into a cell that was empty before the half-step. <b>TRAIN</b> lets a queue move together and a full ring rotate, as in Austin–Benjamini.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>Traffic laws</summary>
+      <div class="window">
+        <h3>TRAFFIC LAWS</h3>
+        <p>Pure BML flips the phase every tick, so both axes fill a crossing and its 2 × 2 box locks. The city adds the laws real cities use. Signals admit a junction only to the axis with green for <span class="math">G</span> half-steps; <span class="math">G = 1</span> is exactly BML. Don’t-block-the-box lets a car enter a junction only if its whole path through it is clear. Turns across oncoming traffic can be banned. Cars dawdle with probability <span class="math">p</span>, as in Nagel–Schreckenberg.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>BML lab</summary>
+      <div class="window">
+        <h3>BML LAB</h3>
+        <p>The original Biham–Middleton–Levine torus. Cyan cars move east and pink cars move north, alternately. This is the rule the city generalises, and the repository's theorems apply here exactly.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>Why frozen cars are certain</summary>
+      <div class="window">
+        <h3>WHY FROZEN CARS ARE CERTAIN</h3>
+        <p>Let <span class="math">β(k)</span> be the car blocking car <span class="math">k</span>. Cars choose their route only after they move, so a cycle of β never moves again under CLASSIC. Under TRAIN the same holds unless the cycle is a straight ring. Every car whose β-path reaches such a cycle is frozen too. This is the map form of Lemma G0. A test checks that no certified car ever moves again, across both rules, every law, dawdling and breakdowns. A jam loop is a directed cycle of lanes, so it needs at least <b>girth</b> cars, the Theorem G1 bound min(W,H) in city form. Grids like Midtown have a girth of 50+ cells, so they almost never lock.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>Nucleation and capture</summary>
+      <div class="window">
+        <h3>NUCLEATION AND CAPTURE</h3>
+        <p>Following the repository’s freezing note, forming a permanent core and capturing the rest of the traffic are separate events. In a closed city, every car that keeps driving at random eventually reaches a permanent core, so one jam loop takes the whole map. Watch FROZEN climb after a JAM LOOP appears: nucleation is rare and sudden, capture is steady.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>Fundamental diagram</summary>
+      <div class="window">
+        <h3>FUNDAMENTAL DIAGRAM</h3>
+        <p>Yellow: flow J = ρ × mean speed after 300 half-steps at each density on this map and law (press MEASURE). Red: right now. The curve flattens where the map's entries saturate, the open-boundary limit known from exclusion processes.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>Any place: the OSM API</summary>
+      <div class="window">
+        <h3>ANY PLACE: THE OSM API</h3>
+        <p>Run <code>npm start</code> in <code>app/</code> and the simulator is served together with a small OpenStreetMap API: <code>/api/geocode</code> (Nominatim), <code>/api/roads</code> (Overpass, falling back to the OSM API), <code>/api/network</code> (the lane graph: cells, junctions, girth) and <code>/api/simulate</code> (a headless run with a time series and the final jam certificate). LOAD then works for any place on Earth. The server identifies itself to OpenStreetMap, sends Nominatim at most one request a second, and caches every result. This hosted copy cannot make outside requests, so it offers the six built-in places.</p>
+      </div>
+    </details>
+    <details name="info">
+      <summary>Sources</summary>
+      <div class="window">
+        <h3>SOURCES</h3>
+        <ol class="sources">
+        <li>O. Biham, A. A. Middleton, D. Levine, <i>Phys. Rev. A</i> 46, R6124 (1992).</li>
+        <li>O. Angel, A. E. Holroyd, J. B. Martin, <i>Electron. Commun. Probab.</i> 10 (2005).</li>
+        <li>T. Austin, I. Benjamini, <a href="https://arxiv.org/abs/math/0607759" target="_blank" rel="noopener">arXiv:math/0607759</a> (2006).</li>
+        <li>K. Nagel, M. Schreckenberg, <i>J. Phys. I France</i> 2, 2221 (1992).</li>
+        <li>B. Derrida, M. R. Evans, V. Hakim, V. Pasquier, <i>J. Phys. A</i> 26, 1493 (1993).</li>
+        <li>R. M. D’Souza, <i>Phys. Rev. E</i> 71, 066112 (2005).</li>
+        <li><a href="https://github.com/larsbx/traffic-theory-research/blob/main/docs/theorems.md" target="_blank" rel="noopener">traffic-theory-research: theorems G0–F, T</a> and <a href="https://github.com/larsbx/traffic-theory-research/blob/main/docs/research/2026-11-18-freezing-gridlock-nucleation.md" target="_blank" rel="noopener">freezing and capture</a>.</li>
+      </ol>
+      </div>
+    </details>
+    </nav>
+    <p class="credit">Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>, ODbL 1.0.</p>
+  </footer>
+</div>
+<!-- APP -->

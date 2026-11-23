@@ -111,11 +111,24 @@ connections to tiling and dynamical-systems theory.
   exact population normalization. The actual exporter is proved to refine
   the CLASSIC board and tagged traces; independent finite recurrence checks
   cover empty boards, partial fixation, and unequal-population mixtures.
+- [Dynamics-free mathematics on real street maps](docs/research/2026-11-23-dynamics-free-map-mathematics.md)
+  (2026-11-23): G0/G1 restated for lane graphs under exclusion + commitment alone (jam cores
+  live on the *jam graph* and need ≥ girth cars). It also adds a per-cell throughput lemma with
+  a max-flow bound, Sturmian free speeds of straight streets (1 + min(|tan θ|, |cot θ|)), and a
+  graph-zeta risk index, all computed from OpenStreetMap by `GET /api/analyze`.
 - [Formal coverage and validation](formal/README.md): the CLASSIC finite-torus
   `BML` proofs, identity-preserving transport and non-monotonicity witness, together
   with the complementary `Traffic` tiling/staircase proofs, the complete
   [TRAIN rectangular jam theorem](formal/TRAIN.md), actual Quint evaluation,
   bounded correspondence, and the remaining proof obligations.
+
+## Simulator
+
+- [Gridlock City](app/README.md): a retro pixel-art traffic simulator on real OpenStreetMap streets,
+  driven by the BML rule generalised to lane graphs. It reduces exactly to `bml.model.step`
+  on the torus, which is tested against 80 Python orbits. Frozen "ghost" cars are β-cycle
+  certificates, the map form of Lemma G0, and jam cores need at least girth-many cars, as in
+  G1. It includes a BML lab with live theorem readouts.
 
 ## Code
 
