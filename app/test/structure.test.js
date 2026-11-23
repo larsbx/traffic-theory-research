@@ -118,3 +118,21 @@ test('Sturmian free speed matches the simulator: one car on a straight diagonal 
   const speed = (2 * (moved.length - 1)) / span;
   assert.ok(Math.abs(speed - freeSpeed(th).cells) < 0.08, `simulated ${speed} vs predicted ${freeSpeed(th).cells}`);
 });
+
+test('reported speed is hops per car per full step, uncapped: a lone car at slope 1/2 reads 1.5', async () => {
+  const { snapshot } = await import('../src/analysis.js');
+  const th = Math.atan2(1, 2);
+  const L = 3000;
+  const net = rasterize([{ o: 1, c: 4, pts: [-Math.cos(th) * L, -Math.sin(th) * L, Math.cos(th) * L, Math.sin(th) * L].map((v) => Math.round(v * 10)) }], { cols: 200, rows: 120, cell: 7.5 });
+  const o = { ...DEFAULTS, green: 1, slow: 0, straight: 1e9 };
+  let s = init(net, 1, 1, o);
+  const vs = [];
+  for (let t = 0; t < 80; t++) {
+    const a = halfStep(net, s, o);
+    const b = halfStep(net, a, o);
+    if (b.pos[0] >= 0 && s.pos[0] >= 0) vs.push(snapshot(net, b, o, a.moved + b.moved).v);
+    s = b;
+  }
+  const mean = vs.reduce((x, y) => x + y, 0) / vs.length;
+  assert.ok(Math.abs(mean - 1.5) < 0.08, `mean v ${mean}`);
+});

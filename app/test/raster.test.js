@@ -77,3 +77,24 @@ test('edge headings keep their fractional radians (regression: they were stored 
   assert.ok([...net.outHeading].every((h) => Math.abs(h - want) < 1e-6), [...new Set(net.outHeading)].join(' '));
   assert.ok([...torus(3, 3).outHeading].some((h) => Math.abs(h - Math.PI / 2) < 1e-6), 'torus north edges point at π/2');
 });
+
+test('straight streets: each lane cell displays on its lane line, within half a cell diagonal of its centre', () => {
+  const th = Math.atan2(1, 2);
+  const net = rasterize([{ o: 1, c: 4, pts: [-3000 * Math.cos(th), -3000 * Math.sin(th), 3000 * Math.cos(th), 3000 * Math.sin(th)].map((v) => Math.round(v * 10)) }], { cols: 60, rows: 40, cell: 7.5 });
+  assert.equal(net.lanes.length, 1);
+  const ln = net.lanes[0];
+  const [x0, y0] = [ln[0], ln[1]];
+  const dir = Math.atan2(ln.at(-1) - y0, ln.at(-2) - x0); // the lane's own line (endpoints are rounded to 0.1 m)
+  for (let c = 0; c < net.W * net.H; c++) {
+    if (!net.road[c]) continue;
+    const [dx, dy] = [net.disp[2 * c], net.disp[2 * c + 1]];
+    assert.ok(Math.hypot(dx - (c % net.W) - 0.5, dy - Math.floor(c / net.W) - 0.5) <= Math.SQRT1_2 + 1e-6, `cell ${c}`);
+    assert.ok(Math.abs((dx - x0) * Math.sin(dir) - (dy - y0) * Math.cos(dir)) < 1e-3, `cell ${c} off the line`);
+  }
+});
+
+test('straight streets: presets carry lane polylines; the torus displays cells at their centres', () => {
+  const t = torus(3, 2);
+  assert.equal(t.lanes.length, 0);
+  assert.deepEqual([...t.disp.slice(0, 4)], [0.5, 0.5, 1.5, 0.5]);
+});

@@ -2,6 +2,7 @@
 // perspective (camera.js); cars are lit 3D shapes. In the texture, row = H − 1 − y.
 import { isStalled, greenAxis } from './sim.js';
 import { project, groundRows } from './camera.js';
+import { edgeHeading } from './raster.js';
 
 export const COLORS = Object.freeze({
   void: '#050510', block: '#0b0b2a', wall: '#2b3bff', pellet: '#ffb8ae', cool: '#4de3ff',
@@ -9,10 +10,28 @@ export const COLORS = Object.freeze({
   ghosts: ['#ff3b3b', '#ffb8ff', '#4de3ff', '#ffb852'],
 });
 
+/** Straight streets: each lane polyline stroked as a corridor, wall-blue edge, black road. */
+const drawLanes = (g, net, px) => {
+  const path = (ln) => {
+    g.beginPath();
+    for (let i = 0; i < ln.length; i += 2) {
+      const [x, y] = [ln[i] * px, (net.H - ln[i + 1]) * px];
+      if (i) g.lineTo(x, y); else g.moveTo(x, y);
+    }
+  };
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  g.fillStyle = COLORS.block; g.fillRect(0, 0, net.W * px, net.H * px);
+  g.strokeStyle = COLORS.wall; g.lineWidth = px + 2;
+  net.lanes.forEach((ln) => { path(ln); g.stroke(); });
+  g.strokeStyle = COLORS.void; g.lineWidth = px;
+  net.lanes.forEach((ln) => { path(ln); g.stroke(); });
+};
+
 export const drawMaze = (net, px) => {
   const cv = new OffscreenCanvas(net.W * px, net.H * px);
   const g = cv.getContext('2d');
   g.fillStyle = COLORS.void; g.fillRect(0, 0, cv.width, cv.height);
+  if (net.lanes?.length) { drawLanes(g, net, px); return cv; }
   if (net.wrap) { // the torus is all road: a faint lattice instead of walls
     g.fillStyle = '#16163a';
     for (let y = 0; y < net.H; y++) for (let x = 0; x < net.W; x++) g.fillRect(x * px + (px >> 1), y * px + (px >> 1), 1, 1);
@@ -35,7 +54,7 @@ export const drawMaze = (net, px) => {
 
 // ---------- perspective view ----------
 
-export const TEX = 4; // texture pixels per cell
+export const TEX = 6; // texture pixels per cell
 
 /** The flat maze as a texture: { data: Uint32Array (ABGR), w, h }. */
 export const texture = (net) => {
@@ -109,13 +128,11 @@ const box = (g, cam, [x, y], [hx, hy], L, w, z0, z1, color, alpha) => {
   g.globalAlpha = 1;
 };
 
-/** Unit heading of car k on the grid (wrap-aware on the torus). */
+/** Unit heading of car k: its lane's true street heading (so cars face along straight streets). */
 const headingOf = (net, sim, k) => {
   const [a, b] = sim.next[k] >= 0 && sim.next[k] !== sim.pos[k] ? [sim.pos[k], sim.next[k]] : sim.prev[k] >= 0 ? [sim.prev[k], sim.pos[k]] : [-1, -1];
-  if (a < 0) return sim.species[k] === 2 ? [0, 1] : [1, 0];
-  const wrap = (d, n) => (Math.abs(d) > 1 ? -Math.sign(d) : d) * (n > 1 ? 1 : 0);
-  const dx = wrap((b % net.W) - (a % net.W), net.W), dy = wrap(Math.floor(b / net.W) - Math.floor(a / net.W), net.H);
-  return dx || dy ? [dx, dy] : [1, 0];
+  const h = a >= 0 ? edgeHeading(net, a, b) : sim.species[k] === 2 ? Math.PI / 2 : 0;
+  return Number.isFinite(h) ? [Math.cos(h), Math.sin(h)] : [1, 0];
 };
 
 /** One frame. view = { net, ground (ImageData), cam, sim, frozen, opts, fx, now, lab? } */
@@ -124,7 +141,7 @@ export const drawFrame = (g, view) => {
   g.putImageData(ground, 0, 0);
   const W = net.W;
   const blink = Math.floor(now / 160) % 2 === 0;
-  const centre = (c, z = 0) => [(c % W) + 0.5, Math.floor(c / W) + 0.5, z];
+  const centre = (c, z = 0) => [net.disp[2 * c], net.disp[2 * c + 1], z]; // the cell's point on its street
 
   if (!net.wrap && opts.green > 1) { // junction lamps show which axis has green
     g.fillStyle = greenAxis(sim.t, opts.green) ? COLORS.cool : COLORS.pellet;
@@ -148,9 +165,13 @@ export const drawFrame = (g, view) => {
     const alpha = lab || f || sim.last[k] >= sim.t - 2 ? 1 : 0.7;
     const [cx, cy] = centre(sim.pos[k]);
     const [hx, hy] = headingOf(net, sim, k);
-    box(g, cam, [cx, cy], [hx, hy], 0.96, 0.7, 0, 0.36, color, alpha); // body
-    box(g, cam, [cx - hx * 0.1, cy - hy * 0.1], [hx, hy], 0.5, 0.56, 0.36, 0.62, color, alpha); // cabin, set back
-    const [lx, ly] = project(cam, [cx + hx * 0.49, cy + hy * 0.49, 0.22]); // headlight
+    // along a diagonal street consecutive cells sit closer than one cell apart: fit the car to the gap
+    const n = sim.next[k] >= 0 ? sim.next[k] : sim.prev[k];
+    const gap = n >= 0 && !net.wrap ? Math.hypot(net.disp[2 * n] - cx, net.disp[2 * n + 1] - cy) : 1;
+    const len = Math.min(0.96, Math.max(0.5, 0.92 * gap));
+    box(g, cam, [cx, cy], [hx, hy], len, 0.7, 0, 0.36, color, alpha); // body
+    box(g, cam, [cx - hx * 0.1 * len, cy - hy * 0.1 * len], [hx, hy], 0.52 * len, 0.56, 0.36, 0.62, color, alpha); // cabin, set back
+    const [lx, ly] = project(cam, [cx + hx * 0.5 * len, cy + hy * 0.5 * len, 0.22]); // headlight
     g.fillStyle = COLORS.white; g.fillRect(Math.round(lx) - 1, Math.round(ly) - 1, 2, 2);
   }
 

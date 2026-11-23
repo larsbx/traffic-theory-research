@@ -86,7 +86,10 @@ test('simulate: bounded, deterministic per seed, and a repealed law can jam wher
   assert.equal(a.status, 200);
   assert.deepEqual(a.body, b.body);
   assert.equal(a.body.series.length, 30);
-  for (const p of a.body.series) for (const k of ['rho', 'v', 'j']) assert.ok(p[k] >= 0 && p[k] <= 1, `${k}=${p[k]}`);
+  for (const p of a.body.series) {
+    for (const k of ['rho', 'j']) assert.ok(p[k] >= 0 && p[k] <= 1, `${k}=${p[k]}`);
+    assert.ok(p.v >= 0 && p.v <= 2, `v=${p.v}`); // hops per car per full step: ≤ 2 (one per half-step)
+  }
   assert.equal(a.body.params.law, 'CITY CODE');
   const bml = await get(api, `/api/simulate?lat=0&lon=0&rho=0.5&steps=1200&law=BML%20LIGHTS&slow=0`);
   for (const core of bml.body.final.cores) assert.ok(core.length >= 4, 'every jam core has ≥ girth cars');

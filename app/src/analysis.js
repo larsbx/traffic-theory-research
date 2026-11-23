@@ -59,11 +59,14 @@ export const isGridlock = (net, s) => {
 /** Cars currently on the street. */
 export const onStreet = (s) => s.pos.reduce((a, p) => a + (p >= 0), 0);
 
-/** Observables after half-step s.t, given the moves made in the last full step (two half-steps). */
+/** Observables after half-step s.t, given the moves made in the last full step (two half-steps).
+ * v is hops per car per full step. It is at most 1 on axis-aligned lanes but reaches
+ * 1 + min(|tan θ|, |cot θ|) on a straight street at bearing θ (structure.freeSpeed), so it is
+ * not capped. */
 export const snapshot = (net, s, opts, fullStepMoves) => {
   const cert = certificate(net, s, opts);
   const on = onStreet(s);
   const rho = on / net.roadCells;
-  const v = on ? Math.min(1, fullStepMoves / on) : 0;
+  const v = on ? fullStepMoves / on : 0;
   return { t: s.t, rho, v, j: rho * v, onStreet: on, queue: s.pos.length - on, frozen: cert.count, loops: cert.cores.length, cert };
 };

@@ -113,7 +113,7 @@ const labReadout = (m) => {
   const gg = gcd(W, H);
   const fmax = gg >= 2 ? (W * H / gg) * Math.floor((2 * gg) / 3) : Math.max(H * Math.floor(W / 2), W * Math.floor(H / 2));
   // JAM = every car certified frozen under the active rule (a full TRAIN ring rotates, so it is not)
-  const status = n > 0 && m.cert.count === n ? 'JAM' : m.vbar >= 0.999 && app.hist.length >= 4 ? 'FREE' : 'MIXED';
+  const status = n > 0 && m.cert.count === n ? 'JAM' : m.vbar >= 0.999 && app.hist.length >= 4 ? 'FREE' : 'MIXED'; // torus: v ≤ 1
   const rows = [
     ['STATE', `${status} · n = ${n} (E ${nE}, N ${n - nE}) · v̄ = ${m.vbar.toFixed(2)}`],
     ['G1', n < Math.min(W, H) ? `n < min(W,H) = ${Math.min(W, H)}: no configuration can ever gridlock.` : `n ≥ min(W,H) = ${Math.min(W, H)}: some ${n}-car gridlock exists.`],
@@ -139,7 +139,7 @@ const startSweep = () => {
     let moves = 0, on = 0;
     for (let t = 0; t < 600; t++) { s = halfStep(v.net, s, v.opts); if (t >= 300) { moves += s.moved; on += onStreet(s); } }
     const rho = on / 300 / v.net.roadCells;
-    app.sweep.push({ rho, j: rho * Math.min(1, (2 * moves) / Math.max(1, on)) });
+    app.sweep.push({ rho, j: (rho * (2 * moves)) / Math.max(1, on) }); // hops per car per full step, uncapped
     app.sweeping.i++;
     setTimeout(run, 0);
   };

@@ -128,7 +128,7 @@ footer { border-top: 3px double var(--maze); padding-top: 14px; margin-top: 10px
         <li><i style="background:var(--hazard)"></i>Broken-down car</li>
         <li><i style="background:var(--peach)"></i><i style="background:var(--cool)"></i>Junction lamps: green for E–W or N–S</li>
       </ul>
-      <p>Cars point toward their next cell, with a headlight on the front. Drag the map to turn and tilt it, shift-drag (or right-drag) to pan, scroll to zoom. <kbd>SPACE</kbd> pauses.</p>
+      <p>Cars face along their street, with a headlight on the front. Drag the map to turn and tilt it, shift-drag (or right-drag) to pan, scroll to zoom. <kbd>SPACE</kbd> pauses.</p>
     </section>
 
     <section class="panel" data-show="city">
@@ -180,7 +180,7 @@ footer { border-top: 3px double var(--maze); padding-top: 14px; margin-top: 10px
       <summary>Streets to lanes</summary>
       <div class="window">
         <h3>STREETS TO LANES</h3>
-        <p>Each map is a 720 × 480 m window of OpenStreetMap, cut into 96 × 64 cells of 7.5 m, one car length. One-way streets become one lane. Two-way streets become two, on the side the country drives on. Lanes are offset by <span class="math">(s/2)(|cos θ|+|sin θ|)</span> so the staircases of diagonal streets cannot interlock. Any loop shorter than 12 cells that is not a real crossing box is a rasterising artefact and is removed.</p>
+        <p>Each map is a 720 × 480 m window of OpenStreetMap, cut into 96 × 64 cells of 7.5 m, one car length. One-way streets become one lane. Two-way streets become two, on the side the country drives on. Lanes are offset by <span class="math">(s/2)(|cos θ|+|sin θ|)</span> so the staircases of diagonal streets cannot interlock. Any loop shorter than 12 cells that is not a real crossing box is a rasterising artefact and is removed. Cars move cell by cell, but each cell is drawn at its point on the real street line, so streets look straight while the dynamics stay on the grid.</p>
       </div>
     </details>
     <details name="info">
@@ -222,7 +222,7 @@ footer { border-top: 3px double var(--maze); padding-top: 14px; margin-top: 10px
       <summary>Fundamental diagram</summary>
       <div class="window">
         <h3>FUNDAMENTAL DIAGRAM</h3>
-        <p>Yellow: flow J = ρ × mean speed after 300 half-steps at each density on this map and law (press MEASURE). Red: right now. The curve flattens where the map's entries saturate, the open-boundary limit known from exclusion processes.</p>
+        <p>Yellow: flow J = ρ × mean speed (hops per car per step; above 1 on diagonal streets) after 300 half-steps at each density on this map and law (press MEASURE). Red: right now. The curve flattens where the map's entries saturate, the open-boundary limit known from exclusion processes.</p>
       </div>
     </details>
     <details name="info">
