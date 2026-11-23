@@ -71,3 +71,30 @@ if __name__ == "__main__":
         for name, g in (("x (jams)", best[0]), ("y = x + car (flows)", best[1])):
             print(name); print("\n".join("".join(sym[v] for v in row) for row in g[::-1]))
         print("added at (y,x) =", best[2], "original cars still moving:", best[3])
+
+
+def gated_witness(h: int, w: int):
+    """Genuine un-jamming pair (x, y, added_cell) for min(h, w) >= 2 and max(h, w) >= 4.
+
+    Columns family (w >= 4): column 0 is a full N ring minus (x,y) = (0,0), column 1 holds a
+    single N car at row 0, column 2 is a full N ring, column w-1 is a full E column. y adds
+    an N car at (0,0), which closes the gate. Rows family (h >= 4, used when w < 4): the same
+    with rows for columns and species swapped. See docs/theorems.md §4 (Theorem U).
+    """
+    from bml.model import EAST, NORTH
+    assert min(h, w) >= 2 and max(h, w) >= 4
+    x = np.zeros((h, w), np.int8)
+    if w >= 4:
+        x[:, 0] = NORTH; x[0, 0] = 0
+        x[0, 1] = NORTH
+        x[:, 2] = NORTH
+        x[:, w - 1] = EAST
+        sp = NORTH
+    else:
+        x[0, :] = EAST; x[0, 0] = 0
+        x[1, 0] = EAST
+        x[2, :] = EAST
+        x[h - 1, :] = NORTH
+        sp = EAST
+    y = x.copy(); y[0, 0] = sp
+    return x, y, (0, 0)

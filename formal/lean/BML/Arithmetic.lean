@@ -1,8 +1,8 @@
 import BML.Kernel
 
 /-!
-Arithmetic components of G1 and F. These do not assert that a blocker cycle
-has already been extracted, or that the free-flow class packing is formalized.
+Arithmetic components used by the complete G1 proof in Gridlock.lean and
+the complete free-flow capacity proof in FreeMaximum.lean.
 -/
 namespace BML
 
@@ -19,7 +19,7 @@ theorem winding_length_lower_bound (w h a b : Nat)
     have hmin := Nat.min_le_left w h
     omega
 
-/-- The arithmetic packing expression in the pen-and-paper Theorem F. -/
+/-- The equivalent nested-floor expression for the free-flow class capacity. -/
 def freeClasses (g : Nat) : Nat := (g + g / 3) / 2
 
 theorem freeClasses_eq_two_thirds (g : Nat) : freeClasses g = (2 * g) / 3 := by

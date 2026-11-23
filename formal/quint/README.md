@@ -1,16 +1,19 @@
 # Executable Quint BML models
 
-This directory contains three separately scoped suites using the same pinned
+This directory contains separately scoped suites using the same pinned
 Quint 0.33.1 interpreter and simultaneous finite-torus half-steps.
 `BML.qnt` provides the CLASSIC east-then-north replay against the NumPy kernel.
 `traffic.qnt` provides explicit half-step phases and the 21-tile Wang encoding,
 with a separate CLASSIC replay against Lean. `Train.qnt` implements TRAIN
 queue movement and full-ring rotation. The distinct filenames also work on
 filesystems that do not distinguish upper and lower case.
+`Absorption.qnt` extends the CLASSIC kernel with finite-cutoff certificates
+for eventual gridlock and all-time avoidance.
 
 | Suite | Entry points | Deterministic coverage |
 |---|---|---|
 | Finite BML replay | `BML.qnt`, `check.py`, `evaluate.py` | Ten Quint tests; every state of all 14 ordered positive rectangles with at most six cells, plus three `4x2` witness rows; three executed mutation controls. |
+| Eventual-gridlock certificates | `Absorption.qnt`, `absorption_evaluate.py` | Twenty deterministic tests including the imported BML tests; 22,320 exhaustive cutoff rows, 144 longer `3x3` rows, and ten larger witness rows compared with actual Lean and Python. |
 | Phase and Wang layer | `traffic.qnt`, `bml_tests.qnt`, `bml_model.qnt`, `bml_export.qnt`, `export.cjs` | 25 pure tests and four state-transition tests; 1,560 boards on six tori, with both phases for 3,120 half-step cases. |
 | TRAIN movement | `Train.qnt`, `train_tests.qnt`, `train_model.qnt`, `train_check.py`, `train_evaluate.py` | 19 pure tests and five stateful tests; 3,720 boards on 14 rectangles, 74 larger targeted boards, 96 constructor boards, and five executed mutation controls. |
 
@@ -128,6 +131,28 @@ actual Quint interpreter and validates every returned row. Full enumeration
 through the CLI is capped at nine cells; explicit state indices can use tori
 up to sixteen cells. `evaluate_rows` provides the same protocol as an importable
 Python function.
+
+## Eventual-gridlock certificates
+
+`Absorption.qnt` imports the actual CLASSIC kernel from `BML.qnt`. It checks
+the complete orbit prefix, both half-steps, species counts, state legality,
+and jam absorption. It returns a hit only for a nonempty terminal jam, a safe
+verdict only for exact non-target terminal recurrence, and unresolved otherwise.
+The adapter requires the model's internal verification flag before exposing
+`initial_code,cutoff,terminal_code,verdict,population` rows.
+
+From the repository root:
+
+```sh
+python scripts/check_absorption.py --backend quint --report .artifacts/absorption-quint.json
+```
+
+The default `--backend both` also builds, audits, and runs the Lean exporter.
+The adapter contains no Python traffic dynamics. These finite correspondence
+checks complement the universal soundness proofs in `BML/Absorption.lean`;
+they do not prove a positive critical density. Exact initial weights, omitted
+mass, cutoff scope, and rejection controls are documented in the
+[certificate note](../../docs/research/2026-11-18-certified-absorption-bounds.md).
 
 ## Phase and Wang layer
 
@@ -279,8 +304,35 @@ verification or unbounded source-refinement theorem is claimed.
 These Quint suites do not prove eventual classification for all configurations,
 G1/G2/Theorem F, a critical density, high-density random gridlock, infinite
 Fibonacci frequencies, trigonometric identities, or diffraction theorems.
-The separate Lean TRAIN library proves the complete rectangular zero-movement
-existence threshold and eventual full speed on sparse squares; the Quint runs
-remain bounded evidence. The empty state
-has no movers but is not a nonempty jam. In TRAIN, fixed occupancy can coexist
-with moving cars, and the model's stuck predicate uses mover counts.
+The separate Lean libraries prove complete CLASSIC G1/G2, the forced-gridlock
+boundary among feasible CLASSIC populations n≤WH, the B2 coordinate coset
+identity, the actual-phase CLASSIC free-flow characterization R, and the rectangular TRAIN
+zero-movement existence threshold and sparse-square speed-one theorem; the
+Quint runs remain bounded evidence.
+CLASSIC G2 constructs a board of each sub-full count that never reaches a
+nonempty jam, without claiming eventual free flow. Full CLASSIC occupancy
+forces a jam at time zero. The empty fixed state has no movers but is not a
+nonempty jam, including on the 1×1 torus. In TRAIN, fixed occupancy can coexist
+with moving cars, and the model's stuck predicate uses mover counts; the
+CLASSIC forced-gridlock boundary does not transfer to that rule.
+
+The separate `coset_export`/`scripts/check_cosets.py` gate compares Lean's
+actual cyclic-coordinate action and phase classes with independent Python
+modular arithmetic. It reconstructs coordinate cycles and checks same-class
+and east-translated reachability on a finite domain; it does not invoke Quint
+or evaluate traffic configurations. The universal B2 proof supplies signed
+and bounded forward witnesses. The separate Lean proof of R connects these
+to actual traffic orbits: static conditions are equivalent to full movement
+from time zero, and checking the first lcm(W,H) rounds suffices. Such
+configurations return after the lcm, possibly with a smaller least period.
+Eventual entry into this static-free set is a separate question; no general
+convergence statement is implied. The packing and maximizing constructions
+of F remain unformalized.
+
+The separate `freeflow_export`/`scripts/check_freeflow.py` gate evaluates
+the actual Lean static and movement predicates and full traffic phase traces.
+Its default domain is all 93,387 initial states on the 23 ordered positive
+rectangles with WH≤9, covering 622,362 full transitions. NumPy and an
+independent scalar orbit oracle check the phases and movement from time zero;
+source-bound receipts record successful runs and rejection controls. This
+gate does not invoke Quint or extend the Quint replay domain above.

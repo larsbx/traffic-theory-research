@@ -1,6 +1,8 @@
 import Traffic
 import Traffic.Export
-import Lean
+-- Batch audits need the command and axiom APIs, not the server/shell umbrella.
+import Lean.Elab.Command
+import Lean.Util.CollectAxioms
 
 open Lean Elab Command
 
