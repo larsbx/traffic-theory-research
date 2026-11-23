@@ -31,6 +31,10 @@ pixels is an affine image of a world segment, as in SNES Mode 7 but at any tilt 
 `render.drawGround` fills the low-res target (480 × 320) row by row from the maze texture,
 with distance fog and a dusk sky, and recomputes only when the camera moves. Zoom 1 frames the
 whole map: the camera distance is bisected until all four corners sit on the screen margin.
+Streets are drawn straight. The rasterizer keeps each lane's true polyline, and the texture
+strokes those as corridors. Each cell has a display point, the projection of its centre onto
+its lane. Cars sit at that point, face along the street's true heading, and are sized to the
+gap between consecutive cells. The dynamics stay on the grid; only the drawing is geometric.
 Cars are drawn far to near; each is two boxes with back faces culled and side faces lit.
 `test/camera.test.js` checks that unproject inverts project, the row-affinity, the framing and
 the zoom.
@@ -109,6 +113,8 @@ signals, with dawdling and breakdowns.
 - Following [freezing and capture](../docs/research/2026-11-18-freezing-gridlock-nucleation.md),
   forming a core is separate from capturing traffic, and in a closed city one core is
   absorbing: FROZEN keeps climbing after the first JAM LOOP appears.
+- Mean speed counts hops per car per full step. It is at most 1 on axis-aligned lanes but
+  reaches 1 + min(\|tan θ\|, \|cot θ\|) on a diagonal street, so it is not capped.
 - Flow saturates at high ρ because entries limit the inflow: the open-boundary (TASEP)
   phenomenon. The simulator reports on-street density and the entry queue separately for that
   reason.

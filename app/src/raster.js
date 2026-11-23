@@ -77,14 +77,18 @@ const csr = (n, edges) => {
   return { outStart, outList, outHeading, inStart, inList };
 };
 
-export const network = ({ W, H, road, edges, exit = new Uint8Array(W * H), entries = [], drive = 'R', wrap = false }) => {
+const centres = (W, H) => Float32Array.from({ length: 2 * W * H }, (_, i) => (i % 2 ? Math.floor(i / 2 / W) : (i / 2) % W) + 0.5);
+
+/** lanes: true lane polylines in cell units (for drawing straight streets); disp: per-cell
+ * display point [x, y], the projection of the cell centre onto its lane (default: the centre). */
+export const network = ({ W, H, road, edges, exit = new Uint8Array(W * H), entries = [], drive = 'R', wrap = false, lanes = [], disp = centres(W, H) }) => {
   const adj = csr(W * H, edges);
   // A junction is entered along both axes: the cells a traffic signal governs.
   const junction = Uint8Array.from({ length: W * H }, (_, c) => {
     const axes = new Set([...adj.inList.subarray(adj.inStart[c], adj.inStart[c + 1])].map((a) => (Math.floor(a / W) === Math.floor(c / W) ? 0 : 1)));
     return axes.size > 1 ? 1 : 0;
   });
-  return Object.freeze({ W, H, road, exit, junction, entries: Int32Array.from(entries), drive, wrap, roadCells: road.reduce((a, b) => a + b, 0), ...adj });
+  return Object.freeze({ W, H, road, exit, junction, entries: Int32Array.from(entries), drive, wrap, lanes, disp, roadCells: road.reduce((a, b) => a + b, 0), ...adj });
 };
 
 /** Heading of the edge a→b (NaN if absent). */
@@ -151,6 +155,14 @@ export const rasterize = (roads, { cols: W, rows: H, cell, drive = 'R' }) => {
   const exit = new Uint8Array(W * H);
   const entries = new Set();
   const edges = new Map(); // "a,b" → [a, b, rank, heading]; lower rank = stronger provenance
+  const lanePolys = [];
+  const disp = centres(W, H);
+  const placed = new Uint8Array(W * H); // first lane through a cell sets its display point
+  const projectOnto = ([px, py], [ax, ay], [bx, by]) => {
+    const [ux, uy] = [bx - ax, by - ay];
+    const t = Math.max(0, Math.min(1, ((px - ax) * ux + (py - ay) * uy) / (ux * ux + uy * uy || 1)));
+    return [ax + t * ux, ay + t * uy];
+  };
   const addEdge = (a, b, rank, heading) => {
     const old = edges.get(`${a},${b}`);
     if (!old || rank < old[2]) edges.set(`${a},${b}`, [a, b, rank, heading]);
@@ -162,10 +174,15 @@ export const rasterize = (roads, { cols: W, rows: H, cell, drive = 'R' }) => {
       // segment index per cell: the first and last segments are the artificial extensions
       const cells = grid.slice(1).flatMap((q, i) => traverse(grid[i], q).slice(i ? 1 : 0).map((c) => [...c, i]));
       const headings = grid.slice(1).map((q, i) => Math.atan2(q[1] - grid[i][1], q[0] - grid[i][0]));
+      lanePolys.push(Float32Array.from(grid.flat()));
       const last = grid.length - 2;
       cells.forEach((c, i) => {
         if (!inside(c)) return;
         road[id(c)] = 1;
+        if (!placed[id(c)]) {
+          const [qx, qy] = projectOnto([c[0] + 0.5, c[1] + 0.5], grid[c[2]], grid[c[2] + 1]);
+          disp[2 * id(c)] = qx; disp[2 * id(c) + 1] = qy; placed[id(c)] = 1;
+        }
         const [p, n] = [cells[i - 1], cells[i + 1]];
         if (p && !inside(p)) entries.add(id(c));
         if (n && !inside(n)) exit[id(c)] = 1;
@@ -203,7 +220,7 @@ export const rasterize = (roads, { cols: W, rows: H, cell, drive = 'R' }) => {
   pruneMicroRings(edges, W); // a turn-around can close a new ring; any dead end it leaves is a sink
   const hasOut = new Set([...edges.values()].map(([a]) => a));
   for (let c = 0; c < W * H; c++) if (road[c] && !hasOut.has(c)) exit[c] = 1;
-  return network({ W, H, road, edges: [...edges.values()], exit, entries: [...entries], drive });
+  return network({ W, H, road, edges: [...edges.values()], exit, entries: [...entries], drive, lanes: lanePolys, disp });
 };
 
 /** The BML torus: every cell has an east and a north out-edge (with wrap-around). */

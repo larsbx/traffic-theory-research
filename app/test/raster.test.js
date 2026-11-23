@@ -77,3 +77,39 @@ test('edge headings keep their fractional radians (regression: they were stored 
   assert.ok([...net.outHeading].every((h) => Math.abs(h - want) < 1e-6), [...new Set(net.outHeading)].join(' '));
   assert.ok([...torus(3, 3).outHeading].some((h) => Math.abs(h - Math.PI / 2) < 1e-6), 'torus north edges point at π/2');
 });
+
+test('straight streets: each lane cell displays on its lane line, within half a cell diagonal of its centre', () => {
+  const th = Math.atan2(1, 2);
+  const net = rasterize([{ o: 1, c: 4, pts: [-3000 * Math.cos(th), -3000 * Math.sin(th), 3000 * Math.cos(th), 3000 * Math.sin(th)].map((v) => Math.round(v * 10)) }], { cols: 60, rows: 40, cell: 7.5 });
+  assert.equal(net.lanes.length, 1);
+  const ln = net.lanes[0];
+  const [x0, y0] = [ln[0], ln[1]];
+  const dir = Math.atan2(ln.at(-1) - y0, ln.at(-2) - x0); // the lane's own line (endpoints are rounded to 0.1 m)
+  for (let c = 0; c < net.W * net.H; c++) {
+    if (!net.road[c]) continue;
+    const [dx, dy] = [net.disp[2 * c], net.disp[2 * c + 1]];
+    assert.ok(Math.hypot(dx - (c % net.W) - 0.5, dy - Math.floor(c / net.W) - 0.5) <= Math.SQRT1_2 + 1e-6, `cell ${c}`);
+    assert.ok(Math.abs((dx - x0) * Math.sin(dir) - (dy - y0) * Math.cos(dir)) < 1e-3, `cell ${c} off the line`);
+  }
+});
+
+test('straight streets: presets carry lane polylines; the torus displays cells at their centres', () => {
+  const t = torus(3, 2);
+  assert.equal(t.lanes.length, 0);
+  assert.deepEqual([...t.disp.slice(0, 4)], [0.5, 0.5, 1.5, 0.5]);
+});
+
+test('cars on a diagonal street never overlap: adjacent half-lengths sum to less than their gap', async () => {
+  const { carLength } = await import('../src/render.js');
+  const th = Math.atan2(1, 2);
+  const net = rasterize([{ o: 1, c: 4, pts: [-3000 * Math.cos(th), -3000 * Math.sin(th), 3000 * Math.cos(th), 3000 * Math.sin(th)].map((v) => Math.round(v * 10)) }], { cols: 60, rows: 40, cell: 7.5 });
+  const lane = [];
+  for (let c = net.entries[0]; c >= 0 && !lane.includes(c); c = net.outStart[c + 1] > net.outStart[c] ? net.outList[net.outStart[c]] : -1) lane.push(c);
+  assert.ok(lane.length > 30);
+  const len = (i) => carLength(net, lane[i - 1] ?? -1, lane[i], lane[i + 1] ?? -1);
+  for (let i = 1; i < lane.length - 2; i++) {
+    const gap = Math.hypot(net.disp[2 * lane[i + 1]] - net.disp[2 * lane[i]], net.disp[2 * lane[i + 1] + 1] - net.disp[2 * lane[i] + 1]);
+    assert.ok(len(i) / 2 + len(i + 1) / 2 < gap, `cells ${i},${i + 1}: ${len(i)}/2 + ${len(i + 1)}/2 ≥ ${gap}`);
+    assert.ok(len(i) > 0.35, 'still a visible car');
+  }
+});
