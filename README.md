@@ -111,6 +111,9 @@ connections to tiling and dynamical-systems theory.
   exact population normalization. The actual exporter is proved to refine
   the CLASSIC board and tagged traces; independent finite recurrence checks
   cover empty boards, partial fixation, and unequal-population mixtures.
+- [Gridlock on Real Street Networks](docs/paper/paper.pdf) (paper, 2026-11-23): the results below
+  in academic form, with proofs, the Lean status of the certificate, and 600 seeded
+  experiments on six city centres ([source and data](docs/paper/README.md)).
 - [Dynamics-free mathematics on real street maps](docs/research/2026-11-23-dynamics-free-map-mathematics.md)
   (2026-11-23): G0/G1 restated for lane graphs under exclusion + commitment alone (jam cores
   live on the *jam graph* and need ≥ girth cars). It also adds a per-cell throughput lemma with

@@ -1,0 +1,214 @@
+<style>
+  @page { size: A4; }
+  :root { --ink: #111; --rule: #888; }
+  html { color-scheme: light; }
+  body { font-family: KaTeX_Main, "Latin Modern Roman", "CMU Serif", "Times New Roman", serif; font-size: 10.5pt; line-height: 1.38; color: var(--ink); background: #fff; margin: 0; text-align: justify; hyphens: auto; }
+  .katex { font-size: 1.04em; }
+  h1 { font-size: 16.5pt; font-weight: 700; text-align: center; margin: 0 0 10pt; line-height: 1.25; text-wrap: balance; }
+  .authors { text-align: center; font-size: 10.5pt; margin-bottom: 4pt; }
+  .date { text-align: center; font-size: 9.5pt; margin-bottom: 16pt; }
+  .abstract { margin: 0 6% 14pt; font-size: 9.6pt; }
+  .abstract b { display: block; text-align: center; margin-bottom: 3pt; }
+  .keywords { margin: 0 6% 16pt; font-size: 9pt; }
+  h2 { font-size: 12pt; margin: 16pt 0 6pt; break-after: avoid; }
+  h3 { font-size: 10.5pt; margin: 11pt 0 4pt; break-after: avoid; }
+  p { margin: 0 0 6pt; text-indent: 1.4em; }
+  h2 + p, h3 + p, .thm + p, .proof + p, figure + p, table + p, .noindent { text-indent: 0; }
+  .thm, .proof, .rem { margin: 7pt 0; text-indent: 0; }
+  .rem { text-align: left; }
+  .thm > .label, .rem > .label { font-weight: 700; }
+  .thm { font-style: italic; }
+  .thm .katex, .thm code { font-style: normal; }
+  .proof > .label { font-style: italic; }
+  .qed { float: right; }
+  ul, ol { margin: 2pt 0 7pt; padding-left: 1.6em; }
+  li { margin-bottom: 2pt; }
+  code { font-family: "Latin Modern Mono", "CMU Typewriter Text", Menlo, monospace; font-size: 0.9em; }
+  table { border-collapse: collapse; margin: 6pt auto 4pt; font-size: 8.8pt; font-variant-numeric: tabular-nums; break-inside: avoid; }
+  th, td { padding: 2pt 6pt; text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  thead tr:first-child th { border-top: 1.2pt solid #000; }
+  thead tr:last-child th { border-bottom: 0.6pt solid #000; }
+  tbody tr:last-child td { border-bottom: 1.2pt solid #000; }
+  caption { caption-side: top; font-size: 9pt; text-align: justify; margin-bottom: 4pt; }
+  figure { margin: 8pt 0; break-inside: avoid; text-align: center; }
+  figure img { max-width: 100%; }
+  figure .row { display: flex; gap: 8pt; justify-content: center; }
+  figure .row img { width: 49%; }
+  figcaption { font-size: 9pt; text-align: justify; margin-top: 4pt; }
+  .refs { font-size: 9pt; padding-left: 2.2em; }
+  .refs li { margin-bottom: 3pt; }
+  .katex-display { margin: 6pt 0; }
+  a { color: inherit; text-decoration: none; }
+</style>
+
+<h1>Gridlock on Real Street Networks: Blocking Certificates, Girth Bounds and Throughput Limits for Two-Phase Exclusion Dynamics</h1>
+<div class="authors">traffic-theory-research contributors</div>
+<div class="date">23 November 2026</div>
+
+<div class="abstract"><b>Abstract</b>
+The Biham–Middleton–Levine (BML) automaton is the standard minimal model of urban gridlock, but it lives on a torus whose streets all run east or north. We transfer it to street networks extracted from OpenStreetMap. We give a rasterisation of real streets into a directed lane graph whose moves are unit steps. On it we define a two-phase exclusion dynamics with committed routes that reduces exactly to BML on the torus. We then separate what can be said without simulation from what cannot. Under two assumptions only, exclusion and commitment, we prove four results. (i) Every cycle of the wait-for relation is permanently frozen, together with everything queued behind it; this result is machine-checked in Lean&nbsp;4 for an abstract half-step contract. (ii) Every direct jam core is a cycle of a <em>jam graph</em> $J$ and so contains at least $\operatorname{girth}(J)$ cars, and every cycle of $J$ is realised by frozen states of every size up to its basin. (iii) The long-run exit rate is bounded by a vertex-capacitated maximum flow. (iv) A straight street at bearing $\theta$ rasterises to a Sturmian word, which gives a free speed of $1+\min(|\tan\theta|,|\cot\theta|)$ cells per step. A mean-field cycle-risk index bounded by a weighted Bowen–Lanford zeta function ranks maps by jam proneness. In 600 simulations over six city centres and four traffic-law regimes, grids with large jam girth never froze. Centres with $2\times2$ crossing boxes froze readily, one of them even under the strictest law set. A safety rule, “don't block the box”, produced deadlock cycles of its own that lie outside $J$. The risk index has Spearman correlation $0.72$ with the observed frozen share. All code, data and proofs are public.
+</div>
+<div class="keywords"><i>Keywords:</i> Biham–Middleton–Levine model; traffic gridlock; exclusion processes; deadlock; directed girth; max-flow min-cut; Sturmian words; graph zeta functions; OpenStreetMap.</div>
+
+<h2>1&nbsp;&nbsp;Introduction</h2>
+<p>In the Biham–Middleton–Levine (BML) model [1] two species of cars occupy the cells of a $W\times H$ torus. Eastbound cars try to move one cell east on even half-steps, and northbound cars one cell north on odd half-steps. A car moves only if its target cell is empty. Simulations show an abrupt transition from free flow to global jamming as density rises. Rigorous results exist only near the extremes. Angel, Holroyd and Martin proved that the jammed phase occurs at densities close to one [2]. Austin and Benjamini proved self-organisation to free flow below a size-dependent density, for a closely related update rule [3]. Whether a sharp threshold $p_c\in(0,1)$ exists remains open. Intermediate states and their dependence on the torus geometry are well documented numerically [4].</p>
+<p>Real streets are not tori. They have arbitrary bearings, one-way and two-way segments, junctions of every degree, turns, signals and open boundaries. This paper asks which parts of the BML mathematics survive the passage to real street networks, and which parts require running dynamics at all. Our answer is that much of it is structural. Gridlock is a statement about cycles of a wait-for relation, and such cycles are constrained by the topology of the network, not by the details of the update rule. Concretely, we contribute the following.</p>
+<ol>
+  <li>A construction of lane graphs from OpenStreetMap whose arcs are unit steps, with rules that remove rasterisation artefacts (§3.1). On it we define a two-phase exclusion dynamics with traffic signals, a box-entry rule and turn restrictions that reduces exactly to BML on the torus (§3.2, Proposition&nbsp;1).</li>
+  <li>A frozen-car certificate (Theorem&nbsp;2), the form on lane graphs of the torus lemma “gridlock = fixed point”. It is machine-checked in Lean&nbsp;4 for an abstract half-step contract.</li>
+  <li>The jam graph $J$ and a two-sided girth theorem (Theorem&nbsp;3): direct jam cores have at least $\operatorname{girth}(J)$ cars, and every cycle of $J$ supports frozen states of all sizes up to its basin. This is the network analogue of the torus threshold $n\ge\min(W,H)$.</li>
+  <li>A per-cell admission lemma and a max-flow bound on throughput (Theorem&nbsp;5); a Sturmian formula for the free speed of straight streets (Theorem&nbsp;6); and a zeta-bounded cycle-risk index (§4.5).</li>
+  <li>Experiments on six real city centres under four law regimes, 600 seeded runs in total, with all data and code released (§5).</li>
+</ol>
+
+<h2>2&nbsp;&nbsp;Related work</h2>
+<p>Beyond [1–4], the stochastic cellular automaton of Nagel and Schreckenberg [5] introduced random deceleration (“dawdling”), which we adopt as an optional noise. Exclusion processes with open boundaries, analysed exactly by Derrida, Evans, Hakim and Pasquier [6], explain the boundary-limited flow plateau we observe. On the macroscopic side, the cell transmission model [7] discretises the LWR kinematic-wave theory on networks. The macroscopic fundamental diagram was established empirically by Geroliminis and Daganzo [9]; Daganzo and Geroliminis [8] approximated it analytically from network geometry and signal timing alone. Our throughput bound is the microscopic, capacity-only counterpart of that idea. Deadlock as a cycle in a wait-for graph is classical in operating systems [10]. Our Theorem&nbsp;2 is that condition specialised to committed vehicles. Digital straight lines and their cutting sequences are Sturmian words [11, 16], and the grid traversal we use to rasterise is that of Amanatides and Woo [15]. Weighted cycle counts on directed graphs are encoded by the Bowen–Lanford zeta function [12]. Maximum flows are computed by Edmonds–Karp [13], and the feedback-arc-set problem relevant to network design is NP-hard [14]. Street geometry comes from OpenStreetMap [17].</p>
+
+<h2>3&nbsp;&nbsp;Model</h2>
+<h3>3.1&nbsp;&nbsp;Lane graphs from OpenStreetMap</h3>
+<p>A window of $720\times480$&nbsp;m around a centre is projected equirectangularly and cut into $96\times64$ cells of side $s=7.5$&nbsp;m, one car length. Drivable ways (motorway to living street, excluding tunnels and access-restricted ways) are taken with their one-way tags. A one-way street becomes one lane. A two-way street becomes two lanes, one on each side of the centre line, on the side the country drives on. Each lane polyline is traversed cell by cell with the Amanatides–Woo algorithm [15]. That yields a 4-connected cell path, and every consecutive pair becomes an arc. Every arc is therefore a unit step, horizontal or vertical, and carries the true bearing of its street.</p>
+<p>Three rules remove artefacts that would otherwise create spurious deadlocks.</p>
+<ol type="a">
+  <li><em>Band-aware lane offset.</em> A 4-connected digital line at bearing $\theta$ occupies a band about $|\cos\theta|+|\sin\theta|$ cells wide, measured across the line. We therefore offset each lane by $\tfrac{s}{2}(|\cos\theta|+|\sin\theta|)$ instead of $\tfrac{s}{2}$. Without this, the opposite lanes of a diagonal street interlock.</li>
+  <li><em>Head-on pairs.</em> If both $a\to b$ and $b\to a$ arise, the arc with weaker provenance is dropped, in the order extension segment, then turn-around, then minor road class.</li>
+  <li><em>Micro-rings.</em> Some shortest directed cycles of at most 12 cells pass through a cell that is not a junction (a junction being a cell entered along both axes). These arise where lanes cross at shallow angles, so their weakest arc is removed. At $7.5$&nbsp;m a real block has a perimeter of at least about 16 cells, and the genuine $2\times2$ box of a two-way crossing, made of four junction cells, is kept.</li>
+</ol>
+<p>Dead ends receive a turn-around arc. Cells where lanes leave the window are exits and those where they enter are entries.</p>
+
+<h3>3.2&nbsp;&nbsp;Two-phase exclusion dynamics</h3>
+<p>A state assigns to each car $k$ a cell $p_k$ (at most one car per cell) and a committed next cell $q_k\in\operatorname{out}(p_k)\cup\{\mathrm{EXIT}\}$. The axis of the move $p_k\to q_k$ is car $k$'s species for its current hop. Half-steps alternate phases $0,1,0,\dots$ and in phase $\varphi$ only cars whose committed move has axis $\varphi$ may move. Under <b>CLASSIC</b> a car moves iff its target was empty before the half-step [1]. Under <b>TRAIN</b> it moves iff its target is empty or its occupant also moves, so that closed loops of same-phase cars rotate (the rule considered in [3]). Several cars may contend for one cell at a merge; the longest-waiting car wins, with ties going to the lower identifier. A car chooses its next hop only after moving. Choices respect turn limits: no U-turns, no turns sharper than $120^\circ$, no two-hop reversal beyond $150^\circ$, and optionally no turns across oncoming traffic. Straight continuation is preferred $4{:}1$. Cars leaving at an exit re-enter at a free entry, which conserves the population.</p>
+<p>Three traffic laws act only by removing moves.</p>
+<ul>
+  <li><em>Signals:</em> a junction admits only the axis with green, $\mathrm{green}(t)=\lfloor t/G\rfloor \bmod 2$.</li>
+  <li><em>Box rule:</em> a car outside a junction commits to its whole path through the junction box. It may enter only if every cell of that path up to the first cell beyond the box is empty.</li>
+  <li><em>Dawdling:</em> each eligible car skips its move with probability $p$ [5].</li>
+</ul>
+<p class="noindent">We study four regimes, from strict to permissive: <i>city code</i> ($G=6$, box rule, no cross-traffic turns); <i>free turns</i> (cross-traffic turns allowed); <i>block the box</i> (no box rule); and <i>BML lights</i> ($G=1$).</p>
+
+<div class="thm"><span class="label">Proposition 1 (reduction to BML).</span> On the torus lane graph, where every cell has one east and one north out-arc, take cars of fixed species E and N, $G=1$, no box rule and $p=0$. Then two half-steps of the dynamics equal one step of the BML automaton, under CLASSIC and under TRAIN.</div>
+<div class="proof"><span class="label">Proof.</span> With $G=1$ the green axis equals the phase, so the signal never binds. On the torus each cell has a unique west and a unique south neighbour, so no two cars ever contend for a cell and the merge rule is vacuous. What remains is the BML eligibility rule of [1] (CLASSIC) or the queue-and-ring rule of [3] (TRAIN), applied east then north. As an independent check, the implementation reproduces the reference Python implementation cell for cell, and in move count, on 80 random orbits over ten torus shapes (including $1\times4$ and $3\times1$), four densities and both rules. <span class="qed">∎</span></div>
+
+<h2>4&nbsp;&nbsp;Structural results</h2>
+<p>Throughout, we assume only:</p>
+<p class="noindent"><b>(E) Exclusion.</b> A cell holds at most one car, and a car advances at most one cell per half-step.<br>
+<b>(C) Commitment.</b> A car changes $q_k$ only when it moves. Under CLASSIC a move into $q_k$ requires $q_k$ to be empty before the half-step. Under TRAIN it requires $q_k$ to be empty or vacated in the same half-step by a car that moves in the same phase.</p>
+<p>Signals, the box rule, dawdling and breakdowns only remove moves and so preserve every statement below of the form “never moves” or “at most”.</p>
+
+<h3>4.1&nbsp;&nbsp;Frozen-car certificates</h3>
+<p>For a car $k$ on the street let $\beta(k)$ be the occupant of $q_k$, if any. This is a <em>direct</em> blocking edge. Under the box rule, if $q_k$ is empty but $k$ waits to enter a junction, let $\beta(k)$ be the first occupant along $k$'s committed box path. This is an <em>indirect</em> edge. The map $\beta$ is a partial function on cars, so its functional graph consists of trees feeding cycles.</p>
+<div class="thm"><span class="label">Theorem 2 (certificate).</span> Let $C$ be a cycle of $\beta$. Under CLASSIC no car of $C$ ever moves again. Under TRAIN the same holds unless every edge of $C$ is direct and all cars of $C$ have the same axis. In either case, every car whose $\beta$-path reaches such a cycle never moves again.</div>
+<div class="proof"><span class="label">Proof.</span> Suppose some car of $C$ moves, and let $t$ be the first half-step at which one does, say car $k$. Up to $t$ no car of $C$ has moved, so by (C) every $q$ and every box path is unchanged and every blocker is still in place. Under CLASSIC, $k$ needs its blocker's cell empty before $t$, which is false. Under TRAIN, an indirect blocker also forbids the move. A direct blocker must itself move at $t$, in the same phase. Applying this around the cycle, every car of $C$ moves at $t$ along direct edges of one axis, which is the excluded case. For the trees, induct along $\beta$-paths: a car whose blocker never moves again never moves again. <span class="qed">∎</span></div>
+<div class="rem"><span class="label">Remark (formal status).</span> Theorem&nbsp;2 is proved in Lean&nbsp;4 (<code>formal/lean/BML/LaneDeadlock.lean</code>) for an abstract half-step contract with tagged occupants, committed next cells, box tails and movement events. The theorems are <code>Cycle.classic_immobile</code>, <code>Cycle.train_immobile</code> and the capture theorems <code>Cycle.classic_capture</code> and <code>Cycle.train_capture</code>. A refinement proof from the JavaScript simulator to that contract remains open. The correspondence is supported instead by targeted tests, which check that certified cars never move again across both rules, all laws, dawdling and breakdowns.</div>
+
+<h3>4.2&nbsp;&nbsp;The jam graph and a girth theorem</h3>
+<p>The natural candidate for “where jams live” is a single car's turn graph, whose states are lane arcs and whose arcs are legal turns. It is the wrong object. A jam loop is formed by <em>different</em> cars, each arriving from its own direction. In the $2\times2$ box of a two-way crossing, four cars that each drive <em>straight</em> through, from four directions, close a 4-cycle. No single car could drive that cycle, and on the London preset the turn graph has girth 20 while the observed cores have 4 cars.</p>
+<p class="noindent"><b>Definition.</b> The <em>jam graph</em> $J$ on road cells has an arc $b\to c$ iff some car at $b$ can commit to $c$: either for some legal arrival $a\to b$, or freshly spawned at $b$ (a spawned car has no arrival and may take any out-lane).</p>
+<div class="thm"><span class="label">Theorem 3 (girth).</span> (a) Every $\beta$-cycle all of whose edges are direct is a simple directed cycle of $J$. Hence every permanent core made of direct edges has at least $\operatorname{girth}(J)$ cars. (b) Conversely, let $C$ be a simple cycle of $J$ and $B(C)=\{v: v \text{ reaches } C \text{ in } J\}$. Then for every $n$ with $|C|\le n\le |B(C)|$ there is a frozen configuration of exactly $n$ cars.</div>
+<div class="proof"><span class="label">Proof.</span> (a) Consecutive cars of a direct cycle sit at distinct cells $b$, $c=q_k$ with $b\to c$ a committed move, which is an arc of $J$ by definition. The cars are distinct, so the cells are distinct. (b) Place one car on each cell of $C$, committed to its successor on $C$, with an arrival chosen so that the commitment is legal; this is possible by the definition of $J$. Take a spanning in-forest of $B(C)$ rooted on $C$. Add cars in order of increasing depth, each committed to its parent, which is already occupied. By Theorem&nbsp;2 the cycle is frozen, and so is each added car. Stop after $n$ cars. <span class="qed">∎</span></div>
+<div class="thm"><span class="label">Corollary 4 (parity).</span> Every arc changes $x+y$ by $\pm1$, so $J$ is bipartite and every jam core of direct edges has even length at least $4$. A core of length $4$ is exactly a $2\times2$ box.</div>
+<p>On the torus, $J$ is the east–north graph, whose girth is $\min(W,H)$. Theorem&nbsp;3(a) is then the lower half of the BML existence threshold “a jam with $n$ cars exists iff $\min(W,H)\le n\le WH$”. Under the box rule, $\beta$-cycles can contain indirect edges. Such cycles are certified by Theorem&nbsp;2 but need not be cycles of $J$, and §5 shows that they occur.</p>
+<p><b>Capture for fixed routes.</b> If routes are fixed in advance, as for automated vehicles or block-signalled trains, let $d_k$ be the number of hops car $k$ makes before it reaches a frozen car. While any non-frozen car can move, one does, so all cars are frozen within $\sum_k d_k$ rounds. On the torus with straight routes this has the shape of the Lean-proved capture bound $n_E(W-1)+n_N(H-1)$.</p>
+
+<h3>4.3&nbsp;&nbsp;Throughput</h3>
+<div class="thm"><span class="label">Lemma (admission).</span> Under CLASSIC, a cell into which no car can spawn is entered at most once per two half-steps. Every cell is entered at most once per half-step.</div>
+<div class="proof"><span class="label">Proof.</span> Let entries occur at $t<t'$. The first car leaves strictly after $t$. The second needs the cell empty before $t'$, so the first left at or before $t'-1$, hence $t'\ge t+2$. The second claim is (E). <span class="qed">∎</span></div>
+<div class="thm"><span class="label">Theorem 5 (max-flow bound).</span> Give each cell a capacity $\kappa(v)$ in cars per full step: $\kappa(v)=1$ under CLASSIC for cells without spawns and $\kappa(v)=2$ otherwise. Then the long-run exit rate satisfies $\Phi\le F^\ast$, where $F^\ast$ is the maximum flow from entries to exits in the lane graph with vertex capacities $\kappa$.</div>
+<div class="proof"><span class="label">Proof.</span> A car that exits after spawning has crossed every entry–exit vertex cut, and each crossing is an admission into a cut cell. By the lemma, a cut $S$ admits at most $\sum_{v\in S}\kappa(v)$ cars per full step. Take the minimum cut and apply max-flow min-cut [13]. Cars present at time $0$ contribute a bounded transient, which vanishes in the long-run average. <span class="qed">∎</span></div>
+
+<h3>4.4&nbsp;&nbsp;Sturmian streets</h3>
+<div class="thm"><span class="label">Theorem 6 (free speed).</span> Let a straight street have bearing $\theta$ and let $\alpha=\min(|\tan\theta|,|\cot\theta|)$. Its rasterised axis word is a Sturmian cutting sequence in which the minority axis has frequency $\alpha/(1+\alpha)$ and never repeats. The switch rate is therefore $\sigma=2\alpha/(1+\alpha)$. Under pure two-phase alternation ($G=1$, $p=0$) a lone car's long-run speed is
+$$ v(\theta)=\frac{2}{2-\sigma}=1+\alpha \ \text{cells per full step} \;=\; \frac{1}{\max(|\cos\theta|,|\sin\theta|)} \ \text{cell lengths of straight-line distance per step}. $$</div>
+<div class="proof"><span class="label">Proof.</span> The traversal of a line of slope $\alpha\le1$ (after a symmetry of the square) records one vertical step per unit rise and one horizontal step per unit run. That is the mechanical word of slope $\alpha/(1+\alpha)$ in the vertical letter [11, 16]. Since $\alpha\le1$, two vertical letters are never adjacent, so each vertical letter contributes two switches and $\sigma=2\alpha/(1+\alpha)$. A car that just moved on one axis finds the opposite phase next. If its next hop is on the other axis it moves after one half-step, and otherwise after two. The mean time per hop is therefore $\sigma\cdot1+(1-\sigma)\cdot2=2-\sigma$ half-steps. The speed is $2/(2-\sigma)$ hops per full step. Substituting $\sigma$ gives $1+\alpha$. Per unit advance along the major axis the street covers straight-line distance $\sqrt{1+\alpha^2}$ in $1+\alpha$ hops, so $1+\alpha$ hops per step cover $\sqrt{1+\alpha^2}=1/\max(|\cos\theta|,|\sin\theta|)$ cell lengths. <span class="qed">∎</span></div>
+<p>Two-phase alternation therefore favours diagonal streets, by up to $\sqrt2$ at $45^\circ$. The rasteriser's staircases inherit the dynamics of the blocking staircases studied on the torus. The tests confirm the switch rate and speed to within $2\cdot10^{-3}$ at ten bearings, and a simulated lone car at slope $\tfrac12$ attains $1.5$.</p>
+
+<h3>4.5&nbsp;&nbsp;A cycle-risk index (heuristic)</h3>
+<p>Let $q(b\to c)$ be the mean-field routing probability on $J$: the probability that a car at $b$ commits to $c$, averaged over its arrivals. Treat occupancy as independent with density $\rho$. A simple cycle $C$ of $J$ is then closed instantaneously with probability $w(C)=\prod_{b\to c\in C}\rho\,q(b\to c)$. Let $M=\rho Q$, with $Q$ the matrix of $q$. Each simple cycle of length $\ell$ contributes $\ell$ rotations, each of weight $w(C)$, to $\operatorname{tr}M^\ell$, and all other terms are non-negative. Hence
+$$ R(\rho):=\sum_{C\ \text{simple}} w(C)\;\le\;\sum_{\ell\ge1}\frac{\operatorname{tr}M^\ell}{\ell}\;=\;-\log\det(I-\rho Q)\;=\;\log\zeta_J(\rho), $$
+where $\zeta_J$ is the weighted Bowen–Lanford zeta function [12]. The equality requires $\rho\,\lambda_{\max}(Q)<1$, which holds because exits make $Q$ substochastic. As $\rho\to0$, $R(\rho)\approx N_g(\rho\bar q)^g$, where $N_g$ counts cycles of length $g=\operatorname{girth}(J)$, so the girth sets the exponent. Queues correlate occupancy positively, so $R$ is used here only to <em>rank</em> networks. We compute it by enumerating simple cycles up to $g+8$ within a work budget.</p>
+
+<h2>5&nbsp;&nbsp;Experiments</h2>
+<p><b>Setup.</b> Six presets were extracted from OpenStreetMap on 18 November 2026: Midtown (New York), Eixample (Barcelona), Grachtengordel (Amsterdam), Étoile (Paris), Bank (London) and Shibuya (Tokyo). London and Tokyo drive on the left. For each preset we ran the four law regimes at target densities $\rho\in\{0.1,\dots,0.5\}$ with five seeds each, $600$ runs in all. Each run lasts $1200$ half-steps with $p=0.1$ under CLASSIC. Flow $J=\rho\,v$ is averaged over the last $600$ half-steps, where $\rho$ is the on-street density and $v$ is hops per car per full step. The frozen share is the fraction of on-street cars certified by Theorem&nbsp;2 at the end. Table&nbsp;1 lists the structural quantities and Table&nbsp;2 the frozen shares. Figures 2–3 show all runs. The script <code>app/scripts/experiments.mjs</code> regenerates <code>docs/paper/data/experiments.json</code> deterministically.</p>
+
+<table>
+<caption><b>Table 1.</b> Structure of the six lane graphs. Girth of the cell graph $G$, and of the jam graph $J$ under the strictest (city code) and the most permissive (BML lights) regime. $R$ is the risk index at $\rho=0.3$, and $F^\ast$ is the throughput bound of Theorem&nbsp;5 under CLASSIC / TRAIN, in cars per full step. “∞”: acyclic.</caption>
+<thead>
+<tr><th></th><th>cells</th><th>junctions</th><th>girth $G$</th><th>$g(J)$ code</th><th>$g(J)$ BML</th><th>$R$ code</th><th>$R$ BML</th><th>$F^\ast$</th></tr>
+</thead>
+<tbody>
+<tr><td>Midtown</td><td>1107</td><td>17</td><td>58</td><td>140</td><td>58</td><td>0</td><td>$1\cdot10^{-32}$</td><td>13 / 26</td></tr>
+<tr><td>Eixample</td><td>1355</td><td>34</td><td>52</td><td>106</td><td>52</td><td>$2\cdot10^{-57}$</td><td>$8\cdot10^{-30}$</td><td>16 / 32</td></tr>
+<tr><td>Grachtengordel</td><td>876</td><td>38</td><td>∞</td><td>∞</td><td>∞</td><td>0</td><td>0</td><td>12 / 24</td></tr>
+<tr><td>Étoile</td><td>1626</td><td>59</td><td>18</td><td>62</td><td>18</td><td>$5\cdot10^{-34}$</td><td>$1\cdot10^{-11}$</td><td>20 / 40</td></tr>
+<tr><td>Bank</td><td>1727</td><td>103</td><td>4</td><td>4</td><td>4</td><td>$7\cdot10^{-4}$</td><td>$2\cdot10^{-3}$</td><td>26 / 42</td></tr>
+<tr><td>Shibuya</td><td>1752</td><td>126</td><td>4</td><td>4</td><td>4</td><td>$5\cdot10^{-4}$</td><td>$1\cdot10^{-3}$</td><td>25 / 48</td></tr>
+</tbody>
+</table>
+
+<table>
+<caption><b>Table 2.</b> Frozen share of on-street cars after $1200$ half-steps, mean ± s.d. over five seeds. The target density is $\rho=0.3$, except in the last column. Midtown, Eixample and Grachtengordel are omitted: all their $300$ runs ended with frozen share $0$.</caption>
+<thead>
+<tr><th></th><th>city code</th><th>free turns</th><th>block the box</th><th>BML lights</th><th>free turns, $\rho=0.1$</th></tr>
+</thead>
+<tbody>
+<tr><td>Étoile</td><td>0.00 ± 0.00</td><td>1.00 ± 0.00</td><td>1.00 ± 0.00</td><td>1.00 ± 0.00</td><td>0.99 ± 0.01</td></tr>
+<tr><td>Bank</td><td>0.00 ± 0.00</td><td>0.42 ± 0.12</td><td>0.90 ± 0.02</td><td>0.91 ± 0.05</td><td>0.04 ± 0.07</td></tr>
+<tr><td>Shibuya</td><td>0.74 ± 0.28</td><td>0.81 ± 0.18</td><td>0.89 ± 0.05</td><td>0.94 ± 0.05</td><td>0.37 ± 0.46</td></tr>
+</tbody>
+</table>
+
+<figure>
+  <div class="row"><img src="figures/midtown-top.png" alt="Midtown from above"><img src="figures/etoile-3d.png" alt="Étoile in perspective"></div>
+  <img src="figures/bank-jam.png" alt="Frozen cars at Bank" style="width:70%;margin-top:6pt">
+  <figcaption><b>Figure 1.</b> The simulator. Top left: Midtown from above. Streets are drawn along their true polylines while cars move on the lane graph. Top right: Étoile in perspective. Bottom: Bank under BML lights at $\rho=0.3$. Blue cars are certified frozen (Theorem&nbsp;2). Flashing cores, not visible in a still image, are $\beta$-cycles at the $2\times2$ boxes of two-way crossings, and the queues behind them are captured.</figcaption>
+</figure>
+
+<figure>
+  <img src="figures/frozen.svg" alt="Frozen share against density">
+  <figcaption><b>Figure 2.</b> Frozen share against on-street density for each preset and law regime (mean ± s.d., five seeds).</figcaption>
+</figure>
+
+<figure>
+  <img src="figures/flow.svg" alt="Flow against density">
+  <figcaption><b>Figure 3.</b> Flow $J=\rho v$ against on-street density. Flow flattens where the entries saturate, the boundary-limited regime of [6]. On the grids BML lights carry the most flow, because they never hold a green phase with nobody waiting.</figcaption>
+</figure>
+
+<p><b>F1. Large jam girth means no freezing.</b> On the three grids, every one of the $300$ runs ended with nothing frozen, under every law and up to $\rho=0.5$. Their jam graphs have girth $\ge52$, or are acyclic (Grachtengordel). By Theorem&nbsp;3, a core there needs a block-sized loop of consistently committed cars, which random routing practically never assembles.</p>
+<p><b>F2. $2\times2$ boxes are the nucleation sites.</b> Bank and Shibuya have $g(J)=4$ under every regime. Bank stays essentially clear under the city code (frozen share at most $0.03$ on average), where signals and the box rule keep the boxes empty in time, a temporal effect that $J$ cannot see. It freezes as laws are repealed. Shibuya froze even under the city code ($0.74\pm0.28$ at $\rho=0.3$). Its large seed-to-seed variance shows bistability: whether a core nucleates is a stochastic event, consistent with the repository's separation of formation from capture.</p>
+<p><b>F3. A safety rule can create deadlock.</b> At $\rho=0.1$ on Étoile, <i>free turns</i> (box rule on) froze completely ($0.99$). Repealing the box rule as well (<i>block the box</i>) left it free-flowing ($0.00$). All five cores observed under free turns contain an indirect edge. They are 87–88-car loops around the roundabout, in which cars committed to box paths wait on one another. These deadlocks lie outside $J$ (Theorem&nbsp;3 covers direct cores only). They are nonetheless certified by Theorem&nbsp;2. Rules that enlarge a vehicle's commitment enlarge the wait-for relation, and can close cycles that the street graph alone does not contain.</p>
+<p><b>F4. Speed above one on diagonal grids.</b> Under BML lights at $\rho=0.1$ the mean speed was $1.20$ on Midtown, whose grid is rotated about $29^\circ$, and $1.31$ on Eixample, rotated about $45^\circ$. Both exceed the axis-aligned bound of one, as Theorem&nbsp;6 predicts, and stay below the lone-car values $1+\tan29^\circ\approx1.55$ and $2$ because of dawdling, turns and interaction.</p>
+<p><b>F5. The risk index ranks well but not perfectly.</b> Across the $24$ (preset, regime) pairs, the Spearman correlation between $R(0.3)$ and the frozen share at $\rho=0.3$ is $0.72$. All $13$ pairs with $R<10^{-20}$ had zero freezing, and every pair with mean frozen share above $5\%$ has $R\ge1.4\cdot10^{-11}$. The exceptions are temporal (F2: Bank under the city code) and indirect (F3), both beyond what $J$ encodes.</p>
+<p><b>Throughput.</b> In tests on all six presets under both rules, the measured exit rate never exceeded $F^\ast$. The admission lemma held at every non-spawn cell over $400$ half-steps on three presets.</p>
+
+<h2>6&nbsp;&nbsp;Discussion</h2>
+<p><b>What the structure decides.</b> Theorems 2–6 need no update rule beyond (E) and (C), and the four laws only remove moves. They therefore apply to any committed-vehicle system: car-following with a reaction-time grid, block-signalled rail, automated guided vehicles. In particular, Theorem&nbsp;2 is an exact, online deadlock detector for any fleet that reports positions and committed next links. For human drivers, who re-route and so violate (C), a cycle is a warning, not a proof.</p>
+<p><b>What it does not decide.</b> Whether a jam forms, how often it nucleates, and whether a sharp density threshold exists are statements about a measure on orbits. Our results bound them (Theorems 3 and 5) or rank networks for them ($R$). They do not settle them, and the threshold question is open even on the torus.</p>
+<p><b>Limitations.</b> The rasterisation and artefact rules are modelling choices. Routing is random, with turn preferences but no origin–destination demand. The boundary is closed by re-entry. Each run lasts $1200$ half-steps. $R$ assumes independence. Theorems 3–6 have paper proofs and property tests but no machine-checked proofs, and the simulator-to-Lean refinement for Theorem&nbsp;2 is open.</p>
+<p><b>Design.</b> Choosing the fewest turn bans that raise $\operatorname{girth}(J)$ to a target is a restricted feedback-arc-set problem, NP-hard in general [14] but small enough at city scale for integer programming over the enumerated short cycles. F3 shows that such designs must also account for the indirect cycles created by commitment-enlarging rules.</p>
+
+<h2>7&nbsp;&nbsp;Conclusion</h2>
+<p>Much of the BML theory is about the topology of waiting rather than about the update rule. On real street networks this yields an exact deadlock certificate and a two-sided girth law for minimum jam size. It also gives a max-flow throughput bound, a closed-form Sturmian free speed and a zeta-bounded risk index, all computable from OpenStreetMap without simulation. Experiments on six cities confirm the predicted dichotomy between large-girth grids, which never froze, and box-ridden centres, which froze readily. They also expose a mechanism outside the street graph: rules that enlarge commitment can manufacture deadlock.</p>
+
+<p class="noindent" style="margin-top:10pt"><b>Code and data availability.</b> Everything is in the repository <code>larsbx/traffic-theory-research</code>:
+the simulator and API (<code>app/</code>), the structural analyses (<code>app/src/structure.js</code>, served by <code>GET /api/analyze</code>), the Lean proof of Theorem&nbsp;2 (<code>formal/lean/BML/LaneDeadlock.lean</code>), the research note (<code>docs/research/2026-11-23-dynamics-free-map-mathematics.md</code>), and this paper with its data and figure scripts (<code>docs/paper/</code>). Map data © OpenStreetMap contributors, ODbL 1.0.</p>
+
+<h2>References</h2>
+<ol class="refs">
+  <li>O. Biham, A. A. Middleton, D. Levine. Self-organization and a dynamical transition in traffic-flow models. <i>Phys. Rev. A</i> 46 (1992) R6124–R6127.</li>
+  <li>O. Angel, A. E. Holroyd, J. B. Martin. The jammed phase of the Biham–Middleton–Levine traffic model. <i>Electron. Commun. Probab.</i> 10 (2005).</li>
+  <li>T. Austin, I. Benjamini. For what number of cars must self organization occur in the Biham–Middleton–Levine traffic model from any possible starting configuration? arXiv:math/0607759 (2006).</li>
+  <li>R. M. D’Souza. Coexisting phases and lattice dependence of a cellular automaton model for traffic flow. <i>Phys. Rev. E</i> 71 (2005) 066112.</li>
+  <li>K. Nagel, M. Schreckenberg. A cellular automaton model for freeway traffic. <i>J. Phys. I France</i> 2 (1992) 2221–2229.</li>
+  <li>B. Derrida, M. R. Evans, V. Hakim, V. Pasquier. Exact solution of a 1D asymmetric exclusion model using a matrix formulation. <i>J. Phys. A</i> 26 (1993) 1493–1517.</li>
+  <li>C. F. Daganzo. The cell transmission model: a dynamic representation of highway traffic consistent with the hydrodynamic theory. <i>Transp. Res. B</i> 28 (1994) 269–287.</li>
+  <li>C. F. Daganzo, N. Geroliminis. An analytical approximation for the macroscopic fundamental diagram of urban traffic. <i>Transp. Res. B</i> 42 (2008) 771–781.</li>
+  <li>N. Geroliminis, C. F. Daganzo. Existence of urban-scale macroscopic fundamental diagrams: some experimental findings. <i>Transp. Res. B</i> 42 (2008) 759–770.</li>
+  <li>E. G. Coffman, M. Elphick, A. Shoshani. System deadlocks. <i>ACM Comput. Surv.</i> 3 (1971) 67–78.</li>
+  <li>M. Morse, G. A. Hedlund. Symbolic dynamics II. Sturmian trajectories. <i>Amer. J. Math.</i> 62 (1940) 1–42.</li>
+  <li>R. Bowen, O. E. Lanford. Zeta functions of restrictions of the shift transformation. <i>Proc. Sympos. Pure Math.</i> 14, Amer. Math. Soc. (1970).</li>
+  <li>J. Edmonds, R. M. Karp. Theoretical improvements in algorithmic efficiency for network flow problems. <i>J. ACM</i> 19 (1972) 248–264.</li>
+  <li>R. M. Karp. Reducibility among combinatorial problems. In <i>Complexity of Computer Computations</i>, Plenum (1972) 85–103.</li>
+  <li>J. Amanatides, A. Woo. A fast voxel traversal algorithm for ray tracing. <i>Eurographics ’87</i> (1987) 3–10.</li>
+  <li>M. Lothaire. <i>Algebraic Combinatorics on Words</i>, ch. 2 (Sturmian words). Cambridge Univ. Press (2002).</li>
+  <li>M. Haklay, P. Weber. OpenStreetMap: user-generated street maps. <i>IEEE Pervasive Comput.</i> 7(4) (2008) 12–18.</li>
+</ol>

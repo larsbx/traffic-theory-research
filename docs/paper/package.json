@@ -1,0 +1,14 @@
+{
+  "name": "gridlock-street-networks-paper",
+  "private": true,
+  "type": "module",
+  "description": "Typesets paper.src.html (TeX math via KaTeX) to paper.html and paper.pdf (Chromium print).",
+  "scripts": {
+    "experiments": "node ../../app/scripts/experiments.mjs",
+    "figures": "node figures.mjs",
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "katex": "0.16.11"
+  }
+}

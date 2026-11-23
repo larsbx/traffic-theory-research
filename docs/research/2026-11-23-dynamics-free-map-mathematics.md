@@ -89,8 +89,7 @@ direct cores only.
 
 **R1 (parity).** Every arc of G changes x + y by ±1, so G is bipartite and every cycle has even
 length. The girths observed are 4, 18, 52, 58, 62, 106 and 140, all even. A jam loop of length 4
-is exactly a 2×2 box. Anything longer must go around at least one non-road cell, which is a
-building, at 7.5 m.
+is exactly a 2×2 box.
 
 **R2 (capture for fixed routes).** Suppose every car's route is fixed in advance, as for AGVs
 or trains. Let d_k be the number of hops car k makes before reaching a frozen car. While any
