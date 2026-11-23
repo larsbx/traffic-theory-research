@@ -1,8 +1,9 @@
 # Gridlock City
 
 A retro pixel-art traffic simulator that runs this repository's BML dynamics on real street
-maps. Streets come from OpenStreetMap and render as a low-resolution arcade maze, with cars as
-ghost-coloured sprites. Cars the engine has **proved** can never move again turn blue, and the
+maps. Streets come from OpenStreetMap and render as a low-resolution arcade maze laid on a
+ground plane in perspective. Cars are lit 3D shapes (a body and a cabin, headlight forward). You
+can tilt, turn, zoom and pan the view. Cars the engine has **proved** can never move again turn blue, and the
 jam-loop cores that hold them flash.
 
 ```sh
@@ -21,6 +22,18 @@ Modes:
   measured fundamental diagram J(ρ).
 - **BML lab:** the plain torus, with live readouts of the theorems in
   [`docs/theorems.md`](../docs/theorems.md).
+
+## Perspective view
+
+`src/camera.js` is a pinhole camera over the ground plane z = 0, with pitch and yaw and no
+roll. Without roll every screen row meets the ground at a single depth. So each row of ground
+pixels is an affine image of a world segment, as in SNES Mode 7 but at any tilt and heading.
+`render.drawGround` fills the low-res target (480 × 320) row by row from the maze texture,
+with distance fog and a dusk sky, and recomputes only when the camera moves. Zoom 1 frames the
+whole map: the camera distance is bisected until all four corners sit on the screen margin.
+Cars are drawn far to near; each is two boxes with back faces culled and side faces lit.
+`test/camera.test.js` checks that unproject inverts project, the row-affinity, the framing and
+the zoom.
 
 ## OpenStreetMap API
 

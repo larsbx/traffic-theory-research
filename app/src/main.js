@@ -4,7 +4,8 @@ import { PLACES, WINDOW } from './presets.js';
 import { rasterize, torus, girth } from './raster.js';
 import { init, halfStep, breakDown, fromGrid, isStalled, greenAxis, CLASSIC, TRAIN, DEFAULTS, LAWS } from './sim.js';
 import { certificate, onStreet, isGridlock, snapshot } from './analysis.js';
-import { drawMaze, drawFrame, drawDiagram, cellPx, COLORS } from './render.js';
+import { texture, drawGround, drawFrame, drawDiagram, COLORS } from './render.js';
+import { camera, unproject } from './camera.js';
 import { fetchRoads, locate, driveSide } from './fetch.js';
 import { makeRng } from './rng.js';
 
@@ -13,7 +14,7 @@ const HZ = 10; // default half-steps per second
 const $ = (id) => document.getElementById(id);
 const canvas = $('screen');
 const g = canvas.getContext('2d');
-const [CW, CH] = [WINDOW.cols * 4, WINDOW.rows * 4];
+const [CW, CH] = [480, 320]; // low-res render target, upscaled with crisp pixels
 canvas.width = CW; canvas.height = CH;
 
 // ---------- places ----------
@@ -23,7 +24,7 @@ const netFor = (id) => {
   if (!nets.has(id)) {
     const p = places.get(id);
     const net = rasterize(p.roads, { ...WINDOW, drive: p.drive });
-    nets.set(id, { net, girth: girth(net), px: 4, maze: drawMaze(net, 4) });
+    nets.set(id, { net, girth: girth(net), tex: texture(net) });
   }
   return nets.get(id);
 };
@@ -33,14 +34,15 @@ const app = {
   mode: 'city', placeId: 'midtown', paused: false, fx: [], acc: 0, last: performance.now(),
   hist: [], sweep: [], sweeping: null,
   opts: { ...DEFAULTS, green: 6, box: true, crossTurns: false, slow: 0.1 }, rho: 0.3, speed: HZ,
+  cam: { pitch: 0.82, yaw: 0, zoom: 1, target: null }, ground: null, groundKey: '',
   lab: { W: 48, H: 32, p: 0.32, rule: CLASSIC, seed: 1, status: '' },
 };
 
 const view = () => app.cur;
 
 const loadSandbox = (seed = 1) => {
-  const { net, girth: gr, px, maze } = netFor(app.placeId);
-  app.cur = { net, girth: gr, px, maze, sim: init(net, Math.round(net.roadCells * app.rho), seed, app.opts), opts: app.opts };
+  const { net, girth: gr, tex } = netFor(app.placeId);
+  app.cur = { net, girth: gr, tex, sim: init(net, Math.round(net.roadCells * app.rho), seed, app.opts), opts: app.opts };
   app.hist = []; app.sweep = [];
 };
 
@@ -52,8 +54,7 @@ const loadLab = () => {
     const u = r.float();
     return u < p / 2 ? 1 : u < p ? 2 : 0;
   }));
-  const px = cellPx(net, CW, CH);
-  app.cur = { net, girth: Math.min(W, H), px, maze: drawMaze(net, px), sim: fromGrid(net, grid), opts: { ...DEFAULTS, rule }, lab: true };
+  app.cur = { net, girth: Math.min(W, H), tex: texture(net), sim: fromGrid(net, grid), opts: { ...DEFAULTS, rule }, lab: true };
   app.hist = [];
 };
 
@@ -156,7 +157,10 @@ const frame = (now) => {
   const v = view();
   if (v) {
     const m = app.lastM;
-    drawFrame(g, { ...v, frozen: m.cert.frozen, fx: app.fx, now });
+    const cam = camera({ W: v.net.W, H: v.net.H, width: CW, height: CH, ...app.cam });
+    const key = `${app.cam.pitch}|${app.cam.yaw}|${app.cam.zoom}|${app.cam.target}`;
+    if (app.ground?.tex !== v.tex || app.groundKey !== key) { app.ground = { tex: v.tex, img: drawGround(cam, v.tex, v.net) }; app.groundKey = key; }
+    drawFrame(g, { ...v, cam, ground: app.ground.img, frozen: m.cert.frozen, fx: app.fx, now });
     app.fx = app.fx.filter((e) => now - e.at < 900);
     hud(m);
     $('pause').textContent = app.paused ? 'RUN' : 'PAUSE';
@@ -173,6 +177,50 @@ addEventListener('keydown', (e) => {
   if (e.key === ' ' || e.key === 'p' || e.key === 'P') { app.paused = !app.paused; e.preventDefault(); }
 });
 $('pause').addEventListener('click', () => { app.paused = !app.paused; });
+
+// camera: tilt/turn/zoom sliders; drag turns and tilts, shift- or right-drag pans, wheel zooms
+const DEG = Math.PI / 180;
+const setCam = (patch) => {
+  const c = { ...app.cam, ...patch };
+  app.cam = {
+    pitch: Math.min(89.9 * DEG, Math.max(18 * DEG, c.pitch)),
+    yaw: Math.atan2(Math.sin(c.yaw), Math.cos(c.yaw)),
+    zoom: Math.min(8, Math.max(1, c.zoom)),
+    target: c.zoom <= 1 ? null : c.target, // fully zoomed out always shows the whole map
+  };
+  $('tilt').value = Math.round(app.cam.pitch / DEG); $('turn').value = Math.round(app.cam.yaw / DEG);
+  $('zoom').value = app.cam.zoom.toFixed(2);
+};
+const camNow = () => camera({ W: view().net.W, H: view().net.H, width: CW, height: CH, ...app.cam });
+const toCanvas = (e) => { const r = canvas.getBoundingClientRect(); return [((e.clientX - r.left) / r.width) * CW, ((e.clientY - r.top) / r.height) * CH]; };
+$('tilt').addEventListener('input', (e) => setCam({ pitch: +e.target.value * DEG }));
+$('turn').addEventListener('input', (e) => setCam({ yaw: +e.target.value * DEG }));
+$('zoom').addEventListener('input', (e) => setCam({ zoom: +e.target.value }));
+$('view-top').addEventListener('click', () => setCam({ pitch: 89.9 * DEG, yaw: 0, zoom: 1 }));
+$('view-3d').addEventListener('click', () => setCam({ pitch: 47 * DEG, yaw: 0, zoom: 1.6, target: null }));
+let drag = null;
+canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+canvas.addEventListener('pointerdown', (e) => {
+  const cam = camNow();
+  drag = { x: e.clientX, y: e.clientY, cam: app.cam, pan: e.shiftKey || e.button === 2, ground: unproject(cam, ...toCanvas(e)), eye: cam };
+  canvas.setPointerCapture(e.pointerId);
+});
+canvas.addEventListener('pointermove', (e) => {
+  if (!drag) return;
+  if (drag.pan) { // keep the grabbed ground point under the pointer
+    const g = unproject(drag.eye, ...toCanvas(e));
+    if (!g || !drag.ground) return;
+    const t = drag.eye.target ?? [view().net.W / 2, view().net.H / 2];
+    setCam({ zoom: Math.max(app.cam.zoom, 1.0001), target: [t[0] + drag.ground[0] - g[0], t[1] + drag.ground[1] - g[1], 0] });
+    return;
+  }
+  const k = 300 / canvas.clientWidth;
+  setCam({ pitch: drag.cam.pitch - (e.clientY - drag.y) * k * 0.6 * DEG, yaw: drag.cam.yaw - (e.clientX - drag.x) * k * DEG });
+});
+const endDrag = () => { drag = null; };
+canvas.addEventListener('pointerup', endDrag); canvas.addEventListener('pointercancel', endDrag);
+canvas.addEventListener('wheel', (e) => { e.preventDefault(); setCam({ zoom: app.cam.zoom * Math.exp(-e.deltaY * 0.0015), target: app.cam.target ?? [view().net.W / 2, view().net.H / 2, 0] }); }, { passive: false });
+setCam({ pitch: 47 * DEG, yaw: 0, zoom: 1.6 });
 document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => setMode(b.dataset.mode)));
 
 // ---------- controls ----------
@@ -262,7 +310,7 @@ $('find').addEventListener('submit', async (e) => {
 // ---------- layout: integer pixel scaling ----------
 const fit = () => {
   const box = $('stage').clientWidth;
-  const k = box >= CW ? Math.floor(box / CW) : box / CW;
+  const k = box / CW;
   canvas.style.width = `${CW * k}px`; canvas.style.height = `${CH * k}px`;
 };
 addEventListener('resize', fit);
