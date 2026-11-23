@@ -98,3 +98,18 @@ test('straight streets: presets carry lane polylines; the torus displays cells a
   assert.equal(t.lanes.length, 0);
   assert.deepEqual([...t.disp.slice(0, 4)], [0.5, 0.5, 1.5, 0.5]);
 });
+
+test('cars on a diagonal street never overlap: adjacent half-lengths sum to less than their gap', async () => {
+  const { carLength } = await import('../src/render.js');
+  const th = Math.atan2(1, 2);
+  const net = rasterize([{ o: 1, c: 4, pts: [-3000 * Math.cos(th), -3000 * Math.sin(th), 3000 * Math.cos(th), 3000 * Math.sin(th)].map((v) => Math.round(v * 10)) }], { cols: 60, rows: 40, cell: 7.5 });
+  const lane = [];
+  for (let c = net.entries[0]; c >= 0 && !lane.includes(c); c = net.outStart[c + 1] > net.outStart[c] ? net.outList[net.outStart[c]] : -1) lane.push(c);
+  assert.ok(lane.length > 30);
+  const len = (i) => carLength(net, lane[i - 1] ?? -1, lane[i], lane[i + 1] ?? -1);
+  for (let i = 1; i < lane.length - 2; i++) {
+    const gap = Math.hypot(net.disp[2 * lane[i + 1]] - net.disp[2 * lane[i]], net.disp[2 * lane[i + 1] + 1] - net.disp[2 * lane[i] + 1]);
+    assert.ok(len(i) / 2 + len(i + 1) / 2 < gap, `cells ${i},${i + 1}: ${len(i)}/2 + ${len(i + 1)}/2 ≥ ${gap}`);
+    assert.ok(len(i) > 0.35, 'still a visible car');
+  }
+});

@@ -128,6 +128,15 @@ const box = (g, cam, [x, y], [hx, hy], L, w, z0, z1, color, alpha) => {
   g.globalAlpha = 1;
 };
 
+/** Display length of a car at `cell` between its neighbours `prev` and `next` (−1: none). Two cars
+ * in adjacent cells sit gap = |disp(a) − disp(b)| apart; each takes at most 0.92 × its smaller
+ * neighbouring gap, so half-lengths sum to < gap and queued cars never overlap. */
+export const carLength = (net, prev, cell, next) => {
+  const gap = (n) => (n >= 0 && n !== cell && !net.wrap
+    ? Math.hypot(net.disp[2 * n] - net.disp[2 * cell], net.disp[2 * n + 1] - net.disp[2 * cell + 1]) : 1);
+  return Math.min(0.96, 0.92 * Math.min(gap(prev), gap(next)));
+};
+
 /** Unit heading of car k: its lane's true street heading (so cars face along straight streets). */
 const headingOf = (net, sim, k) => {
   const [a, b] = sim.next[k] >= 0 && sim.next[k] !== sim.pos[k] ? [sim.pos[k], sim.next[k]] : sim.prev[k] >= 0 ? [sim.prev[k], sim.pos[k]] : [-1, -1];
@@ -165,10 +174,7 @@ export const drawFrame = (g, view) => {
     const alpha = lab || f || sim.last[k] >= sim.t - 2 ? 1 : 0.7;
     const [cx, cy] = centre(sim.pos[k]);
     const [hx, hy] = headingOf(net, sim, k);
-    // along a diagonal street consecutive cells sit closer than one cell apart: fit the car to the gap
-    const n = sim.next[k] >= 0 ? sim.next[k] : sim.prev[k];
-    const gap = n >= 0 && !net.wrap ? Math.hypot(net.disp[2 * n] - cx, net.disp[2 * n + 1] - cy) : 1;
-    const len = Math.min(0.96, Math.max(0.5, 0.92 * gap));
+    const len = carLength(net, sim.prev[k], sim.pos[k], sim.next[k]); // fits diagonal spacing
     box(g, cam, [cx, cy], [hx, hy], len, 0.7, 0, 0.36, color, alpha); // body
     box(g, cam, [cx - hx * 0.1 * len, cy - hy * 0.1 * len], [hx, hy], 0.52 * len, 0.56, 0.36, 0.62, color, alpha); // cabin, set back
     const [lx, ly] = project(cam, [cx + hx * 0.5 * len, cy + hy * 0.5 * len, 0.22]); // headlight
