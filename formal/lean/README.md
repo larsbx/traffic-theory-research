@@ -42,6 +42,31 @@ State codes use `0 = empty`, `1 = east`, `2 = north`, with digit position
 `halfStep`, finite-torus directions, and movement predicate used in the proofs.
 It does not embed Python-produced expected transitions.
 
+## Lane-graph deadlock (P1)
+
+`BML.LaneDeadlock` uses tagged occupants, committed next cells and box tails, and
+half-step movement events. It reuses the kernel's phase type, finite cyclic
+successor and reachability. Its cell and car carriers can both be finite indices.
+The contract fixes the update rule and box-entry gate for the trace. Positions
+and commitments of on-street tags change only on movement. CLASSIC requires a
+vacant direct target at the start of the step. TRAIN permits a direct target
+whose occupant moves in that step and all its movers share the active axis.
+Both require pre-step vacancy of the recorded tail when the box-entry gate applies.
+
+| Lean declaration in `BML.LaneDeadlock` | Conclusion |
+|---|---|
+| `Snapshot.blocker_sound` | A selected direct or box blocker supplies a valid blocking edge. |
+| `Cycle.classic_immobile`, `Cycle.classic_capture` | Cycle members and all tags with a finite blocking path into the cycle retain their position and commitment and record no movement at any half-step. |
+| `Cycle.moves_rotate` | If a cycle retaining its commitments has a mover, the rule is TRAIN and all tags move into their blockers' former cells on the same axis. |
+| `Cycle.train_immobile`, `Cycle.train_capture` | Permanence for a cycle and its upstream paths when the cycle has no axis on which all its edges are direct. |
+
+`lake build BML.LaneDeadlockExamples` checks the proof and the finite Lean examples.
+`lake env lean Audit.lean` checks the required endpoints and transitive axioms
+after a default build. Run `node --test test/p1.test.js` from `app/` for the targeted production
+simulator controls. A refinement theorem from JavaScript `halfStep` and
+`certificate` to the Lean interface remains open. See [the proof](BML/LaneDeadlock.lean),
+[the examples](BML/LaneDeadlockExamples.lean), and [the simulator checks](../../app/test/p1.test.js).
+
 ## Kernel-checked coverage
 
 | Module | Results |

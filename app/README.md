@@ -70,7 +70,7 @@ graphs are cached (LRU, 64 entries). Results are deterministic per seed. Errors 
 | lanes | OSM centre-lines → local metres → 7.5 m cells (one car length). Two lanes per two-way street on the drive side, offset by (s/2)(\|cos θ\|+\|sin θ\|) so diagonal staircases stay disjoint. Lanes are 4-connected Amanatides–Woo traversals, and each edge carries its street's true heading. Head-on 2-cycles and loops ≤ 12 cells through a non-junction cell are rasterising artefacts and are removed by provenance. | `raster.js` |
 | update | half-steps alternate phase 0 (horizontal hops) and phase 1 (vertical hops): BML 1992 Model I. **CLASSIC** moves a car into a cell only if it was empty before the half-step. **TRAIN** lets queues move together and closed same-phase loops rotate (Austin–Benjamini). Merges go to the longest-waiting car. | `sim.js` |
 | signals | a junction (a cell entered along both axes) admits only the axis with green(t) = ⌊t/G⌋ mod 2. With **G = 1** the signal equals the phase and never binds. | `sim.js` |
-| box rule | a car outside a junction commits to its whole path through the box and enters only if every cell up to the first cell beyond it is empty. | `sim.js` |
+| box rule | entering from outside a junction requires pre-step vacancy of every cell in the recorded box tail. The planner records at most `AHEAD` tail entries. | `sim.js` |
 | routing | turns ≤ 120°, no two-hop reversal over 150°, optional ban on turns across oncoming traffic, straight bias 4:1, Nagel–Schreckenberg dawdle p. A car re-plans only after it moves. | `sim.js` |
 | boundary | cars leaving the window re-enter at a free entry: a closed population with an entry queue. | `sim.js` |
 
@@ -81,26 +81,30 @@ both rules.
 
 ## Jam certificates
 
-Define β(k) as the car that keeps k from moving. That is the occupant of k's committed next
-cell. Under the box rule, when k waits to enter a junction, it is the first occupant along k's
-committed path through the box.
+Define β(k) as the occupant of k's committed next cell. If that cell is empty and k is
+subject to the box-entry gate, β(k) is the first occupant in the recorded `ahead` tail,
+when there is one. The gate applies when k is outside the junction and its next cell is
+inside. The check uses the pre-step occupancy in CLASSIC and TRAIN.
 
 **Proposition (frozen cars).** Fix intents as the engine does: a car re-plans only after
 moving. Let C be a β-cycle. Under CLASSIC, no car of C moves again. Under TRAIN, the same holds
-unless C consists of direct edges on one axis. Every car whose β-path reaches such a C is
-frozen too. Signals, dawdling and breakdowns only remove moves, so they preserve this.
+unless C consists of direct edges on one axis. Every car whose β-path reaches a frozen cycle
+is frozen too. A direct same-axis cycle may rotate when every member can move together.
+Signals, dawdling and breakdowns can prevent rotation. The certificate applies while the
+update rule and box-entry gate stay fixed and cars remain in place until they move.
 
 *Proof sketch.* Suppose some car of C moves first, at time t. Under CLASSIC it needs its
 target (or box path) empty before the half-step, but its blocker has not moved yet.
 Contradiction. Under TRAIN a car whose blocker is direct moves only together with that
 blocker, in the same phase. So all of C would move at t, on one axis, with direct edges. Then
-proceed by induction along β-paths into C. ∎
+proceed by induction along β-paths into C. ∎ See [the Lean P1 endpoints](../formal/lean/README.md#lane-graph-deadlock-p1).
 
 This is the map form of Lemma G0. A direct β-cycle is a directed cycle of the lane graph on
-distinct cars, so a jam core has **≥ girth** cars. That is G1's min(W, H) in city form: the
+distinct cars, so a direct jam core has **≥ girth** cars. That is G1's min(W, H) in city form: the
 torus girth is min(W, H), which is tested. `test/sim.test.js` checks the proposition
 empirically: no certified car ever moves again, across six maps × both rules × box rule ×
-signals, with dawdling and breakdowns.
+signals, with dawdling and breakdowns. [The P1 controls](test/p1.test.js) cover direct-priority
+selection, indirect pre-step blocking, capture, and same-axis and mixed-axis cycles.
 
 ## What the simulator shows (headless runs during development; the City mode reproduces them)
 

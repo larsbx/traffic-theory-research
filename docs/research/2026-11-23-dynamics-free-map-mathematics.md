@@ -34,7 +34,7 @@ box rule, which act on timing.
 
 | repository result | its dynamics-free content | on a map | code |
 |---|---|---|---|
-| Lemma G0 | frozen ⟺ the wait-for map β is total | **P1** | `analysis.certificate` |
+| Lemma G0 | occupied blocking cycles and their upstream queues stay frozen | **P1** | `analysis.certificate` |
 | Theorem G1 | β has a cycle, and a cycle is a closed lattice loop | **P2**: cores have ≥ girth(J) cars | `jamGraph`, `girthOf` |
 | Wang-tile encoding | frozen states are locally checkable labellings | "can these junctions be jammed?" is a finite constraint problem | — |
 | Torus winding | a blocker loop is a closed walk on the torus | **R1**: loops have even length ≥ 4 | `girthOf` |
@@ -42,18 +42,29 @@ box rule, which act on timing.
 | Non-monotonicity | the stuck set is not monotone in the state | removing cars or capacity need not help | — |
 | Fibonacci staircase | blocking along irrational slopes follows mechanical words | **P4**: streets are Sturmian | `cuttingWord`, `freeSpeed` |
 
-**P1 (certificate; the form of G0 on maps).** Let β(k) be the car occupying q_k. Under the box
-rule, when k waits to enter a junction, β(k) is the first car on k's committed path through
-the box. Every car on a β-cycle, and every car whose β-path reaches one, never moves again.
-Under TRAIN the exception is a cycle of direct arcs that all lie on one axis, which rotates.
+**P1 (the G0 certificate on maps).** Let β(k) be the car occupying q_k. If q_k is vacant and
+the box-entry gate applies, β(k) is the first occupant of k's recorded box tail, when one
+exists. The gate applies to entry from outside a junction and requires the recorded tail
+cells to be vacant at the start of the half-step under either rule.
+
+Under CLASSIC, all cars on a β-cycle and all cars with a β-path into it are permanently
+immobile. Under TRAIN the same conclusion holds for a cycle with an indirect edge or with
+more than one committed axis. A cycle of direct edges on one axis can rotate if the whole
+cycle is allowed to move together. Use a fixed update rule and box-entry gate throughout
+the trace. On-street tags keep their position and commitment until a movement event.
 
 *Proof.* Let t be the first half-step at which some car k of the cycle moves. Under CLASSIC, k
 needs its blocker's cell vacant before t. But the blocker has not moved yet, by the choice of t.
-Under TRAIN, k moves only together with its direct blocker, in the same phase. So the whole
-cycle moves at t, along one axis, through direct arcs. That is the excluded case. Commitment
-keeps every q_k fixed until then. The claim for the trees feeding the cycle follows by induction
-along β-paths. ∎ (Also in [`app/README.md`](../../app/README.md#jam-certificates); property-tested
-in `app/test/sim.test.js`.)
+Under TRAIN an indirect blocker also precludes movement at t. A mover with a direct blocker
+requires that blocker to move at t. If any cycle member moves, the dependency propagates
+around the cycle and every member moves along a direct arc on the active axis. The upstream
+claim follows by induction along β-paths. ∎
+
+Lean proves both cycle and path results for the half-step contract, using tagged movement
+events and finite cyclic reachability. The JavaScript evidence comes from source inspection
+and simulator tests. See [the proof](../../formal/lean/BML/LaneDeadlock.lean),
+[the formal register](../../formal/lean/README.md#lane-graph-deadlock-p1), and
+[the P1 controls](../../app/test/p1.test.js).
 
 **P2 (minimum jam; the form of G1 on maps).** Every β-cycle of direct arcs is a simple directed
 cycle of J. Hence every permanent core of direct arcs has at least girth(J) cars. Conversely, let
