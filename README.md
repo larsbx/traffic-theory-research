@@ -30,6 +30,11 @@ connections to tiling and dynamical-systems theory.
   on every row and column within `n_E*(W-1) + n_N*(H-1)` full rounds; Python
   verifies mixed-cycle geometry and independently replays tagged cars. The
   results do not determine a probabilistic jamming threshold.
+- [Dynamics-free mathematics on real street maps](docs/research/2026-11-23-dynamics-free-map-mathematics.md)
+  (2026-11-23): G0/G1 restated for lane graphs under exclusion + commitment alone (jam cores
+  live on the *jam graph* and need ≥ girth cars). It also adds a per-cell throughput lemma with
+  a max-flow bound, Sturmian free speeds of straight streets (1 + min(|tan θ|, |cot θ|)), and a
+  graph-zeta risk index, all computed from OpenStreetMap by `GET /api/analyze`.
 - [Formal coverage and validation](formal/README.md): the CLASSIC finite-torus
   `BML` proofs, identity-preserving transport and non-monotonicity witness, together
   with the complementary `Traffic` tiling/staircase proofs, the complete

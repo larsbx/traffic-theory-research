@@ -57,21 +57,27 @@ const isStraight = (net, a, b, c) => Math.abs(turnAngle(net, a, b, c)) < STRAIGH
 /** Is a→b→c a turn across oncoming traffic (left under right-hand drive, right under left)? */
 export const crossesTraffic = (net, a, b, c) => (net.drive === 'L' ? -1 : 1) * turnAngle(net, a, b, c) > STRAIGHT;
 
-/** The hop after `cell`, having arrived from `prev` (−1 if spawned) with heading h0 on the hop
- * before that (NaN if unknown): a cell or EXIT. */
-const hop = (net, cell, prev, species, rng, opts, h0 = NaN) => {
-  const { W, H } = net;
-  if (species === 1) return Math.floor(cell / W) * W + ((cell % W) + 1) % W;
-  if (species === 2) return (Math.floor(cell / W) + 1) % H * W + (cell % W);
+/** The moves a roaming car at `cell` may commit to, having arrived from `prev` (−1 if spawned)
+ * with heading h0 on the hop before that (NaN if unknown), and their routing weights. EXIT
+ * appears at map exits. This is the single source of the turn rules (structure.js reuses it). */
+export const turnOptions = (net, cell, prev, opts, h0 = NaN) => {
   const all = [...net.outList.subarray(net.outStart[cell], net.outStart[cell + 1])];
   const noU = prev < 0 ? all : all.filter((c) => c !== prev && Math.abs(turnAngle(net, prev, cell, c)) <= MAX_TURN &&
     !(angleDiff(edgeHeading(net, cell, c), h0) > REVERSAL));
   const fwd = noU.length ? noU : all;
   const legal = prev < 0 || opts.crossTurns ? fwd : fwd.filter((c) => !crossesTraffic(net, prev, cell, c));
-  const options = [...(legal.length ? legal : fwd), ...(net.exit[cell] ? [EXIT] : [])];
-  if (!options.length) return EXIT;
+  const cells = [...(legal.length ? legal : fwd), ...(net.exit[cell] ? [EXIT] : [])];
   const straight = (c) => prev >= 0 && c >= 0 && isStraight(net, prev, cell, c);
-  return rng.weighted(options, options.map((c) => (straight(c) ? opts.straight : 1)));
+  return { cells, weights: cells.map((c) => (straight(c) ? opts.straight : 1)) };
+};
+
+/** The hop after `cell` (see turnOptions): a cell or EXIT. BML species go east or north. */
+const hop = (net, cell, prev, species, rng, opts, h0 = NaN) => {
+  const { W, H } = net;
+  if (species === 1) return Math.floor(cell / W) * W + ((cell % W) + 1) % W;
+  if (species === 2) return (Math.floor(cell / W) + 1) % H * W + (cell % W);
+  const { cells, weights } = turnOptions(net, cell, prev, opts, h0);
+  return cells.length ? rng.weighted(cells, weights) : EXIT;
 };
 
 /** Committed route from `cell`: the next hop, then (box rule) the rest of the way through a box. */

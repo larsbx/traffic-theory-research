@@ -122,3 +122,17 @@ test('server: JSON under /api with CORS, the page at /', async () => {
     assert.equal((await fetch(`${base}/elsewhere`)).status, 404);
   } finally { server.close(); }
 });
+
+test('analyze: dynamics-free structure of the fake grid (2×2 boxes give jam girth 4 without the box-safe law)', async () => {
+  const api = makeApi({ fetch: fakeOsm().fetch, userAgent: 't', ...clock() });
+  const bml = await get(api, '/api/analyze?lat=0&lon=0&law=BML%20LIGHTS&rho=0.3');
+  assert.equal(bml.status, 200);
+  assert.equal(bml.body.girth.cells, 4);
+  assert.equal(bml.body.girth.jam, 4);
+  assert.ok(bml.body.cycles.count > 0 && bml.body.cycles.hotspots[0].length === 4);
+  assert.ok(bml.body.risk.index > 0 && bml.body.risk.lambda > 0 && bml.body.risk.lambda <= 1);
+  assert.ok(bml.body.throughput.classic > 0 && bml.body.throughput.train >= bml.body.throughput.classic);
+  assert.ok(Math.abs(bml.body.streets.meanFreeSpeedCells - 1) < 1e-9, 'an axis-aligned grid has free speed 1');
+  const code = await get(api, '/api/analyze?lat=0&lon=0&law=CITY%20CODE');
+  assert.ok(code.body.girth.jam === null || code.body.girth.jam >= 4);
+});

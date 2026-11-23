@@ -8,10 +8,15 @@
 //   GET /api/network?lat=&lon= (or q=)[&edges=1]      → lane-graph summary (girth, junctions, …)
 //   GET /api/simulate?lat=&lon= (or q=)&rho=&law=&rule=&slow=&steps=&seed=&samples=
 //                                                     → time series + final jam certificate
+//   GET /api/analyze?lat=&lon= (or q=)&law=&rho=&maxLen=
+//                                                     → dynamics-free structure: girths, short-cycle
+//                                                       census and hotspots, risk index, λ, throughput
+//                                                       bounds, Sturmian street speeds (no simulation)
 import { fetchRoads, locate, driveSide } from './fetch.js';
 import { rasterize, girth } from './raster.js';
 import { init, halfStep, LAWS, CLASSIC, TRAIN, DEFAULTS } from './sim.js';
 import { snapshot } from './analysis.js';
+import { jamGraph, cellGraph, girthOf, cycleCensus, cycleRisk, spectralRadius, throughputBound, freeSpeed } from './structure.js';
 import { WINDOW } from './presets.js';
 
 export const LIMITS = Object.freeze({ steps: 6000, samples: 500, cache: 64, nominatimMs: 1000 });
@@ -134,6 +139,49 @@ export const makeApi = ({ fetch, userAgent, now = Date.now, sleep = (ms) => new 
       for (let a = 0; a < net.W * net.H; a++)
         for (let i = net.outStart[a]; i < net.outStart[a + 1]; i++) edges.push([a, net.outList[i]]);
       return { ...body, W: net.W, H: net.H, edgeList: edges, junctionCells: [...net.junction.keys()].filter((c) => net.junction[c]) };
+    },
+
+    '/api/analyze': async (p) => {
+      const centre = await centreOf(p);
+      const drive = oneOf(p, 'drive', ['R', 'L'], centre.drive);
+      const law = LAWS.find((l) => l.name === oneOf(p, 'law', LAWS.map((l) => l.name), LAWS[0].name));
+      const opts = { ...DEFAULTS, green: law.green, box: law.box, crossTurns: law.crossTurns };
+      const rho = num(p, 'rho', { min: 0.01, max: 0.9, def: 0.3 });
+      const built = await networkAt(centre, drive);
+      const { net } = built;
+      const J = jamGraph(net, opts);
+      const gJ = girthOf(J);
+      const maxLen = num(p, 'maxLen', { min: 2, max: 128, def: Number.isFinite(gJ) ? Math.min(128, gJ + 8) : 16, int: true });
+      const census = cycleCensus(J, { maxLen, budget: 3e6, keep: 8 });
+      const { roads } = await roadsAt(centre);
+      const streets = roads.map(({ pts }) => {
+        let [best, bearing] = [0, 0];
+        for (let i = 2; i < pts.length; i += 2) {
+          const [dx, dy] = [pts[i] - pts[i - 2], pts[i + 1] - pts[i - 1]];
+          if (Math.hypot(dx, dy) > best) [best, bearing] = [Math.hypot(dx, dy), Math.atan2(dy, dx)];
+        }
+        const length = pts.reduce((a, _, i) => (i >= 2 && i % 2 === 0 ? a + Math.hypot(pts[i] - pts[i - 2], pts[i + 1] - pts[i - 1]) : a), 0) / 10;
+        return { length, bearing, speed: freeSpeed(bearing) };
+      });
+      const total = streets.reduce((a, x) => a + x.length, 0) || 1;
+      const fin = (x) => (Number.isFinite(x) ? x : null);
+      return {
+        network: summary(built, centre, drive),
+        law: law.name,
+        girth: { cells: fin(girth(net)), jam: fin(gJ) },
+        cycles: {
+          maxLen, complete: census.complete, count: census.count,
+          byLength: Object.fromEntries([...census.byLength].map(([len, pi]) => [len, pi])),
+          hotspots: census.shortest.map(({ cells, pi }) => ({ length: cells.length, pi, cells: cells.map((c) => ({ x: c % net.W, y: Math.floor(c / net.W) })) })),
+        },
+        risk: { rho, index: cycleRisk(census, rho), lambda: spectralRadius(J) },
+        throughput: { classic: throughputBound(net, CLASSIC), train: throughputBound(net, TRAIN), unit: 'cars per full step' },
+        streets: {
+          meanFreeSpeedCells: streets.reduce((a, x) => a + x.length * x.speed.cells, 0) / total,
+          meanFreeSpeedEuclid: streets.reduce((a, x) => a + x.length * x.speed.euclid, 0) / total,
+          diagonalShare: streets.filter((x) => x.speed.switchRate > 0.2).reduce((a, x) => a + x.length, 0) / total,
+        },
+      };
     },
 
     '/api/simulate': async (p) => {
