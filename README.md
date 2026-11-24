@@ -117,6 +117,8 @@ connections to tiling and dynamical-systems theory.
   period changes it, and that a stuck state contains a blocker cycle no longer than its car
   count. The BML instance is proved equal to the existing kernel, the mixed-grid gridlock lemma
   follows for every roundabout set, and the Python kernel is replayed against the Lean step.
+  The least gridlock of the mixed torus, min((1+ℓ)W + min r_y, (1+ℓ)H + min c_x), is proved
+  in Lean with its attainment.
 - [A grid with a variable share of roundabouts](docs/research/2026-11-24-mixed-roundabout-grid.md)
   (2026-11-24): any set R of intersections are roundabouts and the rest keep the BML signal.
   An n-car gridlock exists iff min(W + min_y r_y, H + min_x c_x) ≤ n ≤ WH + 2|R|, with r_y and

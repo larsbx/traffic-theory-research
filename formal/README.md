@@ -85,8 +85,11 @@ exactly the two half-steps of `BML.halfStep` (`bml_even`, `bml_odd`, `bml_round`
 the mixed-grid gridlock lemma `mixed_stuck_iff` for every roundabout set, with and without link
 cells. `NetAudit.lean` checks these declarations and their axioms. The `net_export` target and
 `scripts/check_net.py` compare the Lean step with `bml.mixed.step` on 26,650 ticks; this is a
-finite replay, not a refinement proof. The least-gridlock formulas and the free-flow results
-for these grids remain prose. See the
+finite replay, not a refinement proof. `BML/NetGridlock.lean` proves the least gridlock of the
+mixed torus: a stuck state with a car has at least as many cars as some straight street has
+cells (`stuck_carCount_ge_street`), and filling one street is a stuck state with exactly that
+many (`row_gridlock`, `col_gridlock`). Gridlocks at every larger count, the placement extremes
+and the free-flow results for these grids remain prose. See the
 [traffic-net note](../docs/research/2026-11-24-traffic-nets.md).
 
 ```sh
