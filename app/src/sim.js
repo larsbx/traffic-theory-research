@@ -28,7 +28,7 @@ import { axisOf, edgeHeading } from './raster.js';
 export const EXIT = -2;
 export const CLASSIC = 'classic';
 export const TRAIN = 'train';
-export const DEFAULTS = Object.freeze({ rule: CLASSIC, slow: 0, crossTurns: true, straight: 4, respawnDelay: 0, green: 1, box: false });
+export const DEFAULTS = Object.freeze({ rule: CLASSIC, slow: 0, crossTurns: true, straight: 4, respawnDelay: 0, green: 1, box: false, reroute: false });
 export const AHEAD = 6; // longest committed path through a junction box
 
 /** Named traffic laws, from realistic to bare BML. */
@@ -195,9 +195,29 @@ const movers = (s, want, rule) => {
 };
 
 /** One half-step in phase t mod 2. Returns the new state; `moved`/`exited` describe it. */
-export const halfStep = (net, s0, opts = DEFAULTS) => {
+/** Re-routing (opts.reroute): before a half-step, every roaming car whose committed next cell is
+ * occupied may switch to a free legal option from its current lane (a free cell, or EXIT),
+ * chosen with the usual routing weights. This drops assumption (C) as human drivers do; cars
+ * committed through a junction box (aheadLen > 0) and broken-down cars do not switch. */
+const reroute = (net, s0, rng, o) => {
+  const s = clone(s0);
+  for (let k = 0; k < s.pos.length; k++) {
+    const [p, q] = [s.pos[k], s.next[k]];
+    if (p < 0 || q < 0 || s.occ[q] < 0 || s.species[k] || s.aheadLen[k] || s.stall[k] > s.t) continue;
+    const { cells, weights } = turnOptions(net, p, s.prev[k], o);
+    const free = cells.map((c, i) => [c, weights[i]]).filter(([c]) => c === EXIT || s.occ[c] < 0);
+    if (!free.length) continue;
+    const next = rng.weighted(free.map(([c]) => c), free.map(([, w]) => w));
+    s.next[k] = next;
+    s.axis[k] = axisFor(net, p, s.prev[k], next);
+  }
+  return s;
+};
+
+export const halfStep = (net, sIn, opts = DEFAULTS) => {
   const o = { ...DEFAULTS, ...opts };
-  const rng = makeRng(s0.seed);
+  const rng = makeRng(sIn.seed);
+  const s0 = o.reroute ? reroute(net, sIn, rng, o) : sIn;
   const phase = s0.t & 1;
   const red = greenAxis(s0.t, o.green) !== phase;
   const N = s0.pos.length;
