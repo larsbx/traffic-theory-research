@@ -118,7 +118,9 @@ connections to tiling and dynamical-systems theory.
   fewest roundabouts. With k roundabouts it ranges from min(W,H) to min(W + ⌊k/H⌋, H + ⌊k/W⌋),
   and a random placement of share ρ gives (1+ρ)L asymptotically. A junction time budget bounds
   free flow. Exhaustive enumeration shows free-flow capacity is not monotone in R, and a
-  Monte Carlo sweep shows mixed grids jamming earliest. The proofs are prose; none is in Lean.
+  Monte Carlo sweep shows mixed grids jamming earliest. A variant with a private link cell on
+  every street segment is compared throughout: it raises every threshold and keeps the dip.
+  The proofs are prose; none is in Lean.
 - [Roundabout BML](docs/research/2026-11-24-roundabout-bml.md) (2026-11-24): BML with every
   intersection replaced by a yield-controlled roundabout and no signal phases. A free-flowing
   configuration with n_E east and n_N north cars exists iff ⌈n_E/m⌉ + ⌈n_N/m⌉ ≤ g, where

@@ -22,6 +22,11 @@ roundabout allows 6 free cars, every single roundabout allows 5, and eight round
 A Monte Carlo sweep (§6) shows the same shape for gridlock from random traffic: mixed grids
 jam at lower density than either pure grid.
 
+**Link cells (§0, §8).** Every result is also given for the variant with one private link cell
+per street segment, where a car waits for its signal on the link and not inside a roundabout.
+The gridlock theorem carries over with W and H doubled. Capacity and the jamming density rise
+at every share, and the dip at intermediate shares remains.
+
 MX-0, MX-G, MX-E, MX-P and MX-F have complete prose proofs. The capacity census is finite
 data, the sweep is simulation, and nothing is formalized in Lean. No novelty is claimed.
 
@@ -55,6 +60,13 @@ waits for green in the cell before it. For an N car leaving a roundabout that ce
 private b. For an E car it is the roundabout's shared cell c, because the roundabout's private
 E cell lies on its entry side. An E car therefore holds a roundabout for two ticks when the
 next intersection east is a signal. §4 and §5 depend on this choice; §§1–3 do not.
+
+**The link variant.** Add one private cell per street segment: e(x,y) east of c(x,y) for E
+cars and n(x,y) north of it for N cars. The routes become c(x,y) → e(x,y) → [a(x+1,y)] →
+c(x+1,y) and c(x,y) → [b(x,y)] → n(x,y) → c(x,y+1), and there are 3WH + 2|R| cells. A car now
+waits for its signal on a link, which removes the asymmetry above. This variant does not
+reduce to BML at R = ∅: it is BML with a buffer cell on every segment. Write ℓ = 0 for the
+model without links and ℓ = 1 for the model with them.
 
 ## 1. Lemma MX-0 (gridlock)
 
@@ -92,6 +104,15 @@ junction cell, and junction cells reach every cell by E and N routes. So while s
 empty, a route path from an empty cell to an occupied one has a last empty cell z, whose
 successor under some species σ is occupied. Put a σ car in z. It is blocked, and the state is
 again a gridlock by MX-0. Repeat until all WH + 2|R| cells are full. ∎
+
+**With links.** The same proof gives, for ℓ = 1,
+
+> n_min(R) = min( 2W + min_y r_y , 2H + min_x c_x ) ≤ n ≤ 3WH + 2|R|.
+
+A row now has 2W + r_y cells and a column 2H + c_x, and a cycle with α, β > 0 has at least
+2(W+H) ≥ 3·min(W,H) ≥ n_min(R) cells. MX-E holds with W and H replaced by 2W and 2H in the
+leading terms, so the best placement gives 2L + ⌊ρL⌋ on the L×L torus. MX-P holds with the
+condition H ≥ 2W replaced by 2H ≥ 3W.
 
 **Endpoints.** R = ∅ gives min(W,H) ≤ n ≤ WH, which is G1. R everything gives
 2·min(W,H) ≤ n ≤ 3WH, which is RB-G.
@@ -158,6 +179,11 @@ carries at most ⌊2W/3⌋ E cars, and a row of roundabouts at most W. A column 
 consecutive signals carries at most ⌊2H/3⌋ N cars. With R = ∅ and with R everything the
 budget gives the upper bounds n ≤ 2WH/3 of Theorem F and n ≤ WH of RB-C.
 
+**With links** nobody waits in a junction cell, so every visit uses two ticks. An undelayed
+car laps its street in T ticks, where T is the number of cells from each signal to the next,
+rounded up to even and summed round the street, or the number of cells if the street has no
+signal (`laps`). The budget becomes 2·E_y/T_y + 2·N_x/T′_x ≤ 1 at every junction.
+
 The budget is necessary and not sufficient: on 3×3 with one roundabout it allows more than
 the true capacity 5.
 
@@ -178,47 +204,89 @@ So on 3×3 the first roundabout lowers the capacity, the mean over placements st
 BML value 6 until k = 7, and the last signal still costs two cars (7 against 9). On 3×3 BML
 reaches its ceiling because 3 | g, and one roundabout breaks the period-3 pattern that does
 so. On the other three boards, where BML is below its ceiling, the minimum never falls below
-the BML value. These are exact facts about these boards only; no general capacity formula for
-mixed R is proved here.
+the BML value.
+
+With links, on every placement of two boards:
+
+| k | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|---|
+| 3×2, ℓ = 1 | 6 | 5 | 4–7 | 6–7 | 6–8 | 8 | 9 |
+| 2×2, ℓ = 1 | 4 | 3 | 4–5 | 5 | 6 | | |
+
+Links raise the capacity at every share: on 3×2 from 3 to 6 with signals only and from 6 to 9
+with roundabouts only. The first roundabout now lowers it on both boards, where without links
+it did not. So the dip is not caused by cars waiting inside a roundabout. With links a street's
+lap time depends on its roundabouts (3 ticks per roundabout block against 2 per signal block),
+so one roundabout puts its row and its column out of step with the rest; whether that is the
+cause was not tested.
+
+These are exact facts about these boards only; no general capacity formula for mixed R is
+proved here.
 
 ## 6. Monte Carlo: gridlock from random traffic against the share
 
 Not a proof. L = 24, each intersection a roundabout with probability ρ, each cell occupied
-with probability p, 40 runs of 6,000 ticks per point, one seed. A run counts as gridlocked if
-no car can move at the end.
+with probability p, 40 runs of 6,000 ticks per point, one seed per variant. A run counts as
+gridlocked if no car can move at the end. The table gives the lowest p on a grid of step 0.04
+at which at least half the runs are gridlocked, and the same point in cars per intersection.
 
-| ρ | highest p with no gridlocked run | lowest p with ≥ half the runs gridlocked | the same, in cars per intersection |
-|---|---|---|---|
-| 0 | 0.34 | 0.46 | 0.45 |
-| 0.25 | 0.14 | 0.22 | 0.34 |
-| 0.5 | 0.10 | 0.18 | 0.36 |
-| 0.75 | 0.10 | 0.18 | 0.45 |
-| 1 | 0.38 | 0.50 | 1.50 |
+| ρ | ℓ = 0: p | ℓ = 0: cars per intersection | ℓ = 1: p | ℓ = 1: cars per intersection |
+|---|---|---|---|---|
+| 0 | 0.46 | 0.45 | 0.26 | 0.79 |
+| 0.25 | 0.22 | 0.34 | 0.18 | 0.63 |
+| 0.5 | 0.18 | 0.36 | 0.18 | 0.73 |
+| 0.75 | 0.18 | 0.45 | 0.18 | 0.80 |
+| 1 | 0.50 | 1.50 | 0.54 | 2.69 |
 
-The grid of p has step 0.04. In this model a mixed grid jams at a markedly lower density than
-BML, per cell and per intersection, and the all-roundabout grid holds about three times as
-many cars per intersection as BML before jamming. One size and one seed support no claim
-about a limit, and 6,000 ticks may undercount slow jams.
+What the comparison shows, at this one size:
 
-A likely contributor is the modelling choice of §0: an E car waiting for a signal sits in the
-shared cell of the roundabout behind it and blocks the crossing N stream. This was not tested.
-A variant with a link cell between intersections would remove it, and is the natural next
-model to compare.
+- **Links help at every share.** Per intersection the grid holds roughly 1.75 to 2 times as
+  many cars before jamming. Per cell the signal-only grid jams earlier with links (0.26
+  against 0.46), since two thirds of its cells are now buffers.
+- **The dip remains.** At ρ = 0.25 the jamming point per intersection is about three quarters
+  of the signal-only value without links and about four fifths with them. On a grid of step
+  0.04 these two are not distinguishable. The guess in the first version of this note, that
+  the dip came from E cars waiting in a roundabout's shared cell, is therefore wrong as the
+  main explanation.
+- **Roundabouts pay off only when nearly all intersections have them.** In both variants the
+  jamming point at ρ = 0.75 is no better than at ρ = 0, and at ρ = 1 it is more than three
+  times higher. The sweep has no point between 0.75 and 1, so it does not locate the jump.
+
+One size and one seed support no claim about a limit, and 6,000 ticks may undercount slow jams.
 
 ## 7. Summary: what the share of roundabouts does
 
 | quantity | dependence on R | status |
 |---|---|---|
-| least gridlock n_min | W or H plus the fewest roundabouts on a street | proved (MX-G) |
-| n_min at share ρ | from min(W,H) to ≈ (1+ρ)·min(W,H); random placement → (1+ρ)L | proved (MX-E, MX-P) |
-| most cars in gridlock | WH(1 + 2ρ) | proved (MX-G) |
-| free flow on one street | ≤ 2/3 per junction if the street has a signal, ≤ 1 if none | proved (MX-F) |
-| free-flow capacity | not monotone; lowest at intermediate shares on 3×3 | exhaustive on 4 tori |
-| gridlock from random traffic | earliest at intermediate shares, L = 24 | simulation |
+| least gridlock n_min | (1+ℓ)·W or (1+ℓ)·H plus the fewest roundabouts on a street | proved (MX-G) |
+| n_min at share ρ | from (1+ℓ)·min(W,H) to ≈ (1+ℓ+ρ)·min(W,H); random placement → (1+ℓ+ρ)L | proved (MX-E, MX-P) |
+| most cars in gridlock | WH(1 + 2ℓ + 2ρ) | proved (MX-G) |
+| free flow on one street, ℓ = 0 | ≤ 2/3 per junction if the street has a signal, ≤ 1 if none | proved (MX-F) |
+| free-flow capacity | not monotone, with or without links; links raise it at every share | exhaustive on small tori |
+| gridlock from random traffic | earliest at intermediate shares, with or without links; far later only at ρ = 1 | simulation, L = 24 |
 
 **Evidence.** The tests compare n_min with the girth of the blocker graph for every placement
 on eight boards up to 4×2 and 3×3, and with exhaustive enumeration of all states on boards with
 at most four intersections. The construction is replayed at every admissible count on random
 placements up to 5×5. MX-E is checked against all placements up to 4×4, MX-P against exact
 enumeration on four boards, and MX-F on every free configuration of every placement up to
-3×2. The largest board in the capacity census has nine intersections.
+3×2. The largest board in the capacity census has nine intersections. For ℓ = 1 the tests
+compare n_min with the girth for every placement up to 3×3, enumerate all states on boards with
+at most two intersections and on 2×2 with at most one roundabout, replay the construction on
+random placements up to 4×4, check the lap formula against lone cars, and check MX-F on every
+free configuration of every placement of 3×1 and 2×2.
+
+## 8. What the link cell changes
+
+| | ℓ = 0 | ℓ = 1 |
+|---|---|---|
+| cells | WH + 2\|R\| | 3WH + 2\|R\| |
+| where a car waits for a signal | E: in the cell before, which is a roundabout's shared cell if the previous intersection is one | on its private link |
+| least gridlock | min(W + min r_y, H + min c_x) | min(2W + min r_y, 2H + min c_x) |
+| relative gain from roundabouts, best placement | factor 1 + ρ | factor 1 + ρ/2 |
+| free-flow capacity, 3×2, signals only / roundabouts only | 3 / 6 | 6 / 9 |
+| first roundabout lowers capacity | on 3×3 only, of the boards searched | on both boards searched |
+| jamming point at ρ = 0, 0.25, 1 (cars per intersection, simulation) | 0.45, 0.34, 1.50 | 0.79, 0.63, 2.69 |
+
+The link cell is a buffer. It makes every grid harder to gridlock and raises free flow, but it
+does not change the shape of the dependence on the share of roundabouts.

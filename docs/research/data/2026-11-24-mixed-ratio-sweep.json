@@ -5,6 +5,7 @@
  "seed": 20261124,
  "rows": [
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.1,
    "gridlocked": 0.0,
@@ -12,6 +13,7 @@
    "cars_per_intersection": 0.1015
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.14,
    "gridlocked": 0.0,
@@ -19,6 +21,7 @@
    "cars_per_intersection": 0.1408
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.18,
    "gridlocked": 0.0,
@@ -26,6 +29,7 @@
    "cars_per_intersection": 0.1793
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.22,
    "gridlocked": 0.0,
@@ -33,6 +37,7 @@
    "cars_per_intersection": 0.2189
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.26,
    "gridlocked": 0.0,
@@ -40,6 +45,7 @@
    "cars_per_intersection": 0.2577
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.3,
    "gridlocked": 0.0,
@@ -47,6 +53,7 @@
    "cars_per_intersection": 0.3049
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.34,
    "gridlocked": 0.0,
@@ -54,6 +61,7 @@
    "cars_per_intersection": 0.344
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.38,
    "gridlocked": 0.025,
@@ -61,6 +69,7 @@
    "cars_per_intersection": 0.3807
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.42,
    "gridlocked": 0.175,
@@ -68,6 +77,7 @@
    "cars_per_intersection": 0.4173
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.46,
    "gridlocked": 0.65,
@@ -75,6 +85,7 @@
    "cars_per_intersection": 0.4536
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.5,
    "gridlocked": 0.975,
@@ -82,6 +93,7 @@
    "cars_per_intersection": 0.4961
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.54,
    "gridlocked": 1.0,
@@ -89,6 +101,7 @@
    "cars_per_intersection": 0.5434
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.58,
    "gridlocked": 1.0,
@@ -96,6 +109,7 @@
    "cars_per_intersection": 0.5815
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.62,
    "gridlocked": 1.0,
@@ -103,6 +117,7 @@
    "cars_per_intersection": 0.623
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.66,
    "gridlocked": 1.0,
@@ -110,6 +125,7 @@
    "cars_per_intersection": 0.658
   },
   {
+   "link": false,
    "rho": 0.0,
    "p": 0.7,
    "gridlocked": 1.0,
@@ -117,6 +133,7 @@
    "cars_per_intersection": 0.7045
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.1,
    "gridlocked": 0.0,
@@ -124,6 +141,7 @@
    "cars_per_intersection": 0.1497
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.14,
    "gridlocked": 0.0,
@@ -131,6 +149,7 @@
    "cars_per_intersection": 0.2118
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.18,
    "gridlocked": 0.025,
@@ -138,6 +157,7 @@
    "cars_per_intersection": 0.2697
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.22,
    "gridlocked": 0.775,
@@ -145,6 +165,7 @@
    "cars_per_intersection": 0.335
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.26,
    "gridlocked": 1.0,
@@ -152,6 +173,7 @@
    "cars_per_intersection": 0.3882
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.3,
    "gridlocked": 1.0,
@@ -159,6 +181,7 @@
    "cars_per_intersection": 0.4579
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.34,
    "gridlocked": 0.975,
@@ -166,6 +189,7 @@
    "cars_per_intersection": 0.5059
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.38,
    "gridlocked": 0.975,
@@ -173,6 +197,7 @@
    "cars_per_intersection": 0.5718
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.42,
    "gridlocked": 1.0,
@@ -180,6 +205,7 @@
    "cars_per_intersection": 0.6315
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.46,
    "gridlocked": 1.0,
@@ -187,6 +213,7 @@
    "cars_per_intersection": 0.6874
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.5,
    "gridlocked": 1.0,
@@ -194,6 +221,7 @@
    "cars_per_intersection": 0.7441
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.54,
    "gridlocked": 1.0,
@@ -201,6 +229,7 @@
    "cars_per_intersection": 0.8166
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.58,
    "gridlocked": 1.0,
@@ -208,6 +237,7 @@
    "cars_per_intersection": 0.876
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.62,
    "gridlocked": 1.0,
@@ -215,6 +245,7 @@
    "cars_per_intersection": 0.9285
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.66,
    "gridlocked": 1.0,
@@ -222,6 +253,7 @@
    "cars_per_intersection": 0.9938
   },
   {
+   "link": false,
    "rho": 0.25,
    "p": 0.7,
    "gridlocked": 1.0,
@@ -229,6 +261,7 @@
    "cars_per_intersection": 1.0643
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.1,
    "gridlocked": 0.0,
@@ -236,6 +269,7 @@
    "cars_per_intersection": 0.2019
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.14,
    "gridlocked": 0.025,
@@ -243,6 +277,7 @@
    "cars_per_intersection": 0.2811
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.18,
    "gridlocked": 0.75,
@@ -250,6 +285,7 @@
    "cars_per_intersection": 0.3609
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.22,
    "gridlocked": 0.975,
@@ -257,6 +293,7 @@
    "cars_per_intersection": 0.4341
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.26,
    "gridlocked": 0.975,
@@ -264,6 +301,7 @@
    "cars_per_intersection": 0.5234
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.3,
    "gridlocked": 0.95,
@@ -271,6 +309,7 @@
    "cars_per_intersection": 0.6
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.34,
    "gridlocked": 0.975,
@@ -278,6 +317,7 @@
    "cars_per_intersection": 0.6788
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.38,
    "gridlocked": 0.975,
@@ -285,6 +325,7 @@
    "cars_per_intersection": 0.7596
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.42,
    "gridlocked": 1.0,
@@ -292,6 +333,7 @@
    "cars_per_intersection": 0.8434
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.46,
    "gridlocked": 0.975,
@@ -299,6 +341,7 @@
    "cars_per_intersection": 0.9244
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.5,
    "gridlocked": 1.0,
@@ -306,6 +349,7 @@
    "cars_per_intersection": 0.9955
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.54,
    "gridlocked": 1.0,
@@ -313,6 +357,7 @@
    "cars_per_intersection": 1.0786
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.58,
    "gridlocked": 1.0,
@@ -320,6 +365,7 @@
    "cars_per_intersection": 1.1634
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.62,
    "gridlocked": 1.0,
@@ -327,6 +373,7 @@
    "cars_per_intersection": 1.2341
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.66,
    "gridlocked": 1.0,
@@ -334,6 +381,7 @@
    "cars_per_intersection": 1.3034
   },
   {
+   "link": false,
    "rho": 0.5,
    "p": 0.7,
    "gridlocked": 1.0,
@@ -341,6 +389,7 @@
    "cars_per_intersection": 1.3967
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.1,
    "gridlocked": 0.0,
@@ -348,6 +397,7 @@
    "cars_per_intersection": 0.2535
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.14,
    "gridlocked": 0.05,
@@ -355,6 +405,7 @@
    "cars_per_intersection": 0.3502
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.18,
    "gridlocked": 0.95,
@@ -362,6 +413,7 @@
    "cars_per_intersection": 0.4484
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.22,
    "gridlocked": 0.875,
@@ -369,6 +421,7 @@
    "cars_per_intersection": 0.5529
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.26,
    "gridlocked": 0.85,
@@ -376,6 +429,7 @@
    "cars_per_intersection": 0.6524
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.3,
    "gridlocked": 0.875,
@@ -383,6 +437,7 @@
    "cars_per_intersection": 0.7502
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.34,
    "gridlocked": 0.875,
@@ -390,6 +445,7 @@
    "cars_per_intersection": 0.8479
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.38,
    "gridlocked": 0.925,
@@ -397,6 +453,7 @@
    "cars_per_intersection": 0.9477
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.42,
    "gridlocked": 0.975,
@@ -404,6 +461,7 @@
    "cars_per_intersection": 1.0526
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.46,
    "gridlocked": 1.0,
@@ -411,6 +469,7 @@
    "cars_per_intersection": 1.1491
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.5,
    "gridlocked": 1.0,
@@ -418,6 +477,7 @@
    "cars_per_intersection": 1.2529
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.54,
    "gridlocked": 1.0,
@@ -425,6 +485,7 @@
    "cars_per_intersection": 1.339
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.58,
    "gridlocked": 1.0,
@@ -432,6 +493,7 @@
    "cars_per_intersection": 1.4531
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.62,
    "gridlocked": 1.0,
@@ -439,6 +501,7 @@
    "cars_per_intersection": 1.5536
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.66,
    "gridlocked": 1.0,
@@ -446,6 +509,7 @@
    "cars_per_intersection": 1.6491
   },
   {
+   "link": false,
    "rho": 0.75,
    "p": 0.7,
    "gridlocked": 1.0,
@@ -453,6 +517,7 @@
    "cars_per_intersection": 1.7502
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.1,
    "gridlocked": 0.0,
@@ -460,6 +525,7 @@
    "cars_per_intersection": 0.2952
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.14,
    "gridlocked": 0.0,
@@ -467,6 +533,7 @@
    "cars_per_intersection": 0.4174
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.18,
    "gridlocked": 0.0,
@@ -474,6 +541,7 @@
    "cars_per_intersection": 0.539
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.22,
    "gridlocked": 0.0,
@@ -481,6 +549,7 @@
    "cars_per_intersection": 0.6604
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.26,
    "gridlocked": 0.0,
@@ -488,6 +557,7 @@
    "cars_per_intersection": 0.7813
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.3,
    "gridlocked": 0.0,
@@ -495,6 +565,7 @@
    "cars_per_intersection": 0.8971
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.34,
    "gridlocked": 0.0,
@@ -502,6 +573,7 @@
    "cars_per_intersection": 1.0248
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.38,
    "gridlocked": 0.0,
@@ -509,6 +581,7 @@
    "cars_per_intersection": 1.138
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.42,
    "gridlocked": 0.05,
@@ -516,6 +589,7 @@
    "cars_per_intersection": 1.2614
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.46,
    "gridlocked": 0.25,
@@ -523,6 +597,7 @@
    "cars_per_intersection": 1.3732
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.5,
    "gridlocked": 0.575,
@@ -530,6 +605,7 @@
    "cars_per_intersection": 1.4999
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.54,
    "gridlocked": 0.725,
@@ -537,6 +613,7 @@
    "cars_per_intersection": 1.6171
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.58,
    "gridlocked": 0.725,
@@ -544,6 +621,7 @@
    "cars_per_intersection": 1.7393
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.62,
    "gridlocked": 0.975,
@@ -551,6 +629,7 @@
    "cars_per_intersection": 1.8663
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.66,
    "gridlocked": 0.975,
@@ -558,11 +637,652 @@
    "cars_per_intersection": 1.9683
   },
   {
+   "link": false,
    "rho": 1.0,
    "p": 0.7,
    "gridlocked": 0.975,
    "moves_per_car_per_tick": 0.0003,
    "cars_per_intersection": 2.1034
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.1,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.9913,
+   "cars_per_intersection": 0.3016
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.14,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.9551,
+   "cars_per_intersection": 0.4135
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.18,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.9324,
+   "cars_per_intersection": 0.5464
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.22,
+   "gridlocked": 0.15,
+   "moves_per_car_per_tick": 0.7281,
+   "cars_per_intersection": 0.6572
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.26,
+   "gridlocked": 0.85,
+   "moves_per_car_per_tick": 0.0693,
+   "cars_per_intersection": 0.7865
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.3,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0148,
+   "cars_per_intersection": 0.8988
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.34,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.0211
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.38,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0014,
+   "cars_per_intersection": 1.1318
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.42,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.2566
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.46,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0012,
+   "cars_per_intersection": 1.3789
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.5,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.5067
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.54,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.6172
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.58,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.7429
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.62,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.8612
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.66,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.9785
+  },
+  {
+   "link": true,
+   "rho": 0.0,
+   "p": 0.7,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.1012
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.1,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.8666,
+   "cars_per_intersection": 0.3495
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.14,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.8493,
+   "cars_per_intersection": 0.4839
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.18,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.6334
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.22,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.7615
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.26,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0027,
+   "cars_per_intersection": 0.9014
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.3,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.0536
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.34,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.1943
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.38,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.333
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.42,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.4758
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.46,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.6035
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.5,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.7514
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.54,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.8857
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.58,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.0294
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.62,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.1694
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.66,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.3032
+  },
+  {
+   "link": true,
+   "rho": 0.25,
+   "p": 0.7,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.4522
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.1,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.879,
+   "cars_per_intersection": 0.402
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.14,
+   "gridlocked": 0.025,
+   "moves_per_car_per_tick": 0.8367,
+   "cars_per_intersection": 0.5564
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.18,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.7261
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.22,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.8786
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.26,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.0388
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.3,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.2094
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.34,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.3588
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.38,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.5188
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.42,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.6854
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.46,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.8418
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.5,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.9891
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.54,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.1655
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.58,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.3052
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.62,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.4818
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.66,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.6404
+  },
+  {
+   "link": true,
+   "rho": 0.5,
+   "p": 0.7,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.8003
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.1,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.9235,
+   "cars_per_intersection": 0.4418
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.14,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.9146,
+   "cars_per_intersection": 0.6338
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.18,
+   "gridlocked": 0.95,
+   "moves_per_car_per_tick": 0.0457,
+   "cars_per_intersection": 0.8013
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.22,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.9928
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.26,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.1796
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.3,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.3624
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.34,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.5232
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.38,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.7176
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.42,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0007,
+   "cars_per_intersection": 1.899
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.46,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.0711
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.5,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.2418
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.54,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.4388
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.58,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.6084
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.62,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.7906
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.66,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 2.9657
+  },
+  {
+   "link": true,
+   "rho": 0.75,
+   "p": 0.7,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 3.1616
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.1,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.979,
+   "cars_per_intersection": 0.501
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.14,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.9349,
+   "cars_per_intersection": 0.7123
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.18,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.8765,
+   "cars_per_intersection": 0.895
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.22,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.7195,
+   "cars_per_intersection": 1.1014
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.26,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.5932,
+   "cars_per_intersection": 1.3084
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.3,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.5683,
+   "cars_per_intersection": 1.5093
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.34,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.4986,
+   "cars_per_intersection": 1.6982
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.38,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.3434,
+   "cars_per_intersection": 1.8951
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.42,
+   "gridlocked": 0.05,
+   "moves_per_car_per_tick": 0.2956,
+   "cars_per_intersection": 2.0813
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.46,
+   "gridlocked": 0.275,
+   "moves_per_car_per_tick": 0.1287,
+   "cars_per_intersection": 2.2922
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.5,
+   "gridlocked": 0.3,
+   "moves_per_car_per_tick": 0.0413,
+   "cars_per_intersection": 2.4982
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.54,
+   "gridlocked": 0.6,
+   "moves_per_car_per_tick": 0.0135,
+   "cars_per_intersection": 2.6934
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.58,
+   "gridlocked": 0.8,
+   "moves_per_car_per_tick": 0.0044,
+   "cars_per_intersection": 2.9062
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.62,
+   "gridlocked": 0.85,
+   "moves_per_car_per_tick": 0.0026,
+   "cars_per_intersection": 3.1075
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.66,
+   "gridlocked": 0.825,
+   "moves_per_car_per_tick": 0.0023,
+   "cars_per_intersection": 3.2885
+  },
+  {
+   "link": true,
+   "rho": 1.0,
+   "p": 0.7,
+   "gridlocked": 0.85,
+   "moves_per_car_per_tick": 0.002,
+   "cars_per_intersection": 3.4964
   }
  ]
 }
