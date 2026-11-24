@@ -55,8 +55,23 @@ exactly one moves. **Yield on entry** lets the E car go. The mirror rule lets th
 
 **Scope.** All four results below hold for both yield rules, and the proofs use only that a
 contested merge moves exactly one car. The reflection x ↔ y exchanges species and the two
-yield rules (`transpose`). Cars never turn, as in BML. With turning traffic all four quadrants
-are used and a single roundabout can lock with four cars, so nothing here covers that model.
+yield rules (`transpose`). Cars never turn, as in BML, so the fourth quadrant is unused and a
+ring can never close on itself.
+
+**Turning traffic is a different model, and its four-car lock is an artifact.** With turns all
+four quadrants are used. Four cars can then enter an empty ring in the same step, one per arm,
+and if each has a further quadrant to cross, every next cell is occupied and the ring is fixed.
+This does not describe a real roundabout. It comes from two features of the minimal model:
+
+- the ring has as many cells as arms, so every cell is an entry cell and also the cell that the
+  next entrant checks. If no two entry cells are adjacent, an entrant needs its entry cell t
+  and the cell t−1 behind it empty. Afterwards t−1 is empty, or it was filled from t−2, which
+  is then empty and could not be entered in that step. So entries never fill the ring;
+- a full ring cannot rotate under the CLASSIC vacancy rule. Real circulating cars move
+  together, as under the TRAIN rule, until one reaches its exit.
+
+A real roundabout locks when a queue from downstream blocks an exit, which involves the
+surrounding network and more than four cars. Nothing in this note covers turning traffic.
 
 ## 1. Lemma RB-0 (gridlock = fixed point)
 
@@ -247,7 +262,7 @@ domains. The largest searched g is 3.
 
 **Not addressed.** Whether a random configuration below capacity reaches free flow, and at
 what density the roundabout city gridlocks, are open here exactly as for BML. Links of
-positive length and turning traffic change the model. No Lean formalization exists yet.
+positive length, longer rings and turning traffic change the model. No Lean formalization exists yet.
 
 **Related work.** [Fouladvand–Sadjadi–Shaebani][FSS] simulate a single yield-at-entry
 roundabout as a stochastic cellular automaton and compare its delay with signal control.
