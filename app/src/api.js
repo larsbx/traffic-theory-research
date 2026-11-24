@@ -151,7 +151,7 @@ export const makeApi = ({ fetch, userAgent, now = Date.now, sleep = (ms) => new 
       const { net } = built;
       const J = jamGraph(net, opts);
       const gJ = girthOf(J);
-      const maxLen = num(p, 'maxLen', { min: 2, max: 128, def: Number.isFinite(gJ) ? Math.min(128, gJ + 8) : 16, int: true });
+      const maxLen = num(p, 'maxLen', { min: 2, max: 512, def: Number.isFinite(gJ) ? gJ + 8 : 16, int: true }); // through the girth: a cap below it would report zero cycles
       const census = cycleCensus(J, { maxLen, budget: 3e6, keep: 8 });
       const { roads } = await roadsAt(centre);
       const streets = roads.map(({ pts }) => {
