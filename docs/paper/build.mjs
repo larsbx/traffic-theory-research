@@ -1,5 +1,5 @@
 // paper.src.html → paper.html (math pre-rendered by KaTeX) → paper.pdf (Chromium print).
-// Math: $…$ inline, $$…$$ display. Uses the Playwright that ships with the environment.
+// Math: $…$ inline, $$…$$ display. Needs Playwright's Chromium (`npx playwright install chromium`).
 import { readFile, writeFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import katex from 'katex';

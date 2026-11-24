@@ -34,7 +34,7 @@ const places = presets.places.map((p) => {
     const o = lawOpts(l);
     const J = jamGraph(net, o);
     const g = girthOf(J);
-    const census = cycleCensus(J, { maxLen: Number.isFinite(g) ? Math.min(128, g + 8) : 16, budget: 3e6 });
+    const census = cycleCensus(J, { maxLen: Number.isFinite(g) ? g + 8 : 16, budget: 3e6 });
     const runs = RHOS.map((rho) => ({ target: rho, seeds: SEEDS.map((seed) => run(net, o, rho, seed)) }));
     console.log(`${p.id} ${l.name} done`);
     return { law: l.name, jamGirth: fin(g), cycles: census.count, complete: census.complete, risk03: cycleRisk(census, 0.3), lambda: spectralRadius(J), runs };

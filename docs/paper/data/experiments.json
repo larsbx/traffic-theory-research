@@ -43,9 +43,9 @@
     {
      "law": "CITY CODE",
      "jamGirth": 140,
-     "cycles": 0,
+     "cycles": 1,
      "complete": true,
-     "risk03": 0,
+     "risk03": 4.511366987168115e-75,
      "lambda": 0.9850008991667718,
      "runs": [
       {

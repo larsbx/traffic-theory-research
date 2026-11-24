@@ -13,6 +13,7 @@ two-phase exclusion dynamics on OpenStreetMap lane graphs, with experiments on s
 
 ```sh
 cd docs/paper && npm ci
+npx playwright install chromium   # the browser that prints the PDF (skip if already provisioned)
 npm run experiments   # ~1 min, deterministic
 npm run figures
 npm run build         # paper.html (local preview) and paper.pdf

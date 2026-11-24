@@ -61,7 +61,7 @@ way, its LOAD box goes through the API, so any place works.
 | `GET /api/geocode` | `q` (a name, or `lat,lon`) | `{lat, lon, name, drive}`; drive side `R`/`L` |
 | `GET /api/roads` | `lat`,`lon` or `q` | OSM drivable centre-lines in local metres, plus `source` (`overpass` / `osm-api`) |
 | `GET /api/network` | `lat`,`lon` or `q`; `drive`; `edges=1` | lane graph: cells, edges, junctions, entries, exits, **girth**; with `edges=1`, the edge list |
-| `GET /api/analyze` | `lat`,`lon` or `q`; `law`; `rho` (0.3); `maxLen` (girth + 8) | **no simulation**: cell and jam-graph girth, short-cycle census with hotspot cells, risk index R(ρ), spectral radius, throughput bounds (CLASSIC / TRAIN), Sturmian free speeds of the streets ([note](../docs/research/2026-11-23-dynamics-free-map-mathematics.md)) |
+| `GET /api/analyze` | `lat`,`lon` or `q`; `law`; `rho` (0.3); `maxLen` (girth + 8, at most 512) | **no simulation**: cell and jam-graph girth, short-cycle census with hotspot cells, risk index R(ρ), spectral radius, throughput bounds (CLASSIC / TRAIN), Sturmian free speeds of the streets ([note](../docs/research/2026-11-23-dynamics-free-map-mathematics.md)) |
 | `GET /api/simulate` | `lat`,`lon` or `q`; `rho` (0.3), `law` (`CITY CODE`…`BML LIGHTS`), `rule` (`classic`/`train`), `slow` (0.1), `steps` ≤ 6000 (1200), `samples` ≤ 500 (60), `seed` (1) | a time series of ρ, v̄, J, queue, frozen and jam loops; the final certificate with each core's cells |
 
 ```sh

@@ -9,6 +9,7 @@
     "build": "node build.mjs"
   },
   "devDependencies": {
-    "katex": "0.16.11"
+    "katex": "0.16.11",
+    "playwright": "1.63.0"
   }
 }

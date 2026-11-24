@@ -86,14 +86,17 @@ and simulator tests. See [the proof](../../formal/lean/BML/LaneDeadlock.lean),
 
 **P2 (minimum jam; the form of G1 on maps).** Every β-cycle of direct arcs is a simple directed
 cycle of J. Hence every permanent core of direct arcs has at least girth(J) cars. Conversely, let
-C be any simple cycle of J. For every n with |C| ≤ n ≤ |{v : v reaches C in J}|, some
-configuration of n cars is frozen.
+C be any simple cycle of J. Under CLASSIC, and under TRAIN when C uses both axes, for every n
+with |C| ≤ n ≤ |{v : v reaches C in J}| some configuration of n cars is frozen. The axis
+condition is needed: a full eastbound row of the torus is a cycle of J that rotates under TRAIN.
+No cycle of a lane graph built from a map runs along a single axis, since that needs wraparound.
 
 *Proof.* (⇒) Consecutive cars on a direct β-cycle sit in distinct cells b → c with c = q_k, so
 b → c is an arc of J. (⇐) Put one car on each cell of C, committed to its successor on C, with
 arrivals chosen to make each hop legal; J guarantees such an arrival exists. Then fill a
 spanning in-forest of the cells reaching C, from the cycle outwards. Each new car is committed to
-its parent, which is occupied and frozen. ∎
+its parent, which is occupied and frozen. The cycle is frozen by P1, which under TRAIN needs the
+two axes. ∎
 
 Measured (`app/test/structure.test.js`): every core observed in simulation on the six presets
 lies on J and has ≥ girth(J) cars. A single car's *turn* graph is the wrong object here. The
@@ -105,8 +108,9 @@ there was 20, while the observed cores had 4 cars.
 path. Such cycles are certified by P1, but they need not be cycles of J, so P2's bound covers
 direct cores only.
 
-**R1 (parity).** Every arc of G changes x + y by ±1, so G is bipartite and every cycle has even
-length. The girths observed are 4, 18, 52, 58, 62, 106 and 140, all even. A jam loop of length 4
+**R1 (parity).** On a lane graph built from a map, which has no wraparound, every arc of G changes
+x + y by ±1. So G is bipartite and every cycle has even length. (The torus is excluded: with W odd
+its wraparound arcs give an odd cycle.) The girths observed are 4, 18, 52, 58, 62, 106 and 140, all even. A jam loop of length 4
 is exactly a 2×2 box.
 
 **R2 (capture for fixed routes).** Suppose every car's route is fixed in advance, as for AGVs
@@ -168,7 +172,7 @@ and reports whether it finished.
 
 | map | girth(G) | J, city code: girth · cycles ≤ g+8 · R(0.3) | J, BML lights: girth · cycles · R(0.3) | Φ ≤ (CLASSIC / TRAIN) | jams seen in simulation |
 |---|---|---|---|---|---|
-| Midtown | 58 | 140 · 0 · 0 | 58 · 1 · 1·10⁻³² | 13 / 26 | none |
+| Midtown | 58 | 140 · 1 · 5·10⁻⁷⁵ | 58 · 1 · 1·10⁻³² | 13 / 26 | none |
 | Eixample | 52 | 106 · 4 · 2·10⁻⁵⁷ | 52 · 65 · 8·10⁻³⁰ | 16 / 32 | none |
 | Grachten | ∞ | ∞ · 0 · 0 | ∞ · 0 · 0 | 12 / 24 | none |
 | Étoile | 18 | 62 · 3 · 5·10⁻³⁴ | 18 · 4 · 1·10⁻¹¹ | 20 / 40 | once laws are repealed |
