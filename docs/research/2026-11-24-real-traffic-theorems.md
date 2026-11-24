@@ -52,6 +52,12 @@ loop. This continuous form does not depend on any discretisation. The lattice Th
 | round a Manhattan block (80 m × 274 m) | ≈ 708 m | 95 vehicles |
 | Midtown preset, shortest loop of J, city code | 140 cells × 7.5 m = 1,050 m | 140 vehicles |
 
+**Corollary R1′ (kept-clear junctions).** The same sum gives a more general bound. If
+vehicle i is held at a headway of at most s_jam + e_i, then n ≥ (L(C) − Σ e_i)/s_jam. Where
+junction boxes are kept clear, a vehicle waiting at a stop line is held across the box, so
+e_i ≥ b_i, the box length. The bound then becomes n ≳ (L(C) − B)/s_jam, where B is the total
+box length on the loop. SUMO shows the correction is needed (see [the SUMO test](#test-in-sumo)).
+
 *Data to test it:* stopped-queue lengths in gridlock events, from drone or CCTV trajectories
 such as pNEUMA [BG], against loop lengths from OpenStreetMap.
 
@@ -188,19 +194,71 @@ only v_f, mean trip length and cut capacity. *Lattice check:* the exact finite-w
 inequality holds with no tolerance on three presets (`realflow.test.js`). *Data:* accumulation
 and trip lengths from GPS traces or loop detectors [UTD19].
 
+## Test in SUMO
+
+The harness is in [`sumo/`](../../sumo/README.md) and the data in
+[`data/2026-11-24-sumo.json`](data/2026-11-24-sumo.json).
+
+**Setup.** SUMO 1.28 [SUMO] ran with Krauß car following, real lane geometry, keep-clear
+junctions and guessed signal plans. The networks are the six preset windows, converted from
+OSM by `netconvert`. Demand is one hour of random fringe-to-fringe trips at 900, 1800 or
+3600 veh/h, with seeds 1–3. Each scenario ran with fixed routes and with SUMO's rerouting device
+(period 30 s), giving 108 runs. Teleporting was off.
+
+**Measurement.** At t = 4500 s, a TraCI wait-for graph has these edges: a stopped vehicle →
+its stopped leader, when bumper to bumper or across the junction from the stop line; otherwise,
+a stopped vehicle → a stopped junction foe it must yield to. Its cycles are the gridlock cores.
+R5 is measured on the window [600, 3600) s.
+
+| claim | result |
+|---|---|
+| R5(a): λ_T·ℓ̄_T ≤ v̄_T·N̄_T | **holds**: 0 violations in 108 runs, max ratio 0.966 |
+| R5(c): equality needs stability | **as predicted**: mean ratio 0.937 in the 60 runs with no stuck vehicle, 0.363 in the 48 with stuck vehicles |
+| R1, plain: n ≥ L/7.5 m | **fails on 21/21** gridlock loops (354–749 m, 38–95 vehicles). Density is 0.106–0.127 veh/m, 80–95 % of k_jam. |
+| R1′: n ≥ (L − B)/7.5 m | **holds on 12/21**, with a deficit of at most 2.4 vehicles (≤ 6 %). Mean off-box density is 0.138 veh/m against k_jam = 0.133. |
+| R2: re-routing removes permanent gridlock | **not borne out** by SUMO's rerouting device. Stuck vehicles went from 19,621 to 19,251. Of the 54 pairs, 12 had fewer, 12 had more and 30 were equal (all zero). |
+| R3, R4 | not tested |
+
+**Reading.**
+- *R5* behaves exactly as stated.
+- *R1* fails in its plain form, and the failure is in a hypothesis, not in the proof. SUMO keeps
+  boxes clear, so a vehicle at a stop line is held at headway ≈ box + 11–21 m, not at
+  ≤ s_jam. Boxes average 16 % of loop length. With them subtracted, queues sit at jam density
+  on average. The remaining deficits come from vehicles that also wait for a full slot beyond
+  the box (e_i > b_i). Some also come from the box measurement, which follows only the first
+  internal-lane chain of the follower's next link.
+  - Practical rule: a real gridlock is lighter than k_jam·L by about the kept-clear share of the loop.
+- *R2*'s hypothesis (O) is that a blocked driver switches at once to any free legal move.
+  SUMO's device does something else: it recomputes routes from travel times every 30 s and
+  leaves lane choice to the lane-change model. Of the vehicles stuck ≥ 10 min:
+  - 96 % were behind a stopped leader (spillback);
+  - 2.5 % needed a lane change they could not make;
+  - 0.3 % were at a red light.
+
+  Both spillback and lane commitment are commitments that the model's drivers cannot revise. The
+  effect of rerouting depends on the place and demand, for example:
+  - fewer stuck vehicles at eixample@3600 veh/h (1096 → 932) and shibuya@1800 (783 → 669);
+  - more trips at midtown@3600 (191 → 294);
+  - slightly more stuck vehicles at bank and midtown.
+
+  R2 stands as a theorem about instantly revising drivers. Whether real drivers are closer to (O)
+  or to SUMO's device is an empirical question.
+
 ## What is proved, tested and open
 
 | result | proved | tested in the simulator | tested on real data |
 |---|---|---|---|
-| R1 jam-spacing bound | yes | lattice case (paper, Theorem 3(a)) | no |
-| R2 traps, safe cells | yes | soundness, equality with the certificate, safe-cell claim, 360-run experiment | no |
+| R1 jam-spacing bound | yes | lattice case (paper, Theorem 3(a)). SUMO: plain form fails (kept-clear boxes); R1′ holds on 12/21 loops, within 2.4 vehicles | no |
+| R2 traps, safe cells | yes | soundness, equality with the certificate, safe-cell claim, 360-run experiment. SUMO: not borne out by its periodic rerouting device | no |
 | R3 closure time | yes (corrected: phase-aware inflow) | closed form only | no |
 | R4 signal cut bound | yes | lattice case (paper, Theorem 5) | no |
-| R5 Little / MFD envelope | yes | exact finite-window inequality | no |
+| R5 Little / MFD envelope | yes | exact finite-window inequality; SUMO: 0/108 violations, tight only when stable | no |
 
 What is open:
 - the real-data tests listed under each result;
-- a version of R2 that allows *partial* re-routing, where drivers revise with some probability;
+- a version of R2 that allows *partial* re-routing, where drivers revise with some probability or
+  only periodically, which SUMO's rerouting device suggests is the relevant case;
+- a sharp form of R1′, which needs the stop-line hold distance e_i for a given junction-entry rule;
 - whether S\* = ∅ bounds how long transient jams last, which needs dynamics, not structure.
 
 ## References
@@ -213,5 +271,7 @@ What is open:
 - [Holt] R. C. Holt. Some deadlock properties of computer systems. *ACM Comput. Surv.* 4 (1972)
   179–196.
 - [Stidham] S. Stidham. A last word on L = λW. *Oper. Res.* 22 (1974) 417–421.
+- [SUMO] P. A. Lopez et al. Microscopic traffic simulation using SUMO. *Proc. IEEE ITSC* (2018)
+  2575–2582.
 - [UTD19] A. Loder, L. Ambühl, M. Menendez, K. W. Axhausen. Understanding traffic capacity of
   urban networks. *Sci. Rep.* 9 (2019) 16283.
