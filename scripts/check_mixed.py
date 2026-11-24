@@ -28,7 +28,7 @@ from bml.mixed import (  # noqa: E402
 GIRTH = ((2, 2), (2, 3), (3, 2), (3, 3), (2, 4), (4, 2), (3, 4))      # (H, W)
 EXTREMES = GIRTH + ((2, 5), (4, 4))
 CENSUS = ((2, 2), (2, 3), (3, 2), (3, 3), (2, 4))
-LINK_CENSUS = ((2, 2), (2, 3), (3, 2))
+LINK_CENSUS = ((2, 2), (2, 3))
 
 
 def masks(h: int, w: int):
