@@ -111,6 +111,13 @@ connections to tiling and dynamical-systems theory.
   exact population normalization. The actual exporter is proved to refine
   the CLASSIC board and tagged traces; independent finite recurrence checks
   cover empty boards, partial fixation, and unequal-population mixtures.
+- [Roundabout BML](docs/research/2026-11-24-roundabout-bml.md) (2026-11-24): BML with every
+  intersection replaced by a yield-controlled roundabout and no signal phases. A free-flowing
+  configuration with n_E east and n_N north cars exists iff ⌈n_E/m⌉ + ⌈n_N/m⌉ ≤ g, where
+  g = gcd(W,H) and m = WH/g. The capacity is one car per roundabout on every torus, and mixed
+  free flow needs g ≥ 2, against (WH/g)·⌊2g/3⌋ and g ≥ 3 for BML. Gridlock with n cars exists
+  iff 2·min(W,H) ≤ n ≤ 3WH. The proofs are prose; dynamics-only enumerations check them on
+  small tori, and nothing is formalized in Lean.
 - [Theorems for real traffic flow](docs/research/2026-11-24-real-traffic-theorems.md) (2026-11-24):
   five results under physical, measurable assumptions (jam spacing, saturation flow, signal green
   fractions, a speed limit). They cover a jam-density bound on gridlock size, permanent gridlock
@@ -172,6 +179,8 @@ connections to tiling and dynamical-systems theory.
 - `bml/thin.py` — thin-torus (2×W) jam structure and exact bounds on q; certificates that q is
   not monotone for every W ≥ 24 (`scripts/thin_certificates.py`, `data/thin-nonmonotone.json`).
 - `bml/montecarlo.py` — empirical jam curves (not a proof).
+- `bml/roundabout.py` — the roundabout variant: synchronous yield kernel, static free-flow
+  criterion, capacity and gridlock constructions, and enumeration of every free configuration.
 
 ```sh
 python -m pip install -r requirements-dev.txt
@@ -184,6 +193,7 @@ python scripts/check_capacity.py --report .artifacts/capacity-replay.json
 python scripts/check_guarded_queue.py --report .artifacts/guarded-queue-replay.json
 python scripts/check_barriers.py --report .artifacts/barriers-replay.json
 python scripts/check_path_core.py --report .artifacts/path-core-replay.json
+python scripts/check_roundabout.py --report .artifacts/roundabout-replay.json
 python -m bml.analysis 16    # regenerate data/exhaustive.json
 ```
 
