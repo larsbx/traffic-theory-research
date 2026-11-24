@@ -11,7 +11,7 @@ from concurrent.futures import ProcessPoolExecutor
 import build
 import run
 
-PERIODS = [8.0, 4.0, 2.0]   # seconds between insertions: 450, 900, 1800 veh/h for one hour
+PERIODS = [4.0, 2.0, 1.0]   # seconds between insertions: 900, 1800, 3600 veh/h for one hour
 SEEDS = [1, 2, 3]
 
 

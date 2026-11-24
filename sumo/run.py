@@ -14,7 +14,7 @@ import sumo
 import traci
 
 SUMO_BIN = str(pathlib.Path(sumo.SUMO_HOME) / "bin" / "sumo")
-END, SAMPLE, WINDOW = 4500, 4500, (600, 3600)
+END, SAMPLE, WINDOW = 4510, 4500, (600, 3600)  # sample before the end: SUMO closes TraCI at --end
 
 
 def wait_for_graph(stuck_s: float = 120.0):
@@ -108,9 +108,9 @@ def run(net, routes, out_stem, reroute: bool, seed: int):
             edges = [next((e for e in g[v] if e[0] == c[(i + 1) % len(c)]), None) for i, v in enumerate(c)]
             if all(e and e[1] == "leader" for e in edges):
                 r1.append({"n": len(c), "length": sum(e[2] for e in edges), "maxHeadway": max(e[2] for e in edges)})
+        reasons = stuck_reasons()
     finally:
         traci.close()
-        reasons = stuck_reasons()
     return {"stuck600": stuck600, "running": running, "cycles": len(cyc), "coreVehicles": len(core),
             "reasons": reasons, "r1Cycles": r1, **little(summary, tripinfo)}
 
