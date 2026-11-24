@@ -1,6 +1,6 @@
 # Theorems for real traffic flow
 
-**Research note — 24 November 2026.** The lane-graph results
+**Research note — 24 November 2026 (revised 24 November after review).** The lane-graph results
 ([previous note](2026-11-23-dynamics-free-map-mathematics.md), [paper](../paper/paper.pdf)) rest
 on a lattice: 7.5 m cells, unit speed, and drivers who never revise a committed move. Real
 traffic has continuous space and time, has signal plans, and has drivers who re-route when
@@ -31,13 +31,16 @@ same instant, is not physical, so it is not used here.
 
 ## R1. Gridlock needs a loop's worth of jammed vehicles
 
-**Theorem R1.** Let C be a closed loop of lane, of length L(C), along which vehicles are committed,
-each to the path ahead of the next one. If every vehicle on C is permanently stopped, then C holds
-at least L(C)/s_jam = k_jam·L(C) vehicles.
+Call a closed loop of lane C, of length L(C), **in gridlock** when the vehicles on it are
+committed each to the path ahead of the next one, and each is *held by* that next vehicle:
+its front-to-front headway to it is at most s_jam. A vehicle stopped for another reason, such
+as a breakdown or a driver who will not move, is not held, and the theorem says nothing about it.
+
+**Theorem R1.** A loop C in gridlock holds at least L(C)/s_jam = k_jam·L(C) vehicles.
 
 *Proof.* Going round the loop, the front-to-front headways of the n vehicles add up to L(C),
-because the committed paths join into the closed loop. A stopped vehicle has headway ≤ s_jam by
-(X). So L(C) ≤ n·s_jam. ∎
+because the committed paths join into the closed loop. Each is at most s_jam because each vehicle
+is held. So L(C) ≤ n·s_jam. ∎
 
 So the minimum size of a gridlock is the jam density times the length of the shortest committed
 loop. This continuous form does not depend on any discretisation. The lattice Theorem 3(a),
@@ -101,9 +104,13 @@ and five seeds (360 runs, `reroute.mjs`):
 |---|---|---|
 | no box rule ("block the box", BML lights): safe-cell share | — | **100 % on all six maps** |
 | trapped share, no box rule, all 180 runs | up to 0.95 (Shibuya), 1.00 (Étoile) | **0 in every run**, as (e) requires |
-| trapped share with the box rule ("free turns", ρ = 0.4) | Étoile 1.00, Bank 0.38, Shibuya 0.70 | Étoile 0.10, Bank 0.12, Shibuya 0.18 |
+| trapped share with the box rule ("free turns", ρ = 0.4) | Étoile 1.00, Bank 0.38, Shibuya 0.70 | Étoile 0.19, Bank 0.12, Shibuya 0.12 |
 | flow J at ρ = 0.3, Étoile, BML lights | 0.000 | 0.207 |
 | flow J at ρ = 0.3, Bank, "block the box" | 0.026 | 0.149 |
+
+The box-rule rows use the corrected simulator, in which a re-routing driver entering a junction
+also commits to its whole path through the box. The first version skipped that commitment, so it
+let re-routed drivers bypass the box rule.
 
 Re-routing removed every trap where the theorem applies. Under the box rule, traps remained only
 because box-committed drivers could not re-route. That supports the corollary that **real
@@ -120,17 +127,25 @@ how many vehicles had an unblocked legal alternative when the jam locked.
 
 ## R3. A loop cannot lock faster than its inflow can fill it
 
-**Theorem R3.** Let a loop C of length L(C) hold n₀ vehicles at time 0, and let the total
-capacity of the links entering C be Q, so the inflow is at most Q, and by (S) at most Σ λ_e s_e
-over its entries. Then C cannot be in gridlock before
-t\* = (L(C)/s_jam − n₀) / Q.
+**Theorem R3.** Let a loop C of length L(C) hold n₀ vehicles at time 0, and let its entries e
+have saturation flow s_e, green fraction λ_e and green duration g_e. Unsignalised entries have
+λ_e = 1, g_e = 0 and their capacity as s_e. Write need = L(C)/s_jam − n₀. Then C cannot be in
+gridlock before
 
-*Proof.* By R1, gridlock on C needs at least L(C)/s_jam vehicles on C. Vehicles are conserved
-and the outflow is non-negative, so N_C(t) ≤ n₀ + Q·t. ∎
+t\* = max( need / Σ s_e , (need − Σ s_e g_e) / Σ s_e λ_e ).
+
+*Proof.* By R1, gridlock on C needs at least L(C)/s_jam vehicles on C. Over any window of length
+t, entry e is green for at most min(t, λ_e t + g_e): at most one green interval beyond the
+long-run share. It discharges at most s_e times that. Vehicles are conserved and the outflow is
+non-negative, so N_C(t) ≤ n₀ + Σ s_e·min(t, λ_e t + g_e). Each of the two bounds on the right
+gives one term of t\*. ∎
+
+The long-run rate Σ λ_e s_e alone is not a valid bound here. A window starting at the onset of
+green sees discharge at full saturation flow.
 
 Example: round a Manhattan block (708 m) holding 29 vehicles (41 veh/km), with two signalised
-entries of 1,800 veh/h each at λ = ½ (Q = 0.5 veh/s). It cannot lock in less than ≈ 130 s,
-which gives a window for clearing an incident. `closureTimeBound` computes the bound.
+entries of 1,800 veh/h each, green for 45 s of a 90 s cycle. The loop cannot lock in less than
+≈ 65 s, which gives a window for clearing an incident. `closureTimeBound` computes the bound.
 
 *Data to test it:* incident logs with queue growth from loop detectors [UTD19].
 
@@ -153,13 +168,20 @@ city signal plans and saturation flows [HCM], against network-wide trip completi
 completed in the window, ℓ̄_T their mean length, N̄_T the mean accumulation and v̄_T the mean
 speed. Then
 λ_T·ℓ̄_T ≤ v̄_T·N̄_T ≤ v_f·N̄_T.
-In the long run, by Little's law, the first inequality becomes an equality, so
-Φ ≤ min(N̄·v_f/ℓ̄, F\*) and the mean travel time satisfies T̄ = N̄/Φ ≥ max(ℓ̄/v_f, N̄/F\*).
+This holds unconditionally. If the long-run limits λ, ℓ̄ and N̄ exist, it gives
+Φ·ℓ̄ ≤ v_f·N̄, so Φ ≤ min(N̄·v_f/ℓ̄, F\*) with R4.
+If, in addition, the network is **stable**, the first inequality becomes an equality. Stable
+means every vehicle completes its trip, the mean sojourn time T̄ is finite, and the vehicles in
+the network at the window's ends are o(T). In that case Little's law gives T̄ = N̄/Φ ≥
+max(ℓ̄/v_f, N̄/F\*). Permanently trapped vehicles break stability: they add to N̄ but never
+complete a trip.
 
 *Proof.* The distance covered in the window by all vehicles is ∫ Σ v dt = v̄_T·N̄_T·T. It
 includes the full length of every trip completed inside the window, which gives the first
-inequality. The second is (V). In the long run, the boundary terms divided by T vanish and the
-sample-path Little's law N̄ = Φ·T̄ [Stidham] gives the rest, with R4 supplying F\*. ∎
+inequality. The second is (V). Dividing by T and taking limits gives Φ·ℓ̄ ≤ v_f·N̄. Under
+stability, the distance and time of trips straddling the window's ends are o(T), so the
+inequality becomes an equality. The sample-path Little's law N̄ = Φ·T̄ [Stidham] and R4 then give
+the travel-time bound. ∎
 
 This is a triangular upper envelope for the macroscopic fundamental diagram [GD] that needs
 only v_f, mean trip length and cut capacity. *Lattice check:* the exact finite-window
@@ -172,7 +194,7 @@ and trip lengths from GPS traces or loop detectors [UTD19].
 |---|---|---|---|
 | R1 jam-spacing bound | yes | lattice case (paper, Theorem 3(a)) | no |
 | R2 traps, safe cells | yes | soundness, equality with the certificate, safe-cell claim, 360-run experiment | no |
-| R3 closure time | yes | closed form only | no |
+| R3 closure time | yes (corrected: phase-aware inflow) | closed form only | no |
 | R4 signal cut bound | yes | lattice case (paper, Theorem 5) | no |
 | R5 Little / MFD envelope | yes | exact finite-window inequality | no |
 

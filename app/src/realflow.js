@@ -68,10 +68,19 @@ export const minGridlockVehicles = (loopMetres, sJam = 7.5) => Math.ceil(loopMet
 /** R1 on a lane graph: girth in cells × cell length = the shortest committed loop in metres. */
 export const jamGirthMetres = (girthCells, cellMetres) => girthCells * cellMetres;
 
-/** R3. A loop of length L (m) holding n0 vehicles cannot lock before
- * (L / sJam − n0) / inflowCapacity, where inflowCapacity (veh/s) bounds the net inflow into it. */
-export const closureTimeBound = ({ loopMetres, n0, inflowCapacity, sJam = 7.5 }) =>
-  Math.max(0, (loopMetres / sJam - n0) / inflowCapacity);
+/** R3. Earliest time a loop of length L (m) holding n0 vehicles can be in gridlock. Entries are
+ * [{ s, lambda = 1, green = 0 }]: saturation flow s (veh/s), green fraction λ and green duration g (s).
+ * Over any window of length t an entry is green at most λt + g, so its inflow is at most
+ * min(s·t, s·(λt + g)). Gridlock needs L/sJam vehicles on the loop (R1), hence
+ * t ≥ max(need / Σs, (need − Σ s·g) / Σ s·λ) with need = L/sJam − n0. */
+export const closureTimeBound = ({ loopMetres, n0, entries, sJam = 7.5 }) => {
+  const need = loopMetres / sJam - n0;
+  if (need <= 0) return 0;
+  const sum = (f) => entries.reduce((a, e) => a + f({ lambda: 1, green: 0, ...e }), 0);
+  const pointwise = need / sum((e) => e.s);
+  const phased = (need - sum((e) => e.s * e.green)) / sum((e) => e.s * e.lambda);
+  return Math.max(pointwise, phased, 0);
+};
 
 /** R5. Upper envelope of the network flow (trips completed per unit time) at mean accumulation N:
  * min(N · vFree / meanTrip, cutCapacity). */

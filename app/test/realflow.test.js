@@ -77,8 +77,13 @@ test('R2 safe cells: no trapped car ever sits on a safe cell; an all-safe map ne
 test('R1, R3, R5: closed forms', () => {
   assert.equal(minGridlockVehicles(4 * 15, 7.5), 8);       // a 15 m × 15 m crossing box
   assert.equal(minGridlockVehicles(720, 7.5), 96);         // around an 80 m × 280 m block
-  assert.ok(Math.abs(closureTimeBound({ loopMetres: 720, n0: 29, inflowCapacity: 0.5 }) - 134) < 1e-9);
-  assert.equal(closureTimeBound({ loopMetres: 60, n0: 20, inflowCapacity: 1 }), 0);
+  // two signalised entries, 1,800 veh/h each, green half of a 90 s cycle: the pointwise bound binds
+  const entries = [{ s: 0.5, lambda: 0.5, green: 45 }, { s: 0.5, lambda: 0.5, green: 45 }];
+  assert.ok(Math.abs(closureTimeBound({ loopMetres: 708, n0: 29, entries }) - (708 / 7.5 - 29)) < 1e-9);
+  // a short green: the phase-aware bound binds
+  const short = [{ s: 0.5, lambda: 0.25, green: 4 }];
+  assert.ok(Math.abs(closureTimeBound({ loopMetres: 708, n0: 29, entries: short }) - (708 / 7.5 - 29 - 2) / 0.125) < 1e-9);
+  assert.equal(closureTimeBound({ loopMetres: 60, n0: 20, entries }), 0);
   assert.equal(mfdEnvelope({ accumulation: 100, vFree: 14, meanTrip: 2000, cutCapacity: 2 }), 0.7);
   assert.equal(mfdEnvelope({ accumulation: 1000, vFree: 14, meanTrip: 2000, cutCapacity: 2 }), 2);
 });
@@ -111,4 +116,18 @@ test('R5 in simulation, exact on a finite window: completed trips × their mean 
 
 test('R2 safe cells refuse the box rule, where the theorem does not apply', () => {
   assert.throws(() => safeCells(nets[0][1], law('CITY CODE')), /box rule/);
+});
+
+test('re-routing under the box rule commits the whole box path (regression: rerouted entries skipped the box rule)', () => {
+  for (const [id, net] of nets.filter(([x]) => ['midtown', 'bank', 'etoile'].includes(x))) {
+    const o = law('FREE TURNS', { reroute: true });
+    let s = init(net, Math.round(net.roadCells * 0.4), 1, o);
+    for (let t = 0; t < 300; t++) {
+      s = halfStep(net, s, o);
+      for (let k = 0; k < s.pos.length; k++) {
+        const [p, q] = [s.pos[k], s.next[k]];
+        if (p >= 0 && q >= 0 && net.junction[q] && !net.junction[p]) assert.ok(s.aheadLen[k] > 0, `${id} t=${t}: car ${k} enters junction ${q} with no box path`);
+      }
+    }
+  }
 });

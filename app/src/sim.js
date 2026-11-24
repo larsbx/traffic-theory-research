@@ -81,8 +81,13 @@ const hop = (net, cell, prev, species, rng, opts, h0 = NaN) => {
 };
 
 /** Committed route from `cell`: the next hop, then (box rule) the rest of the way through a box. */
-export const plan = (net, cell, prev, species, rng, opts, h0 = NaN) => {
-  const route = [hop(net, cell, prev, species, rng, opts, h0)];
+export const plan = (net, cell, prev, species, rng, opts, h0 = NaN) =>
+  throughBox(net, cell, prev, hop(net, cell, prev, species, rng, opts, h0), species, rng, opts);
+
+/** Route starting with the hop `first` from `cell`; under the box rule, entering a junction from
+ * outside extends it through the box to the first cell beyond (the box commitment). */
+const throughBox = (net, cell, prev, first, species, rng, opts) => {
+  const route = [first];
   if (!opts.box || species || net.junction[cell]) return route;
   for (let [z, a, b] = [prev, cell, route[0]]; b >= 0 && net.junction[b] && route.length <= AHEAD; [z, a, b] = [a, b, route.at(-1)])
     route.push(hop(net, b, a, species, rng, opts, z >= 0 ? edgeHeading(net, z, a) : NaN));
@@ -208,8 +213,7 @@ const reroute = (net, s0, rng, o) => {
     const free = cells.map((c, i) => [c, weights[i]]).filter(([c]) => c === EXIT || s.occ[c] < 0);
     if (!free.length) continue;
     const next = rng.weighted(free.map(([c]) => c), free.map(([, w]) => w));
-    s.next[k] = next;
-    s.axis[k] = axisFor(net, p, s.prev[k], next);
+    setRoute(net, s, k, p, s.prev[k], throughBox(net, p, s.prev[k], next, s.species[k], rng, o)); // box commitment too
   }
   return s;
 };
