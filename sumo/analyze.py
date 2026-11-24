@@ -51,13 +51,18 @@ def summarise(results):
         "reasons": {"fixed": dict(reasons[False]), "reroute": dict(reasons[True])},
         "byPlacePeriod": {f"{p}@{per}": {k: st.mean(v) for k, v in d.items()} for (p, per), d in sorted(by.items())},
     }
-    # R1: jam density on gridlock cycles of leader edges
+    # R1: n >= L / s_jam on gridlock cycles of leader edges (s_jam = 5 m car + 2.5 m minGap), and the
+    # refinement n >= (L - B) / s_jam with B the junction boxes SUMO keeps clear on the loop
+    S_JAM = 7.5
     cyc = [c for r in results for c in r["r1Cycles"]]
     out["R1"] = {
         "cycles": len(cyc),
-        "density": [c["n"] / c["length"] for c in cyc],
-        "maxHeadway": [c["maxHeadway"] for c in cyc],
-        "boundHolds": sum(c["n"] >= c["length"] / max(7.5, c["maxHeadway"]) - 1e-9 for c in cyc),
+        "n": [c["n"] for c in cyc],
+        "density": [round(c["n"] / c["length"], 4) for c in cyc],
+        "offBoxDensity": [round(c["n"] / (c["length"] - c["box"]), 4) for c in cyc],
+        "plainBoundHolds": sum(c["n"] >= c["length"] / S_JAM - 1e-9 for c in cyc),
+        "boxBoundHolds": sum(c["n"] >= (c["length"] - c["box"]) / S_JAM - 1e-9 for c in cyc),
+        "boxBoundSlack": [round(c["n"] - (c["length"] - c["box"]) / S_JAM, 2) for c in cyc],
     }
     return out
 

@@ -30,14 +30,29 @@ def wait_for_graph(stuck_s: float = 120.0):
         # held by the leader: bumper to bumper, or waiting at the stop line for room beyond the junction
         if lead and lead[0] in stopped and (lead[1] < 3.0 or (at_stop_line and lead[1] < 30.0)):
             headway = lead[1] + traci.vehicle.getMinGap(v) + traci.vehicle.getLength(lead[0])
-            out.append((lead[0], "leader", headway))
+            out.append((lead[0], "leader", headway, box_length(v, lead[0])))
         else:
             for foe in traci.vehicle.getJunctionFoes(v, 15.0):
                 fid, ego_response = foe[0], foe[7]
                 if fid in stopped and ego_response:
-                    out.append((fid, "junction", None))
+                    out.append((fid, "junction", None, 0.0))
         g[v] = out
     return g
+
+
+def box_length(v: str, leader: str) -> float:
+    """Junction-box length (internal lanes, kept clear by SUMO) between follower v and its leader:
+    0 on the same lane, else the internal lanes on v's next link up to the leader's lane."""
+    lane_l = traci.vehicle.getLaneID(leader)
+    if traci.vehicle.getLaneID(v) == lane_l:
+        return 0.0
+    links = traci.vehicle.getNextLinks(v)  # (lane, priority, opened, foe, via, state, direction, length)
+    total, via = 0.0, links[0][4] if links else ""
+    while via.startswith(":") and via != lane_l:
+        total += traci.lane.getLength(via)
+        nxt = traci.lane.getLinks(via)
+        via = nxt[0][0] if nxt else ""
+    return total
 
 
 def stuck_reasons(stuck_s: float = 600.0):
@@ -71,7 +86,7 @@ def cycles(g):
     def dfs(v):
         color[v] = 1
         stack.append(v)
-        for (w, kind, h) in g.get(v, []):
+        for (w, kind, *_rest) in g.get(v, []):
             if color.get(w) == 1:
                 found.append(stack[stack.index(w):])
             elif w in g and color.get(w, 0) == 0:
@@ -107,7 +122,10 @@ def run(net, routes, out_stem, reroute: bool, seed: int):
         for c in cyc:
             edges = [next((e for e in g[v] if e[0] == c[(i + 1) % len(c)]), None) for i, v in enumerate(c)]
             if all(e and e[1] == "leader" for e in edges):
-                r1.append({"n": len(c), "length": sum(e[2] for e in edges), "maxHeadway": max(e[2] for e in edges)})
+                box = sum(e[3] for e in edges)
+                r1.append({"n": len(c), "length": sum(e[2] for e in edges), "box": box,
+                           "maxHeadway": max(e[2] for e in edges),
+                           "maxOffBoxHeadway": max(e[2] - e[3] for e in edges)})
         reasons = stuck_reasons()
     finally:
         traci.close()
