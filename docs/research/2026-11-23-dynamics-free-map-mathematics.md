@@ -8,6 +8,24 @@ from the map alone. Code: [`app/src/structure.js`](../../app/src/structure.js), 
 `GET /api/analyze` ([`app/src/api.js`](../../app/src/api.js)); tests:
 [`app/test/structure.test.js`](../../app/test/structure.test.js).
 
+## Scope: BML, its extension, and the bridge to traffic
+
+This note works at three separate layers, and nothing carries from one to another without an
+explicit link.
+
+- **L0, BML:** the two-species torus automaton. Its theorems ([`theorems.md`](../theorems.md))
+  are cited, not extended.
+- **L1, the extension:** two-phase exclusion with commitment on lane graphs. P1–P4 and R1–R2 are
+  proved here under (E)+(C), and BML is the special case. L0 theorems do not transfer to L1 by
+  themselves, since their proofs use the torus's translation invariance and its diagonals.
+- **L2, the bridge to real traffic:** real OpenStreetMap geometry, but uncalibrated modelling
+  choices for everything else (cell size, single lanes, random routing, signal period,
+  dawdling). The measured tables below are simulations of L1 on L2 geometry, not observations
+  of traffic.
+
+The claim register in the [paper](../paper/paper.pdf) (§2, Table 0) assigns every result to a
+layer.
+
 ## 0. Setting
 
 A **lane graph** G = (V, A) has cells V (7.5 m, one car length) and unit-step arcs A

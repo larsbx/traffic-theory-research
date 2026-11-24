@@ -23,6 +23,16 @@ Modes:
 - **BML lab:** the plain torus, with live readouts of the theorems in
   [`docs/theorems.md`](../docs/theorems.md).
 
+## BML, extension, bridge
+
+The **BML lab** runs BML itself: the torus, two species, the theorems of
+[`docs/theorems.md`](../docs/theorems.md). **City** mode runs an *extension* of BML to lane
+graphs (signals, box rule, routing, merges), which reduces to BML only on the torus. Results
+proved for the extension are in the [research note](../docs/research/2026-11-23-dynamics-free-map-mathematics.md).
+The street geometry is real, but traffic in City mode is a model: uncalibrated, with random
+routing and no observed data. Statements about the six cities describe the model on their
+geometry, not real traffic there. See the [paper](../docs/paper/paper.pdf), §2.
+
 ## Perspective view
 
 `src/camera.js` is a pinhole camera over the ground plane z = 0, with pitch and yaw and no

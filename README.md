@@ -112,7 +112,8 @@ connections to tiling and dynamical-systems theory.
   the CLASSIC board and tagged traces; independent finite recurrence checks
   cover empty boards, partial fixation, and unequal-population mixtures.
 - [Gridlock on Real Street Networks](docs/paper/paper.pdf) (paper, 2026-11-23): the results below
-  in academic form, with proofs, the Lean status of the certificate, and 600 seeded
+  in academic form. It separates BML itself (L0), the lane-graph extension (L1) and the bridge to
+  real traffic (L2), with a claim register, proofs, the Lean status of the certificate, and 600 seeded
   experiments on six city centres ([source and data](docs/paper/README.md)).
 - [Dynamics-free mathematics on real street maps](docs/research/2026-11-23-dynamics-free-map-mathematics.md)
   (2026-11-23): G0/G1 restated for lane graphs under exclusion + commitment alone (jam cores
