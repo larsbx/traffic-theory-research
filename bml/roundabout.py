@@ -193,20 +193,22 @@ def free_levels(h: int, w: int, priority: int = EAST) -> list[State]:
     return grow_free(h, w, lambda s: is_free(s, priority))
 
 
-def grow_free(h: int, w: int, free, allowed: np.ndarray | None = None) -> list[State]:
+def grow_free(h: int, w: int, free, allowed: np.ndarray | None = None, build=None) -> list:
     """Every configuration accepted by the hereditary predicate ``free``, grouped by car count.
     Removing a car from a free configuration blocks nobody, so growing each n-car free
     configuration by one car in a later slot reaches every (n+1)-car one exactly once.
-    ``allowed`` (shape (4, h, w): a, c=EAST, c=NORTH, b) restricts the usable slots."""
+    Slots come in layers of h×w cells, the first four being a, c=EAST, c=NORTH, b. ``allowed``
+    (shape (layers, h, w)) restricts the usable slots; ``build`` turns a boolean batch of
+    shape (-1, layers, h, w) into states."""
     n = h * w
-    assert 4 * n < 63, "configurations are packed into int64 bitmasks"
-    slots = np.arange(4 * n)
     usable = np.ones(4 * n, bool) if allowed is None else allowed.ravel()
+    assert usable.size < 63, "configurations are packed into int64 bitmasks"
+    slots = np.arange(usable.size)
     rival = np.where(slots // n == 2, slots - n, slots)
+    build = build or (lambda layer: State(layer[:, 0], _junction(layer), layer[:, 3]))
 
-    def unpack(codes: np.ndarray) -> State:
-        layer = (codes[:, None] >> slots & 1).astype(bool).reshape(-1, 4, h, w)
-        return State(layer[:, 0], (layer[:, 1] * EAST + layer[:, 2] * NORTH).astype(np.int8), layer[:, 3])
+    def unpack(codes: np.ndarray):
+        return build((codes[:, None] >> slots & 1).astype(bool).reshape(-1, usable.size // n, h, w))
 
     level, levels = np.zeros(1, np.int64), []
     while level.size:
@@ -217,3 +219,7 @@ def grow_free(h: int, w: int, free, allowed: np.ndarray | None = None) -> list[S
         chunks = [grown[i:i + 2 ** 17] for i in range(0, grown.size, 2 ** 17)]
         level = np.concatenate([c[free(unpack(c))] for c in chunks] or [grown])
     return levels
+
+
+def _junction(layer: np.ndarray) -> np.ndarray:
+    return (layer[:, 1] * EAST + layer[:, 2] * NORTH).astype(np.int8)
