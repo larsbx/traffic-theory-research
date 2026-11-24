@@ -111,6 +111,14 @@ connections to tiling and dynamical-systems theory.
   exact population normalization. The actual exporter is proved to refine
   the CLASSIC board and tagged traces; independent finite recurrence checks
   cover empty boards, partial fixation, and unequal-population mixtures.
+- [A grid with a variable share of roundabouts](docs/research/2026-11-24-mixed-roundabout-grid.md)
+  (2026-11-24): any set R of intersections are roundabouts and the rest keep the BML signal.
+  An n-car gridlock exists iff min(W + min_y r_y, H + min_x c_x) ≤ n ≤ WH + 2|R|, with r_y and
+  c_x the roundabouts per row and column: the least gridlock is the straight street with the
+  fewest roundabouts. With k roundabouts it ranges from min(W,H) to min(W + ⌊k/H⌋, H + ⌊k/W⌋),
+  and a random placement of share ρ gives (1+ρ)L asymptotically. A junction time budget bounds
+  free flow. Exhaustive enumeration shows free-flow capacity is not monotone in R, and a
+  Monte Carlo sweep shows mixed grids jamming earliest. The proofs are prose; none is in Lean.
 - [Roundabout BML](docs/research/2026-11-24-roundabout-bml.md) (2026-11-24): BML with every
   intersection replaced by a yield-controlled roundabout and no signal phases. A free-flowing
   configuration with n_E east and n_N north cars exists iff ⌈n_E/m⌉ + ⌈n_N/m⌉ ≤ g, where
@@ -179,6 +187,8 @@ connections to tiling and dynamical-systems theory.
 - `bml/thin.py` — thin-torus (2×W) jam structure and exact bounds on q; certificates that q is
   not monotone for every W ≥ 24 (`scripts/thin_certificates.py`, `data/thin-nonmonotone.json`).
 - `bml/montecarlo.py` — empirical jam curves (not a proof).
+- `bml/mixed.py` — signals and roundabouts on one grid: the tick kernel, the least-gridlock
+  formula with its blocker-graph check, extremal and random placements, and the junction budget.
 - `bml/roundabout.py` — the roundabout variant: synchronous yield kernel, static free-flow
   criterion, capacity and gridlock constructions, and enumeration of every free configuration.
 
@@ -194,6 +204,7 @@ python scripts/check_guarded_queue.py --report .artifacts/guarded-queue-replay.j
 python scripts/check_barriers.py --report .artifacts/barriers-replay.json
 python scripts/check_path_core.py --report .artifacts/path-core-replay.json
 python scripts/check_roundabout.py --report .artifacts/roundabout-replay.json
+python scripts/check_mixed.py --report .artifacts/mixed-replay.json
 python -m bml.analysis 16    # regenerate data/exhaustive.json
 ```
 

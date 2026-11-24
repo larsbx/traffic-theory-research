@@ -189,11 +189,19 @@ def all_states(h: int, w: int) -> State:
 
 def free_levels(h: int, w: int, priority: int = EAST) -> list[State]:
     """Every free configuration of the h×w board, grouped by car count, found from the
-    dynamics alone. Freeness is hereditary (removing a car blocks nobody), so growing each
-    n-car free configuration by one car in a later slot reaches every (n+1)-car one once."""
+    dynamics alone."""
+    return grow_free(h, w, lambda s: is_free(s, priority))
+
+
+def grow_free(h: int, w: int, free, allowed: np.ndarray | None = None) -> list[State]:
+    """Every configuration accepted by the hereditary predicate ``free``, grouped by car count.
+    Removing a car from a free configuration blocks nobody, so growing each n-car free
+    configuration by one car in a later slot reaches every (n+1)-car one exactly once.
+    ``allowed`` (shape (4, h, w): a, c=EAST, c=NORTH, b) restricts the usable slots."""
     n = h * w
     assert 4 * n < 63, "configurations are packed into int64 bitmasks"
-    slots = np.arange(4 * n)                       # layers: a, c=EAST, c=NORTH, b
+    slots = np.arange(4 * n)
+    usable = np.ones(4 * n, bool) if allowed is None else allowed.ravel()
     rival = np.where(slots // n == 2, slots - n, slots)
 
     def unpack(codes: np.ndarray) -> State:
@@ -205,7 +213,7 @@ def free_levels(h: int, w: int, priority: int = EAST) -> list[State]:
         levels.append(unpack(level))
         taken = (level[:, None] >> slots & 1).astype(bool)
         later = slots > np.where(taken, slots, -1).max(axis=1, keepdims=True)
-        grown = (level[:, None] | 1 << slots)[later & ~taken[:, rival]]
+        grown = (level[:, None] | 1 << slots)[later & ~taken[:, rival] & usable]
         chunks = [grown[i:i + 2 ** 17] for i in range(0, grown.size, 2 ** 17)]
-        level = np.concatenate([c[is_free(unpack(c), priority)] for c in chunks] or [grown])
+        level = np.concatenate([c[free(unpack(c))] for c in chunks] or [grown])
     return levels

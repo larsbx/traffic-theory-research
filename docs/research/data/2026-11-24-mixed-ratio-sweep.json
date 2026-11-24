@@ -1,0 +1,568 @@
+{
+ "L": 24,
+ "runs": 40,
+ "ticks": 6000,
+ "seed": 20261124,
+ "rows": [
+  {
+   "rho": 0.0,
+   "p": 0.1,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.4996,
+   "cars_per_intersection": 0.1015
+  },
+  {
+   "rho": 0.0,
+   "p": 0.14,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.4999,
+   "cars_per_intersection": 0.1408
+  },
+  {
+   "rho": 0.0,
+   "p": 0.18,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.4998,
+   "cars_per_intersection": 0.1793
+  },
+  {
+   "rho": 0.0,
+   "p": 0.22,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.4982,
+   "cars_per_intersection": 0.2189
+  },
+  {
+   "rho": 0.0,
+   "p": 0.26,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.4946,
+   "cars_per_intersection": 0.2577
+  },
+  {
+   "rho": 0.0,
+   "p": 0.3,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.4813,
+   "cars_per_intersection": 0.3049
+  },
+  {
+   "rho": 0.0,
+   "p": 0.34,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.4617,
+   "cars_per_intersection": 0.344
+  },
+  {
+   "rho": 0.0,
+   "p": 0.38,
+   "gridlocked": 0.025,
+   "moves_per_car_per_tick": 0.41,
+   "cars_per_intersection": 0.3807
+  },
+  {
+   "rho": 0.0,
+   "p": 0.42,
+   "gridlocked": 0.175,
+   "moves_per_car_per_tick": 0.3088,
+   "cars_per_intersection": 0.4173
+  },
+  {
+   "rho": 0.0,
+   "p": 0.46,
+   "gridlocked": 0.65,
+   "moves_per_car_per_tick": 0.1078,
+   "cars_per_intersection": 0.4536
+  },
+  {
+   "rho": 0.0,
+   "p": 0.5,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0093,
+   "cars_per_intersection": 0.4961
+  },
+  {
+   "rho": 0.0,
+   "p": 0.54,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.5434
+  },
+  {
+   "rho": 0.0,
+   "p": 0.58,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.5815
+  },
+  {
+   "rho": 0.0,
+   "p": 0.62,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.623
+  },
+  {
+   "rho": 0.0,
+   "p": 0.66,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.658
+  },
+  {
+   "rho": 0.0,
+   "p": 0.7,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.7045
+  },
+  {
+   "rho": 0.25,
+   "p": 0.1,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.6277,
+   "cars_per_intersection": 0.1497
+  },
+  {
+   "rho": 0.25,
+   "p": 0.14,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.628,
+   "cars_per_intersection": 0.2118
+  },
+  {
+   "rho": 0.25,
+   "p": 0.18,
+   "gridlocked": 0.025,
+   "moves_per_car_per_tick": 0.6043,
+   "cars_per_intersection": 0.2697
+  },
+  {
+   "rho": 0.25,
+   "p": 0.22,
+   "gridlocked": 0.775,
+   "moves_per_car_per_tick": 0.1284,
+   "cars_per_intersection": 0.335
+  },
+  {
+   "rho": 0.25,
+   "p": 0.26,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.3882
+  },
+  {
+   "rho": 0.25,
+   "p": 0.3,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.4579
+  },
+  {
+   "rho": 0.25,
+   "p": 0.34,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.002,
+   "cars_per_intersection": 0.5059
+  },
+  {
+   "rho": 0.25,
+   "p": 0.38,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0008,
+   "cars_per_intersection": 0.5718
+  },
+  {
+   "rho": 0.25,
+   "p": 0.42,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.6315
+  },
+  {
+   "rho": 0.25,
+   "p": 0.46,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.6874
+  },
+  {
+   "rho": 0.25,
+   "p": 0.5,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.7441
+  },
+  {
+   "rho": 0.25,
+   "p": 0.54,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.8166
+  },
+  {
+   "rho": 0.25,
+   "p": 0.58,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.876
+  },
+  {
+   "rho": 0.25,
+   "p": 0.62,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.9285
+  },
+  {
+   "rho": 0.25,
+   "p": 0.66,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.9938
+  },
+  {
+   "rho": 0.25,
+   "p": 0.7,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.0643
+  },
+  {
+   "rho": 0.5,
+   "p": 0.1,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.7521,
+   "cars_per_intersection": 0.2019
+  },
+  {
+   "rho": 0.5,
+   "p": 0.14,
+   "gridlocked": 0.025,
+   "moves_per_car_per_tick": 0.6989,
+   "cars_per_intersection": 0.2811
+  },
+  {
+   "rho": 0.5,
+   "p": 0.18,
+   "gridlocked": 0.75,
+   "moves_per_car_per_tick": 0.1362,
+   "cars_per_intersection": 0.3609
+  },
+  {
+   "rho": 0.5,
+   "p": 0.22,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0046,
+   "cars_per_intersection": 0.4341
+  },
+  {
+   "rho": 0.5,
+   "p": 0.26,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0008,
+   "cars_per_intersection": 0.5234
+  },
+  {
+   "rho": 0.5,
+   "p": 0.3,
+   "gridlocked": 0.95,
+   "moves_per_car_per_tick": 0.0027,
+   "cars_per_intersection": 0.6
+  },
+  {
+   "rho": 0.5,
+   "p": 0.34,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0006,
+   "cars_per_intersection": 0.6788
+  },
+  {
+   "rho": 0.5,
+   "p": 0.38,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0005,
+   "cars_per_intersection": 0.7596
+  },
+  {
+   "rho": 0.5,
+   "p": 0.42,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.8434
+  },
+  {
+   "rho": 0.5,
+   "p": 0.46,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0009,
+   "cars_per_intersection": 0.9244
+  },
+  {
+   "rho": 0.5,
+   "p": 0.5,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 0.9955
+  },
+  {
+   "rho": 0.5,
+   "p": 0.54,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.0786
+  },
+  {
+   "rho": 0.5,
+   "p": 0.58,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.1634
+  },
+  {
+   "rho": 0.5,
+   "p": 0.62,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.2341
+  },
+  {
+   "rho": 0.5,
+   "p": 0.66,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.3034
+  },
+  {
+   "rho": 0.5,
+   "p": 0.7,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.3967
+  },
+  {
+   "rho": 0.75,
+   "p": 0.1,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.8667,
+   "cars_per_intersection": 0.2535
+  },
+  {
+   "rho": 0.75,
+   "p": 0.14,
+   "gridlocked": 0.05,
+   "moves_per_car_per_tick": 0.7182,
+   "cars_per_intersection": 0.3502
+  },
+  {
+   "rho": 0.75,
+   "p": 0.18,
+   "gridlocked": 0.95,
+   "moves_per_car_per_tick": 0.0106,
+   "cars_per_intersection": 0.4484
+  },
+  {
+   "rho": 0.75,
+   "p": 0.22,
+   "gridlocked": 0.875,
+   "moves_per_car_per_tick": 0.0089,
+   "cars_per_intersection": 0.5529
+  },
+  {
+   "rho": 0.75,
+   "p": 0.26,
+   "gridlocked": 0.85,
+   "moves_per_car_per_tick": 0.0078,
+   "cars_per_intersection": 0.6524
+  },
+  {
+   "rho": 0.75,
+   "p": 0.3,
+   "gridlocked": 0.875,
+   "moves_per_car_per_tick": 0.0096,
+   "cars_per_intersection": 0.7502
+  },
+  {
+   "rho": 0.75,
+   "p": 0.34,
+   "gridlocked": 0.875,
+   "moves_per_car_per_tick": 0.0038,
+   "cars_per_intersection": 0.8479
+  },
+  {
+   "rho": 0.75,
+   "p": 0.38,
+   "gridlocked": 0.925,
+   "moves_per_car_per_tick": 0.0034,
+   "cars_per_intersection": 0.9477
+  },
+  {
+   "rho": 0.75,
+   "p": 0.42,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0009,
+   "cars_per_intersection": 1.0526
+  },
+  {
+   "rho": 0.75,
+   "p": 0.46,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.1491
+  },
+  {
+   "rho": 0.75,
+   "p": 0.5,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.2529
+  },
+  {
+   "rho": 0.75,
+   "p": 0.54,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.339
+  },
+  {
+   "rho": 0.75,
+   "p": 0.58,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.4531
+  },
+  {
+   "rho": 0.75,
+   "p": 0.62,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.5536
+  },
+  {
+   "rho": 0.75,
+   "p": 0.66,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.6491
+  },
+  {
+   "rho": 0.75,
+   "p": 0.7,
+   "gridlocked": 1.0,
+   "moves_per_car_per_tick": 0.0,
+   "cars_per_intersection": 1.7502
+  },
+  {
+   "rho": 1.0,
+   "p": 0.1,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.9775,
+   "cars_per_intersection": 0.2952
+  },
+  {
+   "rho": 1.0,
+   "p": 0.14,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.9221,
+   "cars_per_intersection": 0.4174
+  },
+  {
+   "rho": 1.0,
+   "p": 0.18,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.8495,
+   "cars_per_intersection": 0.539
+  },
+  {
+   "rho": 1.0,
+   "p": 0.22,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.7041,
+   "cars_per_intersection": 0.6604
+  },
+  {
+   "rho": 1.0,
+   "p": 0.26,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.6038,
+   "cars_per_intersection": 0.7813
+  },
+  {
+   "rho": 1.0,
+   "p": 0.3,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.5885,
+   "cars_per_intersection": 0.8971
+  },
+  {
+   "rho": 1.0,
+   "p": 0.34,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.5606,
+   "cars_per_intersection": 1.0248
+  },
+  {
+   "rho": 1.0,
+   "p": 0.38,
+   "gridlocked": 0.0,
+   "moves_per_car_per_tick": 0.5179,
+   "cars_per_intersection": 1.138
+  },
+  {
+   "rho": 1.0,
+   "p": 0.42,
+   "gridlocked": 0.05,
+   "moves_per_car_per_tick": 0.3663,
+   "cars_per_intersection": 1.2614
+  },
+  {
+   "rho": 1.0,
+   "p": 0.46,
+   "gridlocked": 0.25,
+   "moves_per_car_per_tick": 0.1384,
+   "cars_per_intersection": 1.3732
+  },
+  {
+   "rho": 1.0,
+   "p": 0.5,
+   "gridlocked": 0.575,
+   "moves_per_car_per_tick": 0.0303,
+   "cars_per_intersection": 1.4999
+  },
+  {
+   "rho": 1.0,
+   "p": 0.54,
+   "gridlocked": 0.725,
+   "moves_per_car_per_tick": 0.0074,
+   "cars_per_intersection": 1.6171
+  },
+  {
+   "rho": 1.0,
+   "p": 0.58,
+   "gridlocked": 0.725,
+   "moves_per_car_per_tick": 0.0064,
+   "cars_per_intersection": 1.7393
+  },
+  {
+   "rho": 1.0,
+   "p": 0.62,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0005,
+   "cars_per_intersection": 1.8663
+  },
+  {
+   "rho": 1.0,
+   "p": 0.66,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0004,
+   "cars_per_intersection": 1.9683
+  },
+  {
+   "rho": 1.0,
+   "p": 0.7,
+   "gridlocked": 0.975,
+   "moves_per_car_per_tick": 0.0003,
+   "cars_per_intersection": 2.1034
+  }
+ ]
+}
