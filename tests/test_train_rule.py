@@ -1,5 +1,8 @@
 """Austin–Benjamini's TRAIN rule: their Proposition 6, extended to rectangles, checked
-exhaustively; and their Proposition 1 (m < N/2 ⇒ speed one), checked for both rules."""
+exhaustively; and their Proposition 1 (m < N/2 ⇒ speed one), checked for both rules, with
+the TRAIN boundary m = N/2."""
+from itertools import combinations, product
+
 import numpy as np
 import pytest
 from hypothesis import given, settings, strategies as st
@@ -47,6 +50,33 @@ def test_AB_prop1_fewer_than_half_N_cars_attain_speed_one(N, data, rule):
     kinds = data.draw(st.lists(st.sampled_from([EAST, NORTH]), min_size=m, max_size=m))
     s = np.zeros(N * N, np.int8); s[cells] = kinds
     assert naive_reaches_free(s.reshape(N, N), rule)
+
+
+@settings(max_examples=300, deadline=None)
+@given(st.integers(1, 7), st.data())
+def test_train_equality_case_half_N_cars_attain_speed_one(m, data):
+    """The boundary 2m = N of Proposition 1, proved in Lean as `half_square_eventually_fullSpeed`."""
+    N = 2 * m
+    cells = data.draw(st.lists(st.integers(0, N * N - 1), min_size=m, max_size=m, unique=True))
+    kinds = data.draw(st.lists(st.sampled_from([EAST, NORTH]), min_size=m, max_size=m))
+    s = np.zeros(N * N, np.int8); s[cells] = kinds
+    assert naive_reaches_free(s.reshape(N, N), TRAIN)
+
+
+@pytest.mark.parametrize("m", [1, 2, 3])
+def test_train_equality_case_exhaustive_small_squares(m):
+    N = 2 * m
+    for cells in combinations(range(N * N), m):
+        for kinds in product([EAST, NORTH], repeat=m):
+            s = np.zeros(N * N, np.int8); s[list(cells)] = kinds
+            assert naive_reaches_free(s.reshape(N, N), TRAIN)
+
+
+def test_train_equality_bound_is_sharp_in_the_hypothesis_family():
+    """N cars on N×N need not reach speed one: the periodic family has velocity N/(N+1)."""
+    for N in range(2, 9):
+        s = np.zeros((N, N), np.int8); s[0, :N - 1] = EAST; s[0, N - 1] = NORTH
+        assert not naive_reaches_free(s, TRAIN)
 
 
 @pytest.mark.parametrize("h,w", [(h, w) for h in range(2, 9) for w in range(2, 9)])

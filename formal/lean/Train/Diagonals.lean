@@ -196,8 +196,114 @@ theorem finite_eventually_all {ι : Type} (xs : List ι) (P : Nat → ι → Pro
       exact hA t (by omega)
     · exact hB t (by omega) i hi
 
-/-- The cyclic combinatorial core of the Austin--Benjamini argument.
+/-- Counting saturation at the boundary `2m ≤ N`: if no two adjacent classes
+are both empty, then occupied and empty classes alternate. Duplicate entries
+are allowed; a class occupied together with its successor would be covered
+twice, leaving a cover of all `N` classes by only `2m-1` entries. -/
+theorem saturated_alternating {N : Nat} (hn : 0<N) (xs : List (Fin N))
+    (hsize : 2*xs.length≤N) (hcover : ∀b, b∈xs ∨ cyclicNext N hn b∈xs) :
+    ∀b, b∈xs → cyclicNext N hn b∉xs := by
+  intro b hb hnext
+  have hsub : List.finRange N ⊆ xs.erase b ++ xs.map (cyclicPrev N hn) := by
+    intro x _
+    have hprev : ∀y, cyclicNext N hn y∈xs → y∈xs.map (cyclicPrev N hn) :=
+      fun y hy => List.mem_map.mpr ⟨cyclicNext N hn y,hy,cyclicPrev_next N hn y⟩
+    rcases hcover x with hx | hx
+    · by_cases hxb : x=b
+      · exact List.mem_append_right _ (hprev x (hxb ▸ hnext))
+      · exact List.mem_append_left _ ((List.mem_erase_of_ne hxb).mpr hx)
+    · exact List.mem_append_right _ (hprev x hx)
+  have hlength := (List.nodup_finRange N).length_le_of_subset hsub
+  have hpos := List.length_pos_of_mem hb
+  simp only [List.length_finRange, List.length_append, List.length_map,
+    List.length_erase_of_mem hb] at hlength
+  omega
+
+/-- A saturated time at the boundary `2m ≤ N` is followed by a saturated time
+at which no label has changed its corrected class. -/
+theorem saturated_step {ι : Type} (N : Nat) (hn : 0<N)
+    (xs : List ι) (Y : Nat → ι → Fin N)
+    (hstep : ∀t i, i∈xs →
+      Y (t+1) i=Y t i ∨ Y (t+1) i=cyclicPrev N hn (Y t i))
+    (hrelease : ∀t b, (∃i, i∈xs ∧ Y t i=b) →
+      (∀i, i∈xs → Y t i≠cyclicNext N hn b) → ∃i, i∈xs ∧ Y (t+1) i=b)
+    (half : 2*xs.length≤N) (t : Nat)
+    (hsat : ∀b, ¬EmptyPair hn (fun t b => ∃i, i∈xs ∧ Y t i=b) t b) :
+    (∀b, ¬EmptyPair hn (fun t b => ∃i, i∈xs ∧ Y t i=b) (t+1) b) ∧
+      ∀i, i∈xs → Y (t+1) i=Y t i := by
+  classical
+  let O := fun t b => ∃i, i∈xs ∧ Y t i=b
+  have halt : ∀s, (∀b, ¬EmptyPair hn O s b) →
+      ∀b, O s b → ¬O s (cyclicNext N hn b) := by
+    intro s hs b hb hnext
+    refine saturated_alternating hn (xs.map (Y s)) (by simpa using half) ?_ b
+      (List.mem_map.mpr hb) (List.mem_map.mpr hnext)
+    intro c
+    by_cases hc : O s c
+    · exact Or.inl (List.mem_map.mpr hc)
+    · by_cases hc' : O s (cyclicNext N hn c)
+      · exact Or.inr (List.mem_map.mpr hc')
+      · exact False.elim (hs c ⟨hc,hc'⟩)
+  have hkeep : ∀b, O t b → O (t+1) b := fun b hb =>
+    hrelease t b hb fun i hi he => halt t hsat b hb ⟨i,hi,he⟩
+  have hsat' : ∀b, ¬EmptyPair hn O (t+1) b := fun b hb =>
+    hsat b ⟨fun h => hb.1 (hkeep b h), fun h => hb.2 (hkeep _ h)⟩
+  refine ⟨hsat', ?_⟩
+  intro i hi
+  rcases hstep t i hi with he | he
+  · exact he
+  · have hnext : O (t+1) (cyclicNext N hn (cyclicPrev N hn (Y t i))) := by
+      rw [cyclicNext_prev]
+      exact hkeep _ ⟨i,hi,rfl⟩
+    exact False.elim (halt (t+1) hsat' _ ⟨i,hi,he⟩ hnext)
+
+/-- The cyclic combinatorial core of the Austin--Benjamini argument, including
+the boundary `2m = N`. Either an adjacent empty pair exists at every time, and
+a permanent cut ranks the labels; or some time is saturated, and from then on
+occupied and empty classes alternate and every label keeps its class.
 Labels may share a corrected class, and the label list may be empty. -/
+theorem half_eventual_stable {ι : Type} (N : Nat) (hn : 0<N)
+    (xs : List ι) (Y : Nat → ι → Fin N)
+    (hstep : ∀t i, i∈xs →
+      Y (t+1) i=Y t i ∨ Y (t+1) i=cyclicPrev N hn (Y t i))
+    (hrelease : ∀t b, (∃i, i∈xs ∧ Y t i=b) →
+      (∀i, i∈xs → Y t i≠cyclicNext N hn b) → ∃i, i∈xs ∧ Y (t+1) i=b)
+    (half : 2*xs.length≤N) :
+    ∃T, ∀t, T≤t → ∀i, i∈xs → Y (t+1) i=Y t i := by
+  classical
+  let O := fun t b => ∃i, i∈xs ∧ Y t i=b
+  by_cases hex : ∀t, ∃b, EmptyPair hn O t b
+  · have hforward : ∀t b, O t b → O (t+1) b ∨ O (t+1) (cyclicPrev N hn b) := by
+      intro t b hb
+      obtain ⟨i,hi,hb⟩ := hb
+      rcases hstep t i hi with he | he
+      · exact Or.inl ⟨i,hi,he.trans hb⟩
+      · exact Or.inr ⟨i,hi,he.trans (congrArg (cyclicPrev N hn) hb)⟩
+    have hrel : ∀t b, O t b → ¬O t (cyclicNext N hn b) → O (t+1) b := by
+      intro t b hb hempty
+      apply hrelease t b hb
+      intro i hi he
+      exact hempty ⟨i,hi,he⟩
+    obtain ⟨b,hb⟩ := exists_persistent_emptyPair hn O
+      (emptyPair_backwards hn O hforward hrel) hex
+    apply finite_eventually_all xs (fun t i => Y (t+1) i=Y t i)
+    intro i hi
+    apply avoiding_trace_eventually_stable hn b (fun t => Y t i)
+    · intro t he
+      exact (hb t).1 ⟨i,hi,he⟩
+    · exact fun t => hstep t i hi
+  · obtain ⟨T,hT⟩ := Classical.not_forall.mp hex
+    have hsat : ∀k, ∀b, ¬EmptyPair hn O (T+k) b := by
+      intro k
+      induction k with
+      | zero => exact fun b hb => hT ⟨b,hb⟩
+      | succ k ih => exact (saturated_step N hn xs Y hstep hrelease half (T+k) ih).1
+    refine ⟨T, ?_⟩
+    intro t ht
+    obtain ⟨k,rfl⟩ := Nat.exists_eq_add_of_le ht
+    exact (saturated_step N hn xs Y hstep hrelease half (T+k) (hsat k)).2
+
+/-- The strict case `2m < N` of `half_eventual_stable`. -/
 theorem sparse_eventual_stable {ι : Type} (N : Nat) (hn : 0<N)
     (xs : List ι) (Y : Nat → ι → Fin N)
     (hstep : ∀t i, i∈xs →
@@ -205,35 +311,7 @@ theorem sparse_eventual_stable {ι : Type} (N : Nat) (hn : 0<N)
     (hrelease : ∀t b, (∃i, i∈xs ∧ Y t i=b) →
       (∀i, i∈xs → Y t i≠cyclicNext N hn b) → ∃i, i∈xs ∧ Y (t+1) i=b)
     (sparse : 2*xs.length<N) :
-    ∃T, ∀t, T≤t → ∀i, i∈xs → Y (t+1) i=Y t i := by
-  let O := fun t b => ∃i, i∈xs ∧ Y t i=b
-  have hforward : ∀t b, O t b → O (t+1) b ∨ O (t+1) (cyclicPrev N hn b) := by
-    intro t b hb
-    obtain ⟨i,hi,hb⟩ := hb
-    rcases hstep t i hi with he | he
-    · exact Or.inl ⟨i,hi,he.trans hb⟩
-    · exact Or.inr ⟨i,hi,he.trans (congrArg (cyclicPrev N hn) hb)⟩
-  have hrel : ∀t b, O t b → ¬O t (cyclicNext N hn b) → O (t+1) b := by
-    intro t b hb hempty
-    apply hrelease t b hb
-    intro i hi he
-    exact hempty ⟨i,hi,he⟩
-  have hex : ∀t, ∃b, EmptyPair hn O t b := by
-    intro t
-    obtain ⟨b,hb,hnext⟩ := exists_emptyPair_of_sparse_list hn (xs.map (Y t))
-      (by simpa using sparse)
-    refine ⟨b, ?_, ?_⟩
-    · rintro ⟨i,hi,he⟩
-      exact hb (List.mem_map.mpr ⟨i,hi,he⟩)
-    · rintro ⟨i,hi,he⟩
-      exact hnext (List.mem_map.mpr ⟨i,hi,he⟩)
-  obtain ⟨b,hb⟩ := exists_persistent_emptyPair hn O
-    (emptyPair_backwards hn O hforward hrel) hex
-  apply finite_eventually_all xs (fun t i => Y (t+1) i=Y t i)
-  intro i hi
-  apply avoiding_trace_eventually_stable hn b (fun t => Y t i)
-  · intro t he
-    exact (hb t).1 ⟨i,hi,he⟩
-  · exact fun t => hstep t i hi
+    ∃T, ∀t, T≤t → ∀i, i∈xs → Y (t+1) i=Y t i :=
+  half_eventual_stable N hn xs Y hstep hrelease (Nat.le_of_lt sparse)
 
 end BML.Train.Diagonals

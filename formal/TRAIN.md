@@ -109,16 +109,18 @@ The theorem is Austin–Benjamini Proposition 1 for the repository's
 TRAIN dynamics. On a positive N×N square, for every starting configuration s,
 
 \[
-2|s|<N
+2|s|\le N
 \quad\Longrightarrow\quad
 \exists T\;\forall t\ge T:\quad
 \operatorname{totalMoveCount}(\operatorname{torusStep}^{t}(s))=|s|.
 \]
 
-The public entry points are `BML.Train.sparse_square_eventually_fullSpeed`
+The public entry points are `BML.Train.half_square_eventually_fullSpeed`
 and the explicit numerical statement
-`BML.Train.sparse_square_moves_equal_population`. The strict hypothesis is
-`2 * population s < N`, with no species-balance assumption. Time counts full
+`BML.Train.half_square_moves_equal_population`. The hypothesis is
+`2 * population s ≤ N`, with no species-balance assumption. The strict
+Proposition 1 statements `sparse_square_eventually_fullSpeed` and
+`sparse_square_moves_equal_population` are corollaries. Time counts full
 east-then-north cycles. `FullSpeed` means that the actual total number of
 moves during one such cycle equals its population. The proved
 `fullSpeed_iff_all_phases_move` identifies this numerical condition with every
@@ -172,6 +174,31 @@ time for the finite list of cars and using the movement equivalence yields
 full speed. No eventual-periodicity assumption or bounded simulation is used
 in this proof.
 
+### The boundary 2m = N: counting saturation
+
+With `2m ≤ N` an adjacent empty pair need not exist. The proof of
+`Diagonals.half_eventual_stable` splits on whether one exists at every time.
+If so, the permanent-cut argument above applies unchanged. Otherwise fix a
+*saturated* time T, at which every class or its successor is occupied.
+
+`saturated_alternating`: at a saturated time, an occupied class b has an
+empty successor. Otherwise delete one entry b from the list of occupied tags.
+The remaining tags with all predecessors still cover the N classes, since b
+is the predecessor of its occupied successor. That cover has 2m−1 < N
+entries. Repeated tags are allowed.
+
+`saturated_step`: release therefore keeps every occupied class occupied, so
+time T+1 is saturated and alternating as well. A label that fell back from b
+to its predecessor would make that predecessor and b both occupied at T+1,
+which alternation forbids. Hence every label keeps its class at T, and by
+induction at every later time. This uses no uniqueness of labels per class
+and no population conservation beyond the fixed label list.
+
+The bound is the limit of this method, not a claimed optimum: N cars can
+fail (the periodic family with velocity N/(N+1) is checked for N = 2,…,8 in
+`tests/test_train_rule.py` and is not a Lean theorem). The least failing
+population is thereby bracketed in ⌊N/2⌋+1 ≤ m ≤ N for the tested sides.
+
 The square hypothesis cannot simply be replaced by `2m < min(W,H)`. On a 5×7
 torus, one east and one north car satisfy that inequality but cannot both
 move forever without interference: under hypothetical rigid motion, the
@@ -219,9 +246,9 @@ libraries.
 | [Train/Conservation.lean](lean/Train/Conservation.lean) | Executable numeric species/population conservation, movement-count characterization, and fixed occupancy with positive movement. |
 | [Train/Threshold.lean](lean/Train/Threshold.lean) | The W+H lower bound, explicit all-count construction, full Theorem T, and singleton impossibility, all linked to actual TRAIN semantics. |
 | [Train/FreeFlow.lean](lean/Train/FreeFlow.lean) | Move-count bounds; maximal numerical movement iff every active car moves in both successive phases; eventual full speed iff eventual move counts equal the initial population. |
-| [Train/Diagonals.lean](lean/Train/Diagonals.lean) | Sparse cyclic label lists have adjacent empty pairs; backward heredity gives a permanent pair; cut ranks give eventual stability and a common time for all labels. This abstract theorem is compiled. |
+| [Train/Diagonals.lean](lean/Train/Diagonals.lean) | Sparse cyclic label lists have adjacent empty pairs; backward heredity gives a permanent pair; cut ranks give eventual stability and a common time for all labels. At the boundary `2m ≤ N`, a saturated time forces alternating classes and immediate permanent stability. This abstract theorem is compiled. |
 | [Train/DiagonalDynamics.lean](lean/Train/DiagonalDynamics.lean) | Identity transport through full cycles; injective traces covering every current car; corrected diagonal changes exactly according to actual movement; release of a car before an empty diagonal, including the north phase after east movement. |
-| [Train/SpeedOne.lean](lean/Train/SpeedOne.lean) | Full movement iff every occupied car moves; the complete square theorem `2 * population s < N` implies eventual full speed, including empty states; eventual actual move counts equal the initial population. |
+| [Train/SpeedOne.lean](lean/Train/SpeedOne.lean) | Full movement iff every occupied car moves; the complete square theorem `2 * population s ≤ N` implies eventual full speed, including empty states and the boundary `2m = N`, with the strict statement as a corollary; eventual actual move counts equal the initial population. |
 | [Train/Export.lean](lean/Train/Export.lean) | Executable `stuckCheck` iff semantic `Stuck`; the replay and constructor exporters call the proved kernel and its movement counters directly. The cross-language agreement is checked separately on the finite domains below. |
 
 The shared package pins Lean 4.34.1 and uses its standard library without
@@ -364,10 +391,10 @@ The CLASSIC `Audit.lean` and `TrafficAudit.lean` remain independent audits.
 ## Sources and remaining boundaries
 
 The [open questions and proof roadmap](../docs/research/2026-11-18-open-questions-and-proof-roadmap.md)
-records the periodic N-car family with velocity N/(N+1), a proposed equality
-extension, the rectangular gcd adapter, and the distinction between blocking
-counts and elapsed settling time. These additions are prose arguments and
-finite evidence, not new merged TRAIN theorems.
+records the periodic N-car family with velocity N/(N+1), the rectangular gcd
+adapter, and the distinction between blocking counts and elapsed settling
+time. Those are prose arguments and finite evidence, not TRAIN theorems. Its
+equality extension `2m = N` is now the Lean theorem above.
 
 Austin and Benjamini's written movement rule and Proposition 6 give the square
 threshold 2N. The W+H statement here extends their lower-bound argument to

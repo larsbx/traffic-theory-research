@@ -42,7 +42,7 @@ connections to tiling and dynamical-systems theory.
   - under Austin–Benjamini's train rule, the least stuck configuration has W+H
     cars when W,H≥2; singleton dimensions admit no nonempty jam;
   - a separate TRAIN square-lattice result gives eventual speed one when
-    `2 * population < N`, with a complete Lean proof for the actual movement rule;
+    `2 * population ≤ N`, with a complete Lean proof for the actual movement rule;
   - the square-density 2/3 observation is already in the 1992 literature, and
     a time-zero blocking-loop bound does not control eventual jamming.
 - [Freezing, nucleation, and BML gridlock](docs/research/2026-11-18-freezing-gridlock-nucleation.md)
@@ -242,7 +242,7 @@ fixed-point result does not transfer.
   a construction for every allowed count. Lean and Quint replay evidence is
   recorded separately from this universal Lean theorem; see the
   [TRAIN evidence register](formal/TRAIN.md).
-  It also proves that every N×N state with `2 * population < N` eventually
+  It also proves that every N×N state with `2 * population ≤ N` eventually
   reaches full speed: all cars move in every later full cycle. The empty state
   is included. This square theorem supplies no effective stabilization-time
   bound. The rectangular CLASSIC proof uses the CLASSIC transport kernel.

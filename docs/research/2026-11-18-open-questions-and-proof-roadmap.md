@@ -66,6 +66,16 @@ needed for fixed-positive-density nonjamming. A supplied family with all
 cars moving for order `L` rounds before a mixed staircase forms rejects
 the shortcut from a long free prefix to permanent noncapture.
 
+**TRAIN equality follow-up — 24 November 2026:** the equality extension of
+§2.2 is now kernel-checked. `BML.Train.half_square_eventually_fullSpeed` proves
+eventual full movement on N×N under `2m ≤ N` by the counting-saturation
+argument, without the label-uniqueness step: see the
+[TRAIN register](../../formal/TRAIN.md#the-boundary-2m--n-counting-saturation).
+The kernel-checked lower bound is therefore
+\(m_{\mathrm{bad}}(N)\ge\lfloor N/2\rfloor+1\). The upper bound N, the
+rectangular gcd adapter and any settling-time bound at equality remain as
+described below.
+
 | Status at this snapshot | Consequence for this roadmap |
 | --- | --- |
 | [PR #9](https://github.com/larsbx/traffic-theory-research/pull/9) and [PR #11](https://github.com/larsbx/traffic-theory-research/pull/11) merged | The complete rectangular TRAIN jam theorem and strict sparse-square eventual-speed-one theorem are already in Lean. |

@@ -552,10 +552,11 @@ of sparse corrected cyclic traces, and `Train/DiagonalDynamics.lean` for actual
 identity transport, trace coverage, and release before an empty diagonal.
 `Train/FreeFlow.lean` proves that maximum actual move count means every car
 moves in its own phase. The final theorem in `Train/SpeedOne.lean` has
-hypothesis `2 * population s < N` on N×N and
+hypothesis `2 * population s ≤ N` on N×N and
 conclusion that, from some time onward, every full-cycle move count equals the
-initial population. Both `sparse_square_eventually_fullSpeed` and
-`sparse_square_moves_equal_population` are kernel-checked for the actual TRAIN
+initial population. Both `half_square_eventually_fullSpeed` and
+`half_square_moves_equal_population`, with the strict `sparse_square_*`
+corollaries, are kernel-checked for the actual TRAIN
 step. See [the detailed proof and scope](../TRAIN.md#sparse-squares-eventual-speed-one).
 The empty state is included; there is no effective time bound or CLASSIC
 transfer in this statement.

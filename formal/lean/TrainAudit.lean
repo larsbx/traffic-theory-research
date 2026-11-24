@@ -72,8 +72,13 @@ run_cmd do
     ``BML.Train.corrected_trace_release,
     ``BML.Train.corrected_trace_stable_iff_move,
     ``BML.Train.Diagonals.sparse_eventual_stable,
+    ``BML.Train.Diagonals.saturated_alternating,
+    ``BML.Train.Diagonals.saturated_step,
+    ``BML.Train.Diagonals.half_eventual_stable,
     ``BML.Train.sparse_square_eventually_fullSpeed,
-    ``BML.Train.sparse_square_moves_equal_population]
+    ``BML.Train.sparse_square_moves_equal_population,
+    ``BML.Train.half_square_eventually_fullSpeed,
+    ``BML.Train.half_square_moves_equal_population]
   for name in required do
     unless (env.find? name).any ConstantInfo.isTheorem do
       throwError "TRAIN audit missing required theorem {name}"

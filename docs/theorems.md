@@ -687,16 +687,16 @@ which suffice for CLASSIC freezing. A TRAIN jam additionally excludes full E
 rows and full N columns. There is no claimed TRAIN Wang encoding. The separate
 square speed-one statement is described next.
 
-## 5c. The train rule: eventual speed one below N/2 on squares
+## 5c. The train rule: eventual speed one up to N/2 on squares
 
 **Formal status:** the full theorem is kernel-checked in
 [`Train/SpeedOne.lean`](../formal/lean/Train/SpeedOne.lean), using the proved
 cyclic argument, actual diagonal dynamics, and numerical movement
 characterization. Its public statement assumes only the square domain,
-positive side length, and strict population bound.
+positive side length, and the population bound `2m ≤ N`.
 
-**Proposition S (Austin–Benjamini Proposition 1).** Let N>0 and let s be any
-TRAIN configuration on an N×N torus. If `2 * population s < N`, then
+**Proposition S (Austin–Benjamini Proposition 1, with the boundary case).** Let N>0 and let s be any
+TRAIN configuration on an N×N torus. If `2 * population s ≤ N`, then
 
 \[
 \exists T\;\forall t\ge T:\quad
@@ -709,8 +709,9 @@ Lean's `fullSpeed_iff_all_phases_move` proves that this equals the population
 exactly when every car moves in its own phase. Thus the conclusion asserts
 eventual speed one, rather than merely perpetual positive movement. It
 includes the empty configuration and imposes no species balance. The public
-theorem names are `BML.Train.sparse_square_eventually_fullSpeed` and
-`BML.Train.sparse_square_moves_equal_population`.
+theorem names are `BML.Train.half_square_eventually_fullSpeed` and
+`BML.Train.half_square_moves_equal_population`; the strict `sparse_square_*`
+statements of Proposition 1 are corollaries.
 
 *Proof route.* [Austin–Benjamini, pp. 2–3][AB] uses corrected diagonals; the
 formal argument works with adjacent empty pairs instead of maximal arcs.
@@ -722,7 +723,7 @@ formal argument works with adjacent empty pairs instead of maximal arcs.
    one car in the next full cycle. If an east car is present, it can move;
    otherwise north cars can move because the east phase cannot fill their
    target diagonal from that source diagonal.
-3. The condition 2m<N guarantees two adjacent empty tags at every time. If
+3. Suppose first that 2m<N. This guarantees two adjacent empty tags at every time. If
    no such pair existed, the m occupied tags and their predecessors would
    cover all N tags, contradicting N>2m. Tags may coincide without harming
    the count.
@@ -736,8 +737,15 @@ formal argument works with adjacent empty pairs instead of maximal arcs.
    has a common eventual time; the actual movement equivalence and count
    conservation give the displayed conclusion.
 
+6. If 2m=N and some time T has no adjacent empty pair, counting saturates:
+   an occupied tag with an occupied successor would leave a cover of all N
+   tags by 2m−1 entries. So occupied and empty tags alternate at T. Release
+   keeps each occupied tag occupied, so T+1 alternates too, and a car falling
+   back one tag would create two adjacent occupied tags. Every car therefore
+   keeps its tag from T onward. If no such T exists, steps 4–5 apply.
+
 The generic cyclic argument is proved as
-`BML.Train.Diagonals.sparse_eventual_stable`; `Train/DiagonalDynamics.lean`
+`BML.Train.Diagonals.half_eventual_stable`; `Train/DiagonalDynamics.lean`
 discharges its release and step hypotheses from the actual TRAIN kernel. See the
 [TRAIN register](../formal/TRAIN.md#sparse-squares-eventual-speed-one) for the
 module boundaries and evidence scope.
