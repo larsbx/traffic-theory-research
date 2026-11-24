@@ -103,6 +103,7 @@ jobs:
           lake env lean FreeMaxAudit.lean | tee ../../.artifacts/free-max-audit.log
           lake env lean SparseSpeedAudit.lean | tee ../../.artifacts/sparse-speed-audit.log
           lake env lean StoppedCoreAudit.lean | tee ../../.artifacts/stopped-core-audit.log
+          lake env lean NetAudit.lean | tee ../../.artifacts/net-audit.log
       - name: Compare both half-steps on every rectangle with at most nine cells
         run: python scripts/check_lean_replay.py --max-cells 9 --report .artifacts/lean-replay.json | tee .artifacts/lean-replay.log
       - name: Check actual Lean G1 constructions at every admissible population
@@ -121,6 +122,8 @@ jobs:
         run: python scripts/check_stopped_core.py --report .artifacts/stopped-core.json | tee .artifacts/stopped-core.log
       - name: Compare gated constructions and tagged wraparound with CLASSIC Python
         run: python scripts/check_gated.py --report .artifacts/gated-replay.json | tee .artifacts/gated-replay.log
+      - name: Compare the generic Lean net step with the Python signal/roundabout kernel
+        run: python scripts/check_net.py --report .artifacts/net-replay.json | tee .artifacts/net-replay.log
       - name: Check certified cutoff bounds against the actual Lean probe
         run: python scripts/check_absorption.py --backend lean --report .artifacts/absorption-lean.json | tee .artifacts/absorption-lean.log
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

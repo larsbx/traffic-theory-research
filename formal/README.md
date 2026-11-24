@@ -74,6 +74,26 @@ scope are in [traffic-layer.md](traffic-layer.md). Run
 [TRAIN.md](TRAIN.md). A successful receipt from one suite does not certify the
 other suites.
 
+## Traffic-net layer
+
+`BML/Net.lean` defines one executable object, a net with routes, entry gates and a merge order,
+of which BML and the signal/roundabout grids are instances. It proves for every net that a
+state is stuck iff no tick of one gate period changes it (`stuck_iff`), and that a stuck state
+contains a closed blocker walk no longer than its number of occupied cells
+(`stuck_blocker_cycle`). `BML/NetInstances.lean` proves that the ticks of the BML instance are
+exactly the two half-steps of `BML.halfStep` (`bml_even`, `bml_odd`, `bml_round`) and derives
+the mixed-grid gridlock lemma `mixed_stuck_iff` for every roundabout set, with and without link
+cells. `NetAudit.lean` checks these declarations and their axioms. The `net_export` target and
+`scripts/check_net.py` compare the Lean step with `bml.mixed.step` on 26,650 ticks; this is a
+finite replay, not a refinement proof. The least-gridlock formulas and the free-flow results
+for these grids remain prose. See the
+[traffic-net note](../docs/research/2026-11-24-traffic-nets.md).
+
+```sh
+cd formal/lean && lake build net_export && lake env lean NetAudit.lean
+python scripts/check_net.py --report .artifacts/net-replay.json
+```
+
 ## BML finite-torus coverage register
 
 | Claim | Current evidence | Remaining obligation |

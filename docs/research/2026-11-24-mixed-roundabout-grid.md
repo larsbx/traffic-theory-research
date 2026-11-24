@@ -27,8 +27,10 @@ per street segment, where a car waits for its signal on the link and not inside 
 The gridlock theorem carries over with W and H doubled. Capacity and the jamming density rise
 at every share, and the dip at intermediate shares remains.
 
-MX-0, MX-G, MX-E, MX-P and MX-F have complete prose proofs. The capacity census is finite
-data, the sweep is simulation, and nothing is formalized in Lean. No novelty is claimed.
+MX-0, MX-G, MX-E, MX-P and MX-F have complete prose proofs. MX-0 is also checked in Lean, for
+both variants, as an instance of the [traffic net](2026-11-24-traffic-nets.md), and the Python
+kernel is replayed against the Lean step. The rest is not formalized. The capacity census is
+finite data and the sweep is simulation. No novelty is claimed.
 
 Code: [`bml/mixed.py`](../../bml/mixed.py). Tests: [`tests/test_mixed.py`](../../tests/test_mixed.py).
 Replay: [`scripts/check_mixed.py`](../../scripts/check_mixed.py). Sweep:

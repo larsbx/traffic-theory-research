@@ -111,6 +111,12 @@ connections to tiling and dynamical-systems theory.
   exact population normalization. The actual exporter is proved to refine
   the CLASSIC board and tagged traces; independent finite recurrence checks
   cover empty boards, partial fixation, and unequal-population mixtures.
+- [Traffic nets](docs/research/2026-11-24-traffic-nets.md) (2026-11-24): one executable Lean
+  object, with routes, entry gates and a merge order, of which BML and the signal/roundabout
+  grids are instances. Lean proves for every net that a state is stuck iff no tick of one gate
+  period changes it, and that a stuck state contains a blocker cycle no longer than its car
+  count. The BML instance is proved equal to the existing kernel, the mixed-grid gridlock lemma
+  follows for every roundabout set, and the Python kernel is replayed against the Lean step.
 - [A grid with a variable share of roundabouts](docs/research/2026-11-24-mixed-roundabout-grid.md)
   (2026-11-24): any set R of intersections are roundabouts and the rest keep the BML signal.
   An n-car gridlock exists iff min(W + min_y r_y, H + min_x c_x) ≤ n ≤ WH + 2|R|, with r_y and

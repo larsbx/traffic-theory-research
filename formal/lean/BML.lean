@@ -37,3 +37,5 @@ import BML.Waiting
 import BML.Gated
 import BML.GatedTranspose
 import BML.TheoremU
+import BML.Net
+import BML.NetInstances
