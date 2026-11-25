@@ -67,6 +67,42 @@ simulator controls. A refinement theorem from JavaScript `halfStep` and
 `certificate` to the Lean interface remains open. See [the proof](BML/LaneDeadlock.lean),
 [the examples](BML/LaneDeadlockExamples.lean), and [the simulator checks](../../app/test/p1.test.js).
 
+## Lane-graph traps and safe cells (R2)
+
+[`BML.RouteTrap`](BML/RouteTrap.lean) reuses the P1 tagged snapshot and
+generalizes each vehicle's commitment to a finite menu. Each move has a list of
+required cells. The snapshot adapter replaces each such list with its current
+occupants. An empty menu stays in the greatest trap. An option with an empty
+blocker list removes its vehicle. This covers exits and clear moves.
+
+| Lean endpoint | Conclusion |
+|---|---|
+| `peel_fixed`, `greatestTrap_fixed`, `greatestTrap_greatest` | At most one pass per starting candidate suffices for synchronous deletion. The result is the greatest fixed point on the on-street universe. |
+| `empty_menu_mem`, `unblocked_option_excludes`, `greatestTrap_shrinks` | Empty menus and unblocked options have opposite outcomes. Adding options preserves or shrinks the trap. |
+| `snapshotTrap_iff`, `greatestTrap_snapshot`, `SnapshotTrap.classic_immobile` | Projecting required cells to their occupants preserves trap closure. Every trap member remains in its original cell and records zero movement under the CLASSIC trace contract. |
+| `checkRanks_fixed`, `checkRanks_least` | Strict descent for each supported arrival and a residual witness for each unranked road certify the least safe set. |
+| `SnapshotTrap.no_ranked_member`, `greatestTrap_empty_of_all_ranked` | A trap with the certified single-cell re-routing options excludes ranked positions. Full coverage makes its greatest trap empty. |
+
+The [R2 note](../../docs/research/2026-11-24-real-traffic-theorems.md#r2-structural-traps-and-safe-cells-under-re-routing)
+states the CLASSIC and re-routing premises and distinguishes the certificate
+from simulation observations. Reproduce the focused gate from the repository
+root with the pinned Lean toolchain and Node.js.
+
+```sh
+(cd formal/lean && lake build r2_check && lake env lean R2Audit.lean)
+node app/scripts/r2-certificates.mjs --check-lean "$PWD/formal/lean/.lake/build/bin/r2_check" formal/artifacts
+node app/scripts/r2-certificates.mjs --verify formal/artifacts/r2-map-certificates.json
+```
+
+The gate compares the actual Lean and JavaScript kernels on 1,024 abstract
+trap cases and 144 simulator snapshots. Both check 4,096 abstract rank
+certificates and 12 preset certificates. JavaScript also checks the rank
+induction conclusion on 36,864 occupancy and arrival assignments. The
+standalone verification command reconstructs the current preset turn tables
+and checks the supplied ranks without regenerating them. The formal theorem
+assumes the trace contract and supplied legal turn tables. The executable
+comparisons cover the specified finite domains.
+
 ## Kernel-checked coverage
 
 | Module | Results |
