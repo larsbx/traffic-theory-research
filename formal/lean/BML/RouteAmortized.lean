@@ -334,6 +334,23 @@ theorem alternating_priority (gap : Nat) (enough : 2 ≤ gap) (n : Nat) :
       simp only [pairAt, pairStep, if_neg win]
       omega
 
+/-- The local pair recurrence is the actual oldest-first two-tag selector
+when the side tag wins the initial equal-age tie. -/
+theorem choose_pair (age : Nat → Nat) (side trunk : Nat) (order : side < trunk) :
+    RouteService.chooseWinner age [side,trunk] =
+      some (if age trunk ≤ age side then side else trunk) := by
+  have cmp : (age trunk < age side ∨ (age trunk = age side ∧ side < trunk)) ↔
+      age trunk ≤ age side := by omega
+  simp only [RouteService.chooseWinner, cmp]
+
+theorem alternating_winner (gap n side trunk : Nat) (enough : 2 ≤ gap)
+    (order : side < trunk) (age : Nat → Nat)
+    (sideAge : age side = (pairAt gap n).1)
+    (trunkAge : age trunk = (pairAt gap n).2) :
+    RouteService.chooseWinner age [side,trunk] =
+      some (if n % 2 = 0 then side else trunk) := by
+  rw [choose_pair age side trunk order, sideAge, trunkAge, alternating_priority gap enough n]
+
 theorem replacement_loses (gap loserAge refill : Nat) (positive : 0 < refill)
     (within : refill ≤ gap) : gap-refill < loserAge+gap := by omega
 
@@ -547,14 +564,17 @@ theorem moves_before_focal_deadline {Cell : Type} {D L G : Nat} (w : WorkTrace D
     exact member_work r.height (r.cells t) root atRoot
   · exact quota
   · intro n _ waiting
-    have held : root ∈ r.cells (t+n) := by
-      induction n with
-      | zero => simpa using atRoot
-      | succ n ih =>
-        have prev := ih (fun i hi => waiting i (by omega))
-        exact stays (t+n) prev (waiting n (by omega))
+    have held (m : Nat) : (∀ i < m, ¬ focal (t+i)) → root ∈ r.cells (t+m) := by
+      induction m with
+      | zero =>
+        intro _
+        simpa using atRoot
+      | succ m ih =>
+        intro waits
+        have prev := ih (fun i hi => waits i (by omega))
+        exact stays (t+m) prev (waits m (by omega))
     rw [work_eq]
-    exact member_work r.height (r.cells (t+n)) root held
+    exact member_work r.height (r.cells (t+n)) root (held n waiting)
 
 /-- The zero-work result is actual evacuation when every occupied cell
 contributes positive height and the regional work inventory is complete. -/
