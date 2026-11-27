@@ -41,3 +41,5 @@ import BML.Net
 import BML.NetInstances
 import BML.NetGridlock
 import BML.NetFree
+import BML.NetCount
+import BML.NetMixed
