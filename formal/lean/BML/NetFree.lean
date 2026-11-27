@@ -332,4 +332,61 @@ theorem free_iff_pairs (s : Config Cell Class) :
 
 end Pairs
 
+/-! ## Deciding freeness in finite time -/
+
+theorem step_congr_gate {t t' : Nat} (h : ∀ k c, net.gate t' k c = net.gate t k c)
+    (u : Config Cell Class) : step net t' u = step net t u := by
+  have hw : ∀ c, winner net t' u c = winner net t u c := by
+    intro c
+    simp only [winner, h]
+  funext c
+  simp only [step, leaves, hw]
+  rfl
+
+theorem undelayed_congr_gate {t t' : Nat} (h : ∀ k c, net.gate t' k c = net.gate t k c)
+    (u : Config Cell Class) : Undelayed net t' u ↔ Undelayed net t u := by
+  have hw : ∀ c, winner net t' u c = winner net t u c := by
+    intro c
+    simp only [winner, h]
+  simp only [Undelayed, hw, h]
+
+omit [DecidableEq Class] in
+theorem gate_period_mul {P : Nat} (hP : ∀ t k c, net.gate (t + P) k c = net.gate t k c)
+    (m t : Nat) (k : Class) (c : Cell) : net.gate (t + P * m) k c = net.gate t k c := by
+  induction m with
+  | zero => simp
+  | succ m ih => rw [Nat.mul_succ, ← Nat.add_assoc, hP, ih]
+
+/-- **A finite certificate of freeness.** If the gates have period `P`, the run
+is undelayed up to tick `T0 + P*m`, and the state at that tick equals the state
+at `T0`, then the state is free. So a finite simulation decides freeness. -/
+theorem free_of_recurrence {s : Config Cell Class} {P T0 m : Nat}
+    (hP : ∀ t k c, net.gate (t + P) k c = net.gate t k c) (hL : 0 < P * m)
+    (hrec : run net s (T0 + P * m) = run net s T0)
+    (hund : ∀ t, t < T0 + P * m → Undelayed net t (run net s t)) : Free net s := by
+  have hg := gate_period_mul hP m
+  -- the run repeats with period P*m from T0 on
+  have hrun : ∀ i, run net s (T0 + P * m + i) = run net s (T0 + i) := by
+    intro i
+    induction i with
+    | zero => simpa using hrec
+    | succ i ih =>
+      have e1 : T0 + P * m + (i + 1) = (T0 + P * m + i) + 1 := by omega
+      have e2 : T0 + P * m + i = (T0 + i) + P * m := by omega
+      rw [e1, run, ih, e2, step_congr_gate (fun k c => hg (T0 + i) k c)]
+      rfl
+  intro t
+  induction t using Nat.strongRecOn with
+  | ind t ih =>
+    by_cases ht : t < T0 + P * m
+    · exact hund t ht
+    · obtain ⟨i, rfl⟩ : ∃ i, t = T0 + P * m + i := ⟨t - (T0 + P * m), by omega⟩
+      rw [hrun i, show T0 + P * m + i = (T0 + i) + P * m by omega,
+        undelayed_congr_gate (fun k c => hg (T0 + i) k c)]
+      exact ih (T0 + i) (by omega)
+
+/-- The converse needs nothing: a free state is undelayed at every tick. -/
+theorem Free.undelayed {s : Config Cell Class} (hf : Free net s) (t : Nat) :
+    Undelayed net t (run net s t) := hf t
+
 end BML.Net

@@ -175,6 +175,11 @@ theorem mixed_fair (L : Layout α) : Fair (mixed L) 2 := by
       · exact ⟨0, by omega, by simp [mixed, h]⟩
   | _ => exact ⟨0, by omega, rfl⟩
 
+/-- The mixed grid's signals have period 2. -/
+theorem mixed_periodic (L : Layout α) (t : Nat) (k : Species) (c : Site α) :
+    (mixed L).gate (t + 2) k c = (mixed L).gate t k c := by
+  cases c <;> simp [mixed, Nat.add_mod_right]
+
 /-- **Lemma MX-0, kernel-checked**, for every roundabout set and with or
 without links: every car's next cell is occupied iff no car moves in two
 consecutive ticks. -/

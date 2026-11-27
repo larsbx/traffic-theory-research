@@ -82,15 +82,21 @@ def period(h: int, w: int) -> int:
 
 
 def is_free(s: State, priority: int = EAST) -> np.ndarray | bool:
-    """Dynamic definition: every car moves at every step, forever. Checking one period
-    suffices, because a configuration whose cars all moved for 2·lcm(W,H) steps has returned."""
+    """Every car moves at every step, forever. Decided by the finite certificate of Lean's
+    ``BML.Net.free_of_recurrence`` (no signals, so the gate period is 1): every car moves in
+    each of the first 2·lcm(W,H) steps and the state is then back where it started."""
     h, w = s.c.shape[-2:]
     n = sum(counts(s))
-    ok = np.ones_like(n, dtype=bool)
+    start, ok = s, np.ones_like(n, dtype=bool)
     for _ in range(period(h, w)):
         s, moved = step(s, priority)
         ok = ok & (moved == n)
-    return ok
+    return ok & same_state(s, start)
+
+
+def same_state(s, t) -> np.ndarray | bool:
+    """Equality of (batches of) states, layer by layer."""
+    return np.logical_and.reduce([(u == v).all(axis=(Y, X)) for u, v in zip(s, t)])
 
 
 # ---- Lemma RB-R: the static criterion -------------------------------------------------

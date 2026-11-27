@@ -27,7 +27,7 @@ from typing import NamedTuple
 import numpy as np
 
 from bml.model import EMPTY, EAST, NORTH
-from bml.roundabout import X, Y, State, _junction, grow_free
+from bml.roundabout import X, Y, State, _junction, grow_free, same_state
 
 
 class Linked(NamedTuple):
@@ -158,16 +158,21 @@ def laps(ring: np.ndarray, link: bool = False) -> tuple[list[int], list[int]]:
 
 def is_free(s, ring: np.ndarray, priority: int = EAST) -> np.ndarray | bool:
     """Free: from tick 0 on, no car is ever delayed by another car; a car waits only for its
-    signal. An undelayed car is on its periodic timetable once it has passed a signal, within
-    one lap, so one longest lap plus one common period of ticks decide freeness."""
+    signal. Decided by the finite certificate of Lean's ``BML.Net.free_of_recurrence`` with
+    gate period 2: undelayed through tick T0 + L and the state at T0 + L equal to the state at
+    T0, where T0 is one longest lap plus 2 and L the common period of the laps. A state that
+    fails either test is reported as not free."""
     rows, cols = laps(ring, linked(s))
+    warm, period = max(rows + cols) + 2, lcm(2, *rows, *cols)
     n = sum(counts(s))
-    ok = np.ones_like(n, dtype=bool)
-    for tick in range(max(rows + cols) + 2 + lcm(2, *rows, *cols)):
+    ok, mark = np.ones_like(n, dtype=bool), s
+    for tick in range(warm + period):
+        if tick == warm:
+            mark = s
         waiting = held(s, ring, tick)
         s, moved = step(s, ring, tick, priority)
         ok = ok & (moved == n - waiting)
-    return ok
+    return ok & same_state(s, mark)
 
 
 def free_levels(ring: np.ndarray, priority: int = EAST, link: bool = False) -> list:
