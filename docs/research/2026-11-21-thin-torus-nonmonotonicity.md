@@ -273,5 +273,7 @@ on?" for this geometry, and only for it.
   initial coincidences. Nothing here bears on squares, where blocking cycles can form
   dynamically, or on p₋ > 0 there. Theorem P does not say what replaces jamming on thin tori
   (free flow or intermediate motion).
-- **Only Lemmas 1–4 and the bounds are proved in prose.** The certificates are exact computer
-  arithmetic. The Lean obligations are blueprint B10.
+- **Lemmas 1–4 are kernel-checked; the bounds are proved in prose.** `BML/ThinRigidity.lean`
+  proves Lemmas 1–4 at every height (blueprint B10.1–B10.4, added 27 November). Theorem A's
+  probability identities, the certificates (exact computer arithmetic) and Theorem P are not in
+  Lean: blueprint B10.5–B10.7.

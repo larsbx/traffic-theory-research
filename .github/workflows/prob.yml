@@ -1,0 +1,49 @@
+name: BML probability layer (Mathlib)
+
+on:
+  pull_request:
+    paths:
+      - 'formal/prob/**'
+      - 'formal/lean/**'
+      - '.github/workflows/prob.yml'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: prob-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prob:
+    name: Mathlib-backed iid bounds and axiom audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Disallow proof bypass
+        run: |
+          if grep -nE '^[[:space:]]*(sorry|admit|axiom)([[:space:]]|$)|native_decide' formal/prob/*.lean formal/prob/BMLProb/*.lean; then
+            echo "Proof bypass found"; exit 1
+          fi
+      - uses: leanprover/lean-action@ba3fdfe5c4476c925da13bf11a005ddb47e47aee # v1
+        with:
+          lake-package-directory: formal/prob
+          auto-config: 'false'
+          build: 'true'
+          test: 'false'
+          lint: 'false'
+          use-mathlib-cache: 'true'
+          use-github-cache: 'false'
+      - name: Audit the probability theorems and their axioms
+        working-directory: formal/prob
+        run: lake env lean ProbAudit.lean

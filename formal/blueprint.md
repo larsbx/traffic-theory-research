@@ -1,6 +1,7 @@
 # Blueprint: proof status and open formal obligations
 
-This hand-off document records the completed B0–B9 proofs, the open B10, and the remaining
+This hand-off document records the completed B0–B9 proofs, B10 (structure lemmas B10.1–B10.4 and the first identity of B10.5 complete, the rest of the
+probability parts open), and the remaining
 obligations of [the coverage register](README.md), with proofs decomposed into
 lemmas small enough to formalise one at a time.
 
@@ -32,11 +33,11 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B3 | Lemma R: static ⟺ perpetual free flow | kernel-checked for the actual phases, with strict/inclusive lcm windows, bounded failure witnesses, and lcm return | B0, B2, Kernel |
 | B4 | Theorem F: densest free flow | kernel-checked exact capacity, all-count constructions, static/perpetual/eventual existence spectra, and square corollaries | B2, B3, Counting |
 | B5 | Theorem T: TRAIN jam populations W+H…WH | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `BML.Train` kernel and counting |
-| B6 | TRAIN eventual speed one on sparse N×N squares | kernel-checked in full; see [TRAIN coverage](TRAIN.md) | `Train/Diagonals`, `Train/FreeFlow`, actual diagonal transport/release |
+| B6 | TRAIN eventual speed one on N×N squares with 2m ≤ N | kernel-checked in full, including the boundary 2m = N; see [TRAIN coverage](TRAIN.md) | `Train/Diagonals`, `Train/FreeFlow`, actual diagonal transport/release |
 | B7–B7.6 | CLASSIC eventual speed one for 2m≤gcd(W,H) | kernel-checked alternating equality regime, full movement from round lcm(W,H)·m(g−2) onward, and at most m(g−2) blocked rounds per prefix | B2 geometry, B3 finite free window, CLASSIC transport and car count |
 | B8 | Theorem U: genuine un-jamming exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4 | kernel-checked dimension classification, including both exclusions | Kernel, Transport, Lanes, Enumeration, Fixation |
 | B9 | Maximal-core cardinality, stopped original cars, and finite initial-weight gridlock reduction | kernel-checked tag/site count equality, eventual stopped-count identification, jam/full-lane count sandwich, and exact cleared-denominator initial-weight comparison | PathCore, Fixation, Capture, Counting, Absorption, FiniteSums |
-| B10 | Thin-torus rigidity: jam structure on 2×W and W×2, and the bounds L_W ≤ q ≤ U_W behind Theorem M | prose proof and exact certificates; open for Lean | Kernel, Transport, Lanes, Fixation (G0), Counting |
+| B10 | Thin-torus rigidity: jam structure on 2×W and W×2, and the bounds L_W ≤ q ≤ U_W behind Theorem M | B10.1–B10.4 kernel-checked at every height in `ThinRigidity.lean`; the first identity of B10.5 and the bound `L_W ≤ q_W` kernel-checked in the Mathlib package `formal/prob`; the gap-condition weight, B10.6 and B10.7 prose proof and exact certificates, open for Lean | Kernel, Transport, Lanes, Fixation (G0), Counting |
 
 ---
 
@@ -531,7 +532,7 @@ The result is [Austin–Benjamini Proposition 1, v3](https://arxiv.org/pdf/math/
 for the actual TRAIN rule: for N>0 and any N×N configuration s,
 
 \[
-2\operatorname{population}(s)<N
+2\operatorname{population}(s)\le N
 \;\Longrightarrow\;
 \exists T\;\forall t\ge T:\;
 \operatorname{totalMoveCount}(\operatorname{torusStep}^{t}(s))
@@ -754,7 +755,7 @@ records the complete interfaces and independent controls. In particular,
 the needed large-size decay of the limiting normalized core mass remains
 open; B9 supplies the reduction, not that estimate.
 
-## B10. Thin-torus rigidity and the non-monotonicity of q: open
+## B10. Thin-torus rigidity and the non-monotonicity of q: structure complete, probability open
 
 Prose proofs are in the [thin-torus note](../docs/research/2026-11-21-thin-torus-nonmonotonicity.md)
 §§1–2. Statements are for `h = 2` (2 rows, `W = w` columns); the `w = 2` case is the same
@@ -774,6 +775,44 @@ column.
 
 `tests/test_thin.py` checks B10.3 and B10.4 on every state of 2×3 to 2×5 and their transposes, and
 B10.5 by enumeration.
+
+### B10.1–B10.4: completed in `BML/ThinRigidity.lean`
+
+The Lean statements are for every positive `w × h` torus. On two rows a full north column is a
+plug and `northColumnCount s x = 1` is a lone column. The proofs do not extract blocker cycles.
+
+| Part | Lean theorem | Statement |
+|---|---|---|
+| B10.1 | `fullNorthColumn_iterate_iff`, `northColumnCount_iterate` (`Lanes.lean`); `eastCountIn_iterate` | Plugs and column north counts are invariant. If every edge of a column set `G` is at a full north column (`PlugBounded`), the number of east cars in `G` is invariant. |
+| B10.2 | `jam_east_every_column`, `jam_fullNorthColumn_of_few_east` | A jam without a full north column has an east car in every column. So a jam with fewer than `w` east cars has a full north column. |
+| B10.3 | `eventuallyJammed_fullNorthColumn_of_few_east`, `gap_east_count_lower_bound`, `two_row_gap_condition` | If `s` ever jams and has fewer than `w` east cars, `s` has a full north column. If `s` ever jams, `G` is plug-bounded, and `c, c+1, …, c+d−1` (`d ≤ w`) are columns of `G` that are not full north, with a north car in `c`, then `G` holds at least `d` east cars in `s`. |
+| B10.4 | `eventuallyJammed_of_north_in_full_columns`, `no_lone_column_iff`, `two_row_plug_no_lone_jams` | A full north column, with every north car in such a column, forces eventual nonempty gridlock. On two rows the second hypothesis is "no lone column". |
+
+Differences from the prose: B10.2 is proved in the form used later (plug, or an east car in
+every column), not as a classification of blocker cycles, and "exactly `w` east cars on the
+winding cycle" is not stated. B10.3 takes any plug-bounded `G` instead of constructing the gap of
+a plug, and needs no bound on the number of east cars. The mirrored statements (east rows, north
+counts) are proved for B10.2, B10.4 and the first half of B10.3; the mirrored gap count is not.
+The single-row theorems of `ThinTorus.lean` are now corollaries of B10.4.
+
+### B10.5, first identity: completed in `formal/prob`
+
+The Mathlib-backed package [`formal/prob`](prob/README.md) defines the exact rational iid
+weight `prob p A` and proves, for every positive `w × h` torus and `0 ≤ p ≤ 1`, with
+`a = (p/2)^h` and `c = (1 − p/2)^h`:
+
+- `prob_plug_no_lone`: the weight of "some full north column, and every north car in one" is
+  `(a + c)^w − c^w`;
+- `jamProb_lower_bound` and `thin_lower_bound`: `(a + c)^w − c^w ≤ q`, which for `h = 2` is
+  `L_W(p) ≤ q_W(p)` of Theorem A;
+- `jamProb_upper_bound`: `q ≤ P(#east ≥ w) + 1 − (1 − a)^w`, coarser than Theorem A's `U_W`.
+
+Rational weights are used directly; denominators are not cleared. The kernel package does not
+depend on Mathlib.
+
+Still open: the second identity of B10.5 (the weight of the gap condition as the cyclic
+renewal sum) needs the gap event as a predicate on initial states; B10.6 and B10.7 are as in
+the table above.
 
 ---
 

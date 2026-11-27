@@ -203,3 +203,78 @@ def test_monte_carlo_data_claims():
     assert all(largest_drop(W) < 3 for W in (12, 13, 14))
     assert 5 < largest_drop(15) < 7
     assert all(largest_drop(W) > 15 for W in range(16, 24))
+
+
+@pytest.mark.parametrize("shape", [(2, 5), (5, 2), (3, 3), (3, 4), (4, 3)])
+def test_full_lane_rigidity_any_height(shape):
+    """The Lean statements of `BML/ThinRigidity.lean`, on every state of an H×W torus.
+
+    A jam with fewer than W east cars has a full north column, and with fewer than H north
+    cars a full east row. A full north column with every north car in such a column jams, and
+    likewise for east rows."""
+    from bml.model import NORTH
+    states = all_states(*shape)
+    H, W = shape
+    north_col = (states == NORTH).all(axis=1)          # (state, x)
+    east_row = (states == EAST).all(axis=2)            # (state, y)
+    n_east = (states == EAST).sum(axis=(1, 2))
+    n_north = (states == NORTH).sum(axis=(1, 2))
+    north_confined = ((states != NORTH) | north_col[:, None, :]).all(axis=(1, 2))
+    east_confined = ((states != EAST) | east_row[:, :, None]).all(axis=(1, 2))
+    j = np.asarray(jams(states), bool)
+    assert north_col.any(axis=1)[j & (n_east < W)].all()
+    assert east_row.any(axis=1)[j & (n_north < H)].all()
+    assert j[north_col.any(axis=1) & north_confined].all()
+    assert j[east_row.any(axis=1) & east_confined].all()
+    assert (j & (n_east < W)).any() and (north_col.any(axis=1) & north_confined).any()
+
+
+@pytest.mark.parametrize("shape", [(2, 5), (3, 3), (3, 4), (4, 3)])
+def test_gap_east_count_any_height(shape):
+    """`BML.gap_east_count_lower_bound`: in a state that jams, let G be a set of columns whose
+    edges are full north columns, and let c, c+1, …, c+d−1 be non-full columns of G with a
+    north car in c. Then G holds at least d east cars."""
+    from bml.model import NORTH
+    states = all_states(*shape)
+    H, W = shape
+    j = np.asarray(jams(states), bool)
+    checked = 0
+    for s in states[j]:
+        plug = (s == NORTH).all(axis=0)
+        cuts = [x for x in range(W) if plug[x]]
+        gaps = ([list(range(W))] if not cuts else
+                [[(a + 1 + i) % W for i in range((b - a - 1) % W)]
+                 for a, b in zip(cuts, cuts[1:] + cuts[:1])])
+        for gap in gaps:
+            east = int((s[:, gap] == EAST).sum())
+            for k, c in enumerate(gap):
+                if (s[:, c] == NORTH).any():
+                    d = W if not cuts else len(gap) - k
+                    assert d <= east, (s, gap, c)
+                    checked += 1
+    assert checked
+
+
+@pytest.mark.parametrize("shape", [(2, 3), (2, 4), (3, 2), (3, 3)])
+def test_iid_bounds_any_height(shape):
+    """`formal/prob/BMLProb/Thin.lean`, by exact enumeration at rational densities:
+    `prob_plug_no_lone`, `jamProb_lower_bound`, `prob_exists_fullNorthColumn` and
+    `jamProb_upper_bound`."""
+    from bml.model import NORTH
+    states = all_states(*shape)
+    H, W = shape
+    j = np.asarray(jams(states), bool)
+    north_col = (states == NORTH).all(axis=1)
+    plug = north_col.any(axis=1)
+    confined = ((states != NORTH) | north_col[:, None, :]).all(axis=(1, 2))
+    many_east = (states == EAST).sum(axis=(1, 2)) >= W
+    cars = (states != 0).sum(axis=(1, 2))
+    for p in (Fraction(1, 5), Fraction(1, 2), Fraction(9, 10), Fraction(1)):
+        weight = [(p / 2) ** int(n) * (1 - p) ** int(states[0].size - n) for n in cars]
+        prob = lambda event: sum((x for x, e in zip(weight, event) if e), Fraction(0))
+        a, c = (p / 2) ** H, (1 - p / 2) ** H
+        lower = (a + c) ** W - c ** W
+        assert prob(np.ones(len(states), bool)) == 1
+        assert prob(plug & confined) == lower
+        assert prob(plug) == 1 - (1 - a) ** W
+        assert lower <= prob(j) <= prob(many_east) + 1 - (1 - a) ** W

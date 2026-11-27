@@ -21,6 +21,11 @@ connections to tiling and dynamical-systems theory.
   prove a queue-delay mechanism, a logarithmic settling-time obstruction,
   failed vacancy/defect shortcuts, and a conditional late-defect criterion.
   The fixed-positive-density transition remains open.
+- [BML and finite swarm dynamics: what transfers](docs/research/2026-11-27-swarm-dynamics-links.md)
+  (2026-11-27): a Mathlib-backed probability package on the swarm repository's pin, with the
+  kernel-checked lower bound `L_W ≤ q_W` at every height; the obstruction theorems restated as
+  coverage of lane cycles; and an exact enumeration showing that the cut-rank argument does
+  not apply to the finite Kuramoto model.
 - [Open questions and proof roadmap](docs/research/2026-11-18-open-questions-and-proof-roadmap.md)
   (2026-11-18): the post-TRAIN review, including an explicit periodic N-car
   family, the equality/gcd/time-bound extensions, CLASSIC rigidity and packing,
@@ -42,7 +47,7 @@ connections to tiling and dynamical-systems theory.
   - under Austin–Benjamini's train rule, the least stuck configuration has W+H
     cars when W,H≥2; singleton dimensions admit no nonempty jam;
   - a separate TRAIN square-lattice result gives eventual speed one when
-    `2 * population < N`, with a complete Lean proof for the actual movement rule;
+    `2 * population ≤ N`, with a complete Lean proof for the actual movement rule;
   - the square-density 2/3 observation is already in the 1992 literature, and
     a time-zero blocking-loop bound does not control eventual jamming.
 - [Freezing, nucleation, and BML gridlock](docs/research/2026-11-18-freezing-gridlock-nucleation.md)
@@ -169,7 +174,9 @@ connections to tiling and dynamical-systems theory.
   marginal-law bounds on eventual gridlock.
 - `bml/analysis.py` — tables for all tori with WH ≤ 16, written to `data/exhaustive.json` (~6 min).
 - `bml/nonmonotone.py` — un-jamming pairs with car identities tracked.
-- `bml/thin.py` — thin-torus (2×W) jam structure and exact bounds on q; certificates that q is
+- `bml/thin.py` — thin-torus (2×W) jam structure (structure lemmas kernel-checked in
+  `formal/lean/BML/ThinRigidity.lean`; lower bound on q in the Mathlib package `formal/prob`)
+  and exact bounds on q; certificates that q is
   not monotone for every W ≥ 24 (`scripts/thin_certificates.py`, `data/thin-nonmonotone.json`).
 - `bml/montecarlo.py` — empirical jam curves (not a proof).
 
@@ -242,7 +249,7 @@ fixed-point result does not transfer.
   a construction for every allowed count. Lean and Quint replay evidence is
   recorded separately from this universal Lean theorem; see the
   [TRAIN evidence register](formal/TRAIN.md).
-  It also proves that every N×N state with `2 * population < N` eventually
+  It also proves that every N×N state with `2 * population ≤ N` eventually
   reaches full speed: all cars move in every later full cycle. The empty state
   is included. This square theorem supplies no effective stabilization-time
   bound. The rectangular CLASSIC proof uses the CLASSIC transport kernel.

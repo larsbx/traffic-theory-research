@@ -56,16 +56,17 @@ theorem eventuallyFullSpeed_iff_tags (w h : Nat)
   simp only [EventuallyFullSpeed, fullSpeed_at_time_iff_tags]
 
 /-- Austin–Benjamini's sparse-square TRAIN theorem for the actual complete
-east-then-north update.  The empty configuration is included. -/
-theorem sparse_square_eventually_fullSpeed (n : Nat) (hn : 0 < n)
-    (s : Config (Position n n)) (hsparse : 2 * population s < n) :
+east-then-north update, extended to the boundary `2m = N`. The empty
+configuration is included. -/
+theorem half_square_eventually_fullSpeed (n : Nat) (hn : 0 < n)
+    (s : Config (Position n n)) (hhalf : 2 * population s ≤ n) :
     EventuallyFullSpeed n n (eastRing n n hn) (northRing n n hn) s := by
   apply (eventuallyFullSpeed_iff_tags n n (eastRing n n hn) (northRing n n hn) s).mpr
-  obtain ⟨T, hT⟩ := Diagonals.sparse_eventual_stable n hn
+  obtain ⟨T, hT⟩ := Diagonals.half_eventual_stable n hn
     (occupiedPositions s) (correctedTrace n hn s)
     (corrected_trace_step_cases n hn s)
     (corrected_trace_release n hn s)
-    (by simpa only [population] using hsparse)
+    (by simpa only [population] using hhalf)
   refine ⟨T, ?_⟩
   intro t ht p hp
   have hpos : 0 < population s := List.length_pos_of_mem hp
@@ -74,13 +75,26 @@ theorem sparse_square_eventually_fullSpeed (n : Nat) (hn : 0 < n)
 
 /-- The speed-one conclusion in the executable kernel's movement-counter
 interface: eventually every complete update moves the initial number of cars. -/
-theorem sparse_square_moves_equal_population (n : Nat) (hn : 0 < n)
-    (s : Config (Position n n)) (hsparse : 2 * population s < n) :
+theorem half_square_moves_equal_population (n : Nat) (hn : 0 < n)
+    (s : Config (Position n n)) (hhalf : 2 * population s ≤ n) :
     ∃ T, ∀ t, T ≤ t →
       totalMoveCount n n (eastRing n n hn) (northRing n n hn)
         (BML.iterate (torusStep n n hn hn) t s) = population s := by
   exact (eventuallyFullSpeed_iff_moves_equal_initial_population n n
     (eastRing n n hn) (northRing n n hn) s).mp
-      (sparse_square_eventually_fullSpeed n hn s hsparse)
+      (half_square_eventually_fullSpeed n hn s hhalf)
+
+/-- The strict case `2m < N`, Austin–Benjamini's Proposition 1. -/
+theorem sparse_square_eventually_fullSpeed (n : Nat) (hn : 0 < n)
+    (s : Config (Position n n)) (hsparse : 2 * population s < n) :
+    EventuallyFullSpeed n n (eastRing n n hn) (northRing n n hn) s :=
+  half_square_eventually_fullSpeed n hn s (Nat.le_of_lt hsparse)
+
+theorem sparse_square_moves_equal_population (n : Nat) (hn : 0 < n)
+    (s : Config (Position n n)) (hsparse : 2 * population s < n) :
+    ∃ T, ∀ t, T ≤ t →
+      totalMoveCount n n (eastRing n n hn) (northRing n n hn)
+        (BML.iterate (torusStep n n hn hn) t s) = population s :=
+  half_square_moves_equal_population n hn s (Nat.le_of_lt hsparse)
 
 end BML.Train
