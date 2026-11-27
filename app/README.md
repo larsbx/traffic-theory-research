@@ -25,13 +25,15 @@ Modes:
 
 ## Re-routing and the real-traffic theorems
 
-`opts.reroute` lets a blocked driver switch to any free legal option from its current lane,
-dropping the commitment assumption, as human drivers do. `src/realflow.js` computes the greatest
-**trap**, the cars that can never move whatever their drivers choose, and the **safe cells**,
-where no trapped car can sit. If every cell is safe and there is no box rule, permanent gridlock is
-impossible. It also provides the closed-form bounds of the
-[real-traffic note](../docs/research/2026-11-24-real-traffic-theorems.md). `scripts/reroute.mjs`
-reruns its 360-run experiment.
+`opts.reroute` lets a blocked driver switch to a free legal option from its current lane.
+`src/realflow.js` computes the greatest structural trap. Its members remain
+immobile under CLASSIC as long as their modeled options cover every move.
+Safe-cell ranks exclude structural trapping on fully ranked maps when the
+vehicles can re-route without the box rule. The simulator measures queue
+duration separately. Bounds on a vehicle's next move require vacancy after
+departures and a service condition. See the [R2 theorem](../docs/research/2026-11-24-real-traffic-theorems.md)
+and [progress proof](../docs/research/2026-11-25-r2-progress-service.md).
+`scripts/reroute.mjs` reruns the original 360 matched simulation cases.
 
 ## BML, extension, bridge
 

@@ -103,6 +103,29 @@ and checks the supplied ranks without regenerating them. The formal theorem
 assumes the trace contract and supplied legal turn tables. The executable
 comparisons cover the specified finite domains.
 
+### R2 progress under service
+
+[`BML.RouteProgress`](BML/RouteProgress.lean) connects checked ranks to
+events on a CLASSIC re-routing trace. A departing vehicle must leave its
+former cell vacant at the next checkpoint. The service condition covers
+signals, contention, repair delays and route choice.
+
+| Lean endpoint | Conclusion |
+|---|---|
+| `trap_free_can_wait_forever` | A ranked one-cell map can have an empty greatest trap at every snapshot and a vehicle that never moves. |
+| `immediate_refill_can_keep_ranked_car_stopped` | Immediate refill can keep a follower stopped indefinitely on a fully ranked map with an empty trap and a service cap of two. |
+| `Trace.eventually_moves_of_rank` | Recurring clear checkpoints imply eventual service for a parked car under opportunity fairness. Rank descent supplies recurring clearance for a witness option. |
+| `Trace.moves_before_rank_bound` | Under cap `K` and rank `r`, the next movement occurs at a half-step offset below `B(r)`, with `B(0)=K` and `B(r+1)=K(B(r)+1)`, if the budget fits in the accepted horizon. |
+
+The [progress note](../../docs/research/2026-11-25-r2-progress-service.md)
+records the premises, stochastic service corollary and exact scope of the
+finite controls. The formal gate includes the progress axiom audit and replay.
+
+```sh
+(cd formal/lean && lake build r2_check && lake env lean R2Audit.lean)
+node app/scripts/r2-progress.mjs "$PWD/formal/lean/.lake/build/bin/r2_check"
+```
+
 ## Kernel-checked coverage
 
 | Module | Results |

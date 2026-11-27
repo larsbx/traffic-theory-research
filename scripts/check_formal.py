@@ -22,6 +22,7 @@ COVERAGE = json.loads((ROOT / "formal/coverage.json").read_text())
 R2_APP_SOURCES = {
     "app/data/presets.json",
     "app/scripts/r2-certificates.mjs",
+    "app/scripts/r2-progress.mjs",
     "app/src/presets.js",
     "app/src/raster.js",
     "app/src/realflow.js",
@@ -244,12 +245,16 @@ def main() -> int:
             "lean_cases_sha256": sha256((artifacts / "r2-lean-cases.json").read_bytes()),
             "scope": "structural CLASSIC lane-graph contract and finite simulator correspondence",
         }
+        progress = run("r2-progress", [
+            "node", "app/scripts/r2-progress.mjs", str(LEAN / ".lake/build/bin/r2_check"),
+        ], ROOT)
+        report["r2"]["progress"] = json.loads(progress)
         require(source_manifest() == before_sources, "sources changed during acceptance")
         report["status"] = "passed"
         report["not_claimed"] = COVERAGE["not_claimed"]
         print(
             f"PASS: Lean build/audit, Quint checks, and {COVERAGE['finite_comparison']['phase_cases']} "
-            "exhaustive cross-language phase cases. R2 rank and trap checks passed.", flush=True,
+            "exhaustive cross-language phase cases. R2 rank, trap, and progress checks passed.", flush=True,
         )
     except Exception as error:
         report["status"] = "failed"
