@@ -407,4 +407,194 @@ theorem refill_before_next (first base level slot : Nat) (gap : 4 ≤ base) :
   simp only [departure, Nat.mul_add, Nat.mul_one]
   omega
 
+/-! Derive the held-owner interface from local claimant invariants. -/
+
+/-- Uniform ticking preserves oldest-first priority, including ties.
+Only the ages of actual contenders need to tick. -/
+theorem winner_uniform_tick (age next : Nat → Nat) (tags : List Nat) (dt : Nat)
+    (tick : ∀ k ∈ tags, next k = age k+dt) :
+    RouteService.chooseWinner next tags = RouteService.chooseWinner age tags := by
+  induction tags with
+  | nil => rfl
+  | cons k rest ih =>
+    have tail := ih (fun j hj => tick j (List.mem_cons_of_mem _ hj))
+    simp only [RouteService.chooseWinner, tail]
+    cases picked : RouteService.chooseWinner age rest with
+    | none => rfl
+    | some j =>
+      have spec : j ∈ rest ∧ ∀ b ∈ rest, age b < age j ∨ (age b = age j ∧ j ≤ b) := by
+        simpa only [picked] using RouteService.chooseWinner_spec age rest
+      have ak := tick k (List.mem_cons_self ..)
+      have aj := tick j (List.mem_cons_of_mem _ spec.1)
+      have cmp :
+          (next j < next k ∨ (next j = next k ∧ k < j)) ↔
+          (age j < age k ∨ (age j = age k ∧ k < j)) := by
+        rw [ak,aj]
+        omega
+      simp only [cmp]
+
+private theorem mature_filter (age : Nat → Nat) (L : Nat) (tags : List Nat)
+    (old : ∀ k ∈ tags, L ≤ age k) :
+    tags.filter (fun k => decide (L ≤ age k)) = tags := by
+  induction tags with
+  | nil => rfl
+  | cons k rest ih =>
+    have hk := old k (List.mem_cons_self ..)
+    have tail := ih (fun j hj => old j (List.mem_cons_of_mem _ hj))
+    simp [List.filter, hk, tail]
+
+/-- These are local operational invariants, not the desired deadline.
+A claimant list enumerates legal clear requests before phase filtering;
+for EXIT it may be the singleton focal tag. Mandatory means a real move
+when a protected owner has an eligible option, possibly a different one. -/
+structure Claimants {Cell : Type} {D : Nat} (w : WorkTrace D) (L G : Nat) where
+  tags : Nat → Cell → Option Cell → List Nat
+  age : Nat → Nat → Nat
+  axis : Nat → Cell → Option Cell → Nat → Nat
+  junction : Cell → Option Cell → Bool
+  quiet_tags : ∀ t n c d, (∀ i < n, w.eventsAt (t+i) = 0) →
+    tags (t+n) c d = tags t c d
+  quiet_age : ∀ t n c d k, (∀ i < n, w.eventsAt (t+i) = 0) →
+    k ∈ tags t c d → age (t+n) k = age t k+n
+  quiet_axis : ∀ t n c d k, (∀ i < n, w.eventsAt (t+i) = 0) →
+    k ∈ tags t c d → axis (t+n) c d k = axis t c d k
+  axis_bound : ∀ t c d k, k ∈ tags t c d → axis t c d k < 2
+  mandatory : ∀ t c d k,
+    RouteService.chooseWinner (age t)
+      ((tags t c d).filter fun j => decide (L ≤ age t j)) = some k →
+    RouteService.clockAllows G t (axis t c d k) (junction c d) = true →
+    0 < w.movesAt t
+
+theorem Claimants.held_owner {Cell : Type} {D L G : Nat} {w : WorkTrace D}
+    (p : Claimants (Cell := Cell) w L G) (t : Nat) (c : Cell) (d : Option Cell)
+    (warm : ∀ i < L, w.eventsAt (t+i) = 0)
+    (nonempty : p.tags (t+L) c d ≠ []) :
+    ∃ a < 2, ∃ junction : Bool, ∀ i < 2*G,
+      (∀ j < i, w.eventsAt (t+L+j) = 0) →
+      RouteService.clockAllows G (t+L+i) a junction = true →
+      0 < w.eventsAt (t+L+i) := by
+  let u := t+L
+  let xs := p.tags u c d
+  have mature : ∀ k ∈ xs, L ≤ p.age u k := by
+    intro k hk
+    have same := p.quiet_tags t L c d warm
+    have old : k ∈ p.tags t c d := by
+      change k ∈ p.tags (t+L) c d at hk
+      rw [same] at hk
+      exact hk
+    have grows := p.quiet_age t L c d k warm old
+    change L ≤ p.age (t+L) k
+    omega
+  cases picked : RouteService.chooseWinner (p.age u) xs with
+  | none =>
+    have empty : xs = [] := by
+      simpa only [picked] using RouteService.chooseWinner_spec (p.age u) xs
+    exact (nonempty empty).elim
+  | some k =>
+    have spec : k ∈ xs ∧ ∀ b ∈ xs, p.age u b < p.age u k ∨
+        (p.age u b = p.age u k ∧ k ≤ b) := by
+      simpa only [picked] using RouteService.chooseWinner_spec (p.age u) xs
+    refine ⟨p.axis u c d k, p.axis_bound u c d k spec.1, p.junction c d, ?_⟩
+    intro i _ prior gate
+    have same := p.quiet_tags u i c d prior
+    have ticks (j : Nat) (hj : j ∈ xs) : p.age (u+i) j = p.age u j+i :=
+      p.quiet_age u i c d j prior hj
+    have old : ∀ j ∈ p.tags (u+i) c d, L ≤ p.age (u+i) j := by
+      intro j hj
+      rw [same] at hj
+      have tick := ticks j hj
+      have priorAge := mature j hj
+      omega
+    have grant : RouteService.chooseWinner (p.age (u+i))
+        ((p.tags (u+i) c d).filter fun j => decide (L ≤ p.age (u+i) j)) = some k := by
+      rw [mature_filter _ _ _ old, same]
+      change RouteService.chooseWinner (p.age (u+i)) xs = some k
+      rw [winner_uniform_tick (p.age u) (p.age (u+i)) xs i ticks, picked]
+    have stable := p.quiet_axis u i c d k prior spec.1
+    have clock : RouteService.clockAllows G (u+i) (p.axis (u+i) c d k) (p.junction c d) = true := by
+      rw [stable]
+      exact gate
+    have moved := p.mandatory (u+i) c d k grant clock
+    change 0 < w.movesAt (u+i) + w.admitsAt (u+i)
+    omega
+
+/-- A member's height is part of the total work, without double-counting
+a tag's first exit and subsequent re-admission as a single event. -/
+theorem member_work {Cell : Type} (height : Cell → Nat) (cells : List Cell)
+    (c : Cell) (member : c ∈ cells) : height c ≤ total height cells := by
+  induction cells with
+  | nil => simp at member
+  | cons d rest ih =>
+    simp only [total]
+    rcases List.mem_cons.mp member with eq | tail
+    · subst d
+      omega
+    · have lower := ih tail
+      omega
+
+/-- A focal car which stays at its root reserves that root's work.
+The general deadline now uses the occupied-cell total directly. -/
+theorem moves_before_focal_deadline {Cell : Type} {D L G : Nat} (w : WorkTrace D)
+    (r : QuietRegion (Cell := Cell) w L G) (green : 0 < G)
+    (work_eq : ∀ t, w.work t = total r.height (r.cells t))
+    (focal : Nat → Prop) (t A : Nat) (root : Cell)
+    (positive : 0 < r.height root) (atRoot : root ∈ r.cells t)
+    (stays : ∀ u, root ∈ r.cells u → ¬ focal u → root ∈ r.cells (u+1))
+    (quota : count w.admitsAt t (deadline (w.work t) (r.height root) D A L G) ≤ A) :
+    ∃ i < deadline (w.work t) (r.height root) D A L G, focal (t+i) := by
+  apply moves_before_work_deadline w r green focal t (r.height root) A positive
+  · rw [work_eq]
+    exact member_work r.height (r.cells t) root atRoot
+  · exact quota
+  · intro n _ waiting
+    have held : root ∈ r.cells (t+n) := by
+      induction n with
+      | zero => simpa using atRoot
+      | succ n ih =>
+        have prev := ih (fun i hi => waiting i (by omega))
+        exact stays (t+n) prev (waiting n (by omega))
+    rw [work_eq]
+    exact member_work r.height (r.cells (t+n)) root held
+
+/-- The zero-work result is actual evacuation when every occupied cell
+contributes positive height and the regional work inventory is complete. -/
+theorem empty_before_work_deadline {Cell : Type} {D L G : Nat} (w : WorkTrace D)
+    (r : QuietRegion (Cell := Cell) w L G) (green : 0 < G) (t : Nat)
+    (work_eq : ∀ t, w.work t = total r.height (r.cells t))
+    (positive : ∀ c, 0 < r.height c)
+    (quota : count w.admitsAt t (w.work t*(L+2*G)) = 0) :
+    r.cells (t+w.work t*(L+2*G)) = [] := by
+  have zero := drains_before_work_deadline w r green t quota
+  let finish := t+w.work t*(L+2*G)
+  change w.work finish = 0 at zero
+  change r.cells finish = []
+  cases cells : r.cells finish with
+  | nil => rfl
+  | cons c rest =>
+    rw [work_eq, cells] at zero
+    simp only [total] at zero
+    have h := positive c
+    omega
+
+/-- Construct the quiet-region interface from the local claimant
+invariants, rather than supplying a network-event conclusion. -/
+def QuietRegion.ofClaimants {Cell : Type} {D L G : Nat} (w : WorkTrace D)
+    (p : Claimants (Cell := Cell) w L G)
+    (cells : Nat → List Cell) (height : Cell → Nat)
+    (menu : Nat → Cell → List (Option Cell))
+    (present : ∀ t, 0 < w.work t → cells t ≠ [])
+    (stable : ∀ t n, (∀ i < n, w.eventsAt (t+i) = 0) → cells (t+n) = cells t)
+    (escape : ∀ t c, c ∈ cells t → ∃ d ∈ menu t c, d.elim True (fun q => height q < height c))
+    (covers : ∀ t c d, c ∈ cells t → d ∈ menu t c →
+      d.elim True (fun q => q ∉ cells t) → p.tags t c d ≠ []) :
+    QuietRegion (Cell := Cell) w L G where
+  cells := cells
+  height := height
+  menu := menu
+  present := present
+  stable := stable
+  escape := escape
+  held := fun t c d warm hc hd clear =>
+    p.held_owner t c d warm (covers (t+L) c d hc hd clear)
+
 end BML.RouteAmortized
