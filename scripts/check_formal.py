@@ -257,6 +257,22 @@ def main() -> int:
             **json.loads(service),
             "cases_sha256": sha256((artifacts / "r2-service-cases.json").read_bytes()),
         }
+        amortized = json.loads(run("r2-amortized-reference", [
+            "node", "app/scripts/r2-amortized-reference.mjs",
+        ], ROOT))
+        calendars = json.loads(run("r2-amortized-lean", [
+            str(LEAN / ".lake/build/bin/r2_check"), "--amortized", "12",
+        ], ROOT))
+        require(len(calendars) == 12 and len(amortized["rows"]) == 24,
+                "incomplete amortized case inventory")
+        expected = {(m, geometric) for m in range(1, 13) for geometric in (False, True)}
+        actual = {(r["merges"], r["geometric"]) for r in amortized["rows"]}
+        require(actual == expected, "wrong amortized case inventory")
+        for row in amortized["rows"]:
+            require(row["openFirstMove"] == calendars[row["merges"]-1][int(row["geometric"])],
+                    "Lean/reference merge calendar disagrees")
+        report["r2"]["amortized"] = {**amortized, "calendar_comparisons": len(amortized["rows"]),
+            "scope": "reference scheduler and calendar arithmetic; production transition refinement open"}
         require(source_manifest() == before_sources, "sources changed during acceptance")
         report["status"] = "passed"
         report["not_claimed"] = COVERAGE["not_claimed"]

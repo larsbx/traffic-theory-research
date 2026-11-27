@@ -1,4 +1,4 @@
-import BML.RouteService
+import BML.RouteAmortized
 import Lean.Data.Json
 
 /-! Execute the proved R2 kernels on finite tables exported by the simulator. -/
@@ -165,6 +165,14 @@ def main (args : List String) : IO UInt32 := do
   match args with
   | [path] => R2Check.run path
   | ["--service", path] => R2Check.runService path
+  | ["--amortized", depth] =>
+    match depth.toNat? with
+    | some n =>
+      let rows := (List.range n).map fun i =>
+        [BML.RouteAmortized.mergeStart 0 4 (i+1), BML.RouteAmortized.mergeStart 4 6 i]
+      IO.println (Lean.toJson rows).compress
+      return 0
+    | none => return 2
   | ["--wait-bounds", cap, maxRank] =>
     match cap.toNat?, maxRank.toNat? with
     | some k, some n =>
@@ -175,5 +183,5 @@ def main (args : List String) : IO UInt32 := do
       IO.eprintln "expected a natural service cap and maximum rank"
       return 2
   | _ =>
-    IO.eprintln "usage: r2_check CASES.json | r2_check --service CASES.json | r2_check --wait-bounds CAP MAX_RANK"
+    IO.eprintln "usage: r2_check CASES.json | r2_check --service CASES.json | r2_check --wait-bounds CAP MAX_RANK | r2_check --amortized DEPTH"
     return 2
