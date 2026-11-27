@@ -114,8 +114,8 @@ connections to tiling and dynamical-systems theory.
 - [Theorems for real traffic flow](docs/research/2026-11-24-real-traffic-theorems.md) (2026-11-24):
   five results under physical, measurable assumptions (jam spacing, saturation flow, signal green
   fractions, a speed limit). They cover a jam-density bound on gridlock size, permanent gridlock
-  under re-routing (traps and safe cells: with re-routing, permanent gridlock needs an unrevisable
-  commitment), a closure-time bound, a signal-plan cut bound on throughput, and a Little's-law
+  under re-routing ([R2 traps and safe-cell certificates](formal/lean/README.md#lane-graph-traps-and-safe-cells-r2)),
+  a closure-time bound, a signal-plan cut bound on throughput, and a Little's-law
   envelope for the macroscopic fundamental diagram. Each comes with proofs, simulator checks and
   the real data that would test it.
 - [Gridlock on Real Street Networks](docs/paper/paper.pdf) (paper, 2026-11-23): the results below

@@ -52,6 +52,10 @@ name = "Traffic"
 name = "traffic_export"
 root = "Traffic.Export"
 
+[[lean_exe]]
+name = "r2_check"
+root = "R2Check"
+
 [[lean_lib]]
 name = "Train"
 

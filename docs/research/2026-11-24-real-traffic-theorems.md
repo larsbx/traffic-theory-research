@@ -52,15 +52,20 @@ loop. This continuous form does not depend on any discretisation. The lattice Th
 *Data to test it:* stopped-queue lengths in gridlock events, from drone or CCTV trajectories
 such as pNEUMA [BG], against loop lengths from OpenStreetMap.
 
-## R2. With re-routing, permanent gridlock needs an unrevisable commitment
+## R2. Structural traps and safe cells under re-routing
 
 Under (O), each vehicle k has options o, each needing a set of space need(o) to be free: its
 next cell and, if it is committed through a junction box, the rest of its path through the box.
-A **trap** is a set S of vehicles such that every option of every k ∈ S needs some space
-occupied by a vehicle of S. An exit is never occupied.
+A **trap** is a set S of on-street vehicles such that every option of every k ∈ S
+needs some space occupied by a vehicle of S. A genuinely empty menu satisfies
+this condition vacuously. An exit has an empty list of required cells and
+defeats the condition. The simulator supplies an explicit fallback exit if
+planning finds an empty turn list. The map certificate uses declared exits.
 
 **Theorem R2.**
-- **(a) Soundness.** Under (X), no vehicle of a trap ever moves again, whatever its driver chooses.
+- **(a) Soundness.** Use (X) as CLASSIC pre-step vacancy. Assume a vehicle that
+  has not moved retains its position and that its first hop or exit must use
+  an option from its original menu. No vehicle of a trap ever records a hop or exit.
 - **(b) Greatest trap.** A union of traps is a trap, so there is a greatest one, S\*. It is found
   by repeatedly deleting vehicles that have an option whose needed space is free, at an exit or
   held by a deleted vehicle.
@@ -68,55 +73,72 @@ occupied by a vehicle of S. An exit is never occupied.
   contains the frozen set certified by the wait-for-cycle theorem (paper, Theorem 2). Without the
   box rule the two are equal. With it, S\* also sees blocking anywhere along a box path.
 - **(d) Re-routing shrinks traps.** Adding options to vehicles can only shrink S\*.
-- **(e) Safe cells.** Assume no box rule. Call a cell **safe** if, for every way a vehicle can
-  arrive in it (every in-lane, and spawning), its options include an exit or a safe cell, taking
-  the least such set. Then no vehicle of any trap occupies a safe cell. If every cell is safe, no
-  configuration contains a trap: **permanent gridlock is impossible.**
+- **(e) Safe cells.** With the box rule off, take the least fixed point of the
+  operator that admits a road cell when each supported arrival has an exit or
+  a single-cell move into the set. Every member of a proposed trap must be
+  able to re-route from its actual arrival using that menu. Such a trap
+  contains no safe cell and is empty on a fully ranked map.
 
 *Proof.*
-- (a) Let t be the first time a vehicle k of S moves. It moves by some option o, which by (X)
-  needs all of need(o) free just before t. But o needs space held by some vehicle of S, which has
-  not moved before t, a contradiction.
+- (a) At the first half-step containing a hop or exit by a member of S, its
+  option requires a cell still occupied at the start of the step by a member
+  of S. This contradicts CLASSIC vacancy. A temporary breakdown can delay a
+  move without changing the menu. Permanent breakdowns can remove options,
+  and towing changes the stationary-position premise.
 - (b) If S₁ and S₂ are traps, every option of a vehicle in S_i needs space held by S_i ⊆ S₁ ∪ S₂,
   so the union is a trap. A deleted vehicle has an escaping option, so it cannot belong to a trap
-  built from the vehicles that remain. Deletion therefore stops at the largest trap.
+  built from the vehicles that remain. Every changing pass deletes a vehicle,
+  so at most the starting population many passes can change the set. The
+  result is closed and contains all traps. Adding back any excluded vehicle
+  that passed the final keep test would yield a larger trap, proving the
+  fixed-point claim on the original population.
 - (c) With one option each, k ∈ S\* iff its blocker is in S\*. Following blockers inside a finite
   set reaches a wait-for cycle, so S\* consists of the wait-for cycles and their basins. Under the
   box rule an option needs the whole box path, which also catches blocking beyond the first
   occupant.
 - (d) Each deletion test only gains escape routes.
-- (e) Induct on the stage at which a cell becomes safe. At a stage-0 cell, every arrival has an
-  exit option, so the occupant can always escape. At a stage-r cell, every arrival has an option
-  into a cell of stage below r, which by induction holds no trapped vehicle. So the occupant has
-  an option whose needed space is free or held outside the trap, and it is not in the trap. If
-  every cell is safe, no trap can be nonempty. ∎
+- (e) Grow from the empty set. Each changing pass ranks a new road cell.
+  Each ranked cell has an exit or lower rank witness for every arrival. Each
+  unranked cell has an arrival with no exit and all its destinations unranked.
+  These conditions give a fixed point, and rank induction places it inside
+  every set closed under the rule. Apply rank induction again to trap members.
+  An exit cannot have a blocker. For a lower-ranked destination the occupant,
+  if any, lies outside the trap by induction. Both cases violate closure. ∎
 
-This is the OR-request model of deadlock, whose criterion is a *knot* in the wait-for graph
-[Holt]. The wait-for-cycle certificate is the single-request case.
+With a single required cell per option, this is the OR-request model of
+deadlock [Holt]. The wait-for-cycle certificate is the single-request case.
+Even freely re-routing vehicles can form a trap if all their options require
+cells occupied by its members.
 
-**Evidence.** Re-routing simulations on six city presets, four law regimes, ρ ∈ {0.2, 0.3, 0.4}
-and five seeds (360 runs, `reroute.mjs`):
+The [Lean proof and acceptance commands](../../formal/lean/README.md#lane-graph-traps-and-safe-cells-r2)
+cover termination and maximality of deletion, permanence under the trace
+contract, and leastness and trap exclusion from checked ranks. The preset
+certificate records arrival directions, turns, declared exits and ranks.
+Both the checker against the rasterized maps and the Lean checker accept
+8,443 of 8,443 road cells in the six maps under each of the two no-box laws.
+
+**Simulated evidence from the original experiment.** The script matched the
+two policies on six presets, four law regimes, three densities and five seeds.
+This gives 360 matched cases and 720 executions.
 
 | | committed drivers | re-routing drivers |
 |---|---|---|
 | no box rule ("block the box", BML lights): safe-cell share | — | **100 % on all six maps** |
-| trapped share, no box rule, all 180 runs | up to 0.95 (Shibuya), 1.00 (Étoile) | **0 in every run**, as (e) requires |
+| endpoint trap share, no box rule, 180 executions per policy | up to 0.95 (Shibuya), 1.00 (Étoile) | **0 in every run** |
 | trapped share with the box rule ("free turns", ρ = 0.4) | Étoile 1.00, Bank 0.38, Shibuya 0.70 | Étoile 0.10, Bank 0.12, Shibuya 0.18 |
 | flow J at ρ = 0.3, Étoile, BML lights | 0.000 | 0.207 |
 | flow J at ρ = 0.3, Bank, "block the box" | 0.026 | 0.149 |
 
-Re-routing removed every trap where the theorem applies. Under the box rule, traps remained only
-because box-committed drivers could not re-route. That supports the corollary that **real
-permanent gridlock requires commitments drivers cannot revise**, such as being physically inside
-a box with every exit full. Re-routing also raised flow on every jam-prone map, often several
-times over.
+The proof excludes self-supported blocking sets under the stated menus. Long
+waits from signals, contention, route choice and temporary breakdowns remain
+possible. A [follow-up](2026-11-25-r2-progress-service.md) proves that even full
+rank coverage gives no unconditional waiting-time bound. It derives next-move
+bounds with vacancy after departures and explicit service.
 
-*Caveat.* S\* = ∅ rules out permanent gridlock only. Long transient jams can still occur, and
-real gridlocks of hours fit this description: they dissolve once inflow stops. R3 bounds how
-fast a loop can lock.
-
-*Data to test it:* vehicle trajectories in junction boxes during gridlock events [BG], counting
-how many vehicles had an unblocked legal alternative when the jam locked.
+*Data to test it:* use vehicle trajectories during gridlock events [BG] to
+check supported arrivals, legal alternatives, actual commitments, exit
+availability and the space needed for each move. Use observed timing and
+throughput to evaluate finite congestion.
 
 ## R3. A loop cannot lock faster than its inflow can fill it
 
@@ -178,8 +200,10 @@ and trip lengths from GPS traces or loop detectors [UTD19].
 
 What is open:
 - the real-data tests listed under each result;
-- a version of R2 that allows *partial* re-routing, where drivers revise with some probability;
-- whether S\* = ∅ bounds how long transient jams last, which needs dynamics, not structure.
+- deriving a joint movement probability from the simulator's or a real
+  network's partial re-routing, signal and arbitration rules. The
+  [follow-up](2026-11-25-r2-progress-service.md) gives a conditional
+  probability bound and identifies same-step refill as a separate premise.
 
 ## References
 

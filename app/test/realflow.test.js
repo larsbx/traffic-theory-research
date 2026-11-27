@@ -52,9 +52,14 @@ test('R2 soundness: under re-routing dynamics, a trapped car never moves again (
       const trappedAt = new Map();
       for (let t = 0; t < 500; t++) {
         if (t % 70 === 0) s = breakDown(s, (t * 11) % s.pos.length, 60);
-        trapSet(net, s, o, { reroute: true }).forEach((f, k) => { if (f && !trappedAt.has(k)) trappedAt.set(k, s.pos[k]); });
+        trapSet(net, s, o, { reroute: true }).forEach((f, k) => {
+          if (f && !trappedAt.has(k)) trappedAt.set(k, [s.pos[k], s.last[k]]);
+        });
         s = halfStep(net, s, o);
-        for (const [k, p] of trappedAt) assert.equal(s.pos[k], p, `${id} ${name}: trapped car ${k} moved`);
+        for (const [k, [pos, last]] of trappedAt) {
+          assert.equal(s.pos[k], pos, `${id} ${name}: trapped car ${k} changed cell`);
+          assert.equal(s.last[k], last, `${id} ${name}: trapped car ${k} recorded movement`);
+        }
       }
     }
 });

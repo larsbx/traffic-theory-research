@@ -19,6 +19,16 @@ ROOT = Path(__file__).resolve().parents[1]
 LEAN = ROOT / "formal/lean"
 QUINT = ROOT / "formal/quint"
 COVERAGE = json.loads((ROOT / "formal/coverage.json").read_text())
+R2_APP_SOURCES = {
+    "app/data/presets.json",
+    "app/scripts/r2-certificates.mjs",
+    "app/scripts/r2-progress.mjs",
+    "app/src/presets.js",
+    "app/src/raster.js",
+    "app/src/realflow.js",
+    "app/src/rng.js",
+    "app/src/sim.js",
+}
 
 
 def require(condition: bool, message: str) -> None:
@@ -39,7 +49,9 @@ def source_manifest() -> dict[str, str]:
             for part in relative.parts
         ):
             continue
-        if relative.parts[0] in {"formal", "scripts", ".github"} or str(relative) == "README.md":
+        if (relative.parts[0] in {"formal", "scripts", ".github"}
+                or relative.as_posix() in R2_APP_SOURCES
+                or relative == Path("README.md")):
             paths.append(path)
     return {str(p.relative_to(ROOT)): sha256(p.read_bytes()) for p in sorted(paths)}
 
@@ -171,7 +183,7 @@ def main() -> int:
         require(f"version {COVERAGE['lean_version']}," in lean_version, f"wrong Lean version: {lean_version}")
         require(quint_version == COVERAGE["quint_version"], f"wrong Quint version: {quint_version}")
         report["versions"] = {"lean": lean_version, "quint": quint_version, "node": node_version}
-        run("lean-build", [lake, "build", "Traffic", "traffic_export"], LEAN)
+        run("lean-build", [lake, "build", "Traffic", "traffic_export", "r2_check"], LEAN)
         audit = run("lean-axiom-audit", [lake, "env", "lean", "TrafficAudit.lean"], LEAN)
         audited = {}
         summary = None
@@ -221,12 +233,28 @@ def main() -> int:
         run("lean-export", [str(LEAN / ".lake/build/bin/traffic_export")], LEAN, "lean.tsv")
         run("quint-export", ["node", str(QUINT / "export.cjs")], ROOT, "quint.tsv")
         report["cross_language"] = compare_rows(artifacts / "lean.tsv", artifacts / "quint.tsv")
+        r2_audit = run("r2-axiom-audit", [lake, "env", "lean", "R2Audit.lean"], LEAN)
+        r2 = run("r2-correspondence", [
+            "node", "app/scripts/r2-certificates.mjs", "--check-lean",
+            str(LEAN / ".lake/build/bin/r2_check"), str(artifacts),
+        ], ROOT)
+        report["r2"] = {
+            **json.loads(r2),
+            "axiom_audit": r2_audit,
+            "map_certificates_sha256": sha256((artifacts / "r2-map-certificates.json").read_bytes()),
+            "lean_cases_sha256": sha256((artifacts / "r2-lean-cases.json").read_bytes()),
+            "scope": "structural CLASSIC lane-graph contract and finite simulator correspondence",
+        }
+        progress = run("r2-progress", [
+            "node", "app/scripts/r2-progress.mjs", str(LEAN / ".lake/build/bin/r2_check"),
+        ], ROOT)
+        report["r2"]["progress"] = json.loads(progress)
         require(source_manifest() == before_sources, "sources changed during acceptance")
         report["status"] = "passed"
         report["not_claimed"] = COVERAGE["not_claimed"]
         print(
             f"PASS: Lean build/audit, Quint checks, and {COVERAGE['finite_comparison']['phase_cases']} "
-            "exhaustive cross-language phase cases.", flush=True,
+            "exhaustive cross-language phase cases. R2 rank, trap, and progress checks passed.", flush=True,
         )
     except Exception as error:
         report["status"] = "failed"

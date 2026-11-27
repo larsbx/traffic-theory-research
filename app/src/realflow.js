@@ -2,63 +2,117 @@
 // Proofs: docs/research/2026-11-24-real-traffic-theorems.md.
 //
 //   trapSet          R2: permanent gridlock when drivers may re-route (OR-model deadlock)
-//   safeCells        R2: cells that can never hold a trapped car, whoever occupies them
+//   safeCells        R2: rank certificates for freely re-routing cars, with no box rule
 //   jamGirthMetres   R1: minimum gridlock size from physical loop length and jam spacing
 //   closureTimeBound R3: earliest time a loop can lock, from mass conservation
 //   mfdEnvelope      R5: Little's law + speed limit + cut capacity bound network flow
-import { turnOptions, EXIT, aheadOf } from './sim.js';
+import { turnOptions, EXIT, aheadOf, CLASSIC, DEFAULTS } from './sim.js';
 
 /** Options of car k, each as the list of cells that must be free for that move. Re-routing drivers
  * may take any legal option from their current lane, unless committed through a junction box;
  * committed drivers have one option. Under the box rule, entering a junction from outside also
  * needs the committed path through the box free (sim.boxClear). */
 const optionsOf = (net, s, k, opts, reroute) => {
-  const needs = (c) => (c >= 0 && opts.box && net.junction[c] && !net.junction[s.pos[k]] && c === s.next[k]
-    ? [c, ...aheadOf(s, k).filter((x) => x >= 0)] : [c]);
-  return reroute && !s.aheadLen[k] && !s.species[k]
-    ? turnOptions(net, s.pos[k], s.prev[k], opts).cells.map((c) => [c])
-    : [needs(s.next[k])];
+  const [pos, committed] = [s.pos[k], s.next[k]];
+  const entersBox = opts.box && committed >= 0 && net.junction[committed] && !net.junction[pos];
+  const need = (dest) => (dest === EXIT ? [] : [dest]);
+  const current = entersBox ? [committed, ...aheadOf(s, k).filter((c) => c >= 0)] : need(committed);
+  if (!reroute || s.aheadLen[k] || s.species[k]) return [current];
+  // Planning can depend on the preceding heading. The committed move remains
+  // available even when it is absent from the heading-free re-routing menu.
+  const alternatives = turnOptions(net, pos, s.prev[k], opts).cells;
+  return [current, ...alternatives.filter((c) => c !== committed).map(need)];
 };
 
-/** R2. The greatest trap: the largest set S of cars on the street such that every option of every
- * car in S needs some cell occupied by a car in S (EXIT is never blocked). Under CLASSIC no car of
- * S ever moves again, whatever its driver chooses. Computed by deleting cars that have a free,
- * exiting or untrapped option until nothing changes (a greatest fixed point; the union of traps
- * is a trap). */
-export const trapSet = (net, s, opts, { reroute = false } = {}) => {
-  const N = s.pos.length;
-  const inS = Uint8Array.from({ length: N }, (_, k) => (s.pos[k] >= 0 ? 1 : 0)); // breakdowns only remove moves
-  const options = Array.from({ length: N }, (_, k) => (inS[k] ? optionsOf(net, s, k, opts, reroute) : []));
-  const free = (c) => c === EXIT || s.occ[c] < 0 || !inS[s.occ[c]];
-  const escapes = (k) => options[k].length === 0 || options[k].some((need) => need.every(free));
+/** Project required cells to their current occupants. Temporary breakdowns,
+ * red lights and contention can delay a move but do not remove it from this menu. */
+export const trapInput = (net, s, opts, { reroute = false } = {}) => {
+  const rules = { ...DEFAULTS, ...opts };
+  const cars = [...s.pos.keys()].filter((k) => s.pos[k] >= 0);
+  const menus = Array.from({ length: s.pos.length }, () => []);
+  for (const k of cars)
+    menus[k] = optionsOf(net, s, k, rules, reroute).map((need) => need.map((c) => s.occ[c]).filter((j) => j >= 0));
+  return { cars, menus };
+};
+
+/** Greatest set whose members have a blocker for every option. A car with
+ * zero options stays in the set. EXIT or a vacant option has zero blockers and
+ * deletes that car. Each changing pass deletes at least one candidate. */
+export const greatestTrap = ({ cars, menus }) => {
+  const inS = new Uint8Array(menus.length);
+  for (const k of cars) inS[k] = 1;
   for (let changed = true; changed;) {
     changed = false;
-    for (let k = 0; k < N; k++) if (inS[k] && escapes(k)) { inS[k] = 0; changed = true; }
+    for (const k of cars)
+      if (inS[k] && menus[k].some((blockers) => blockers.every((j) => !inS[j]))) {
+        inS[k] = 0;
+        changed = true;
+      }
   }
   return inS;
 };
 
-/** R2 (no box rule). Safe cells: the least set such that a cell is safe when, for every way a car can arrive in
- * it (every in-lane, and a spawn where cars spawn), its options include EXIT or a safe cell. A
- * re-routing driver in a safe cell is never trapped; if every road cell is safe, no configuration
- * ever contains a trap. Returns { safe: Uint8Array, count, roadCells }. */
-export const safeCells = (net, opts) => {
-  // Under the box rule a car committed through a box cannot re-route and its entry needs a whole
-  // path free, so "some option is safe" no longer implies escape: the theorem does not apply.
-  if (opts.box) throw new Error('safeCells: the safe-cell theorem assumes no box rule');
-  const n = net.W * net.H;
-  const spawn = new Set(net.entries.length ? net.entries : []);
-  const arrivals = (c) => [...net.inList.subarray(net.inStart[c], net.inStart[c + 1]), ...(spawn.has(c) || !net.entries.length ? [-1] : [])];
-  const optionSets = new Map();
-  for (let c = 0; c < n; c++)
-    if (net.road[c]) optionSets.set(c, arrivals(c).map((a) => turnOptions(net, c, a, opts).cells));
-  const safe = new Uint8Array(n);
+/** Under CLASSIC a trap remains immobile if stationary cars keep their
+ * positions and their actual moves stay within the snapshot menus. */
+export const trapSet = (net, s, opts, routing) => greatestTrap(trapInput(net, s, opts, routing));
+
+/** One authoritative turn menu per legal arrival. The unknown-heading case
+ * includes spawn and initialization with no in-lane. Include it also for
+ * isolated roads so coverage does not rely on an empty arrival list. */
+export const safeCellTurnTable = (net, opts) => {
+  const rules = { ...DEFAULTS, ...opts };
+  if (rules.box) throw new Error('safeCells: the safe-cell theorem assumes no box rule');
+  if (rules.rule !== CLASSIC) throw new Error('safeCells: the safe-cell theorem assumes CLASSIC');
+  const spawn = new Set(net.entries);
+  return Array.from(net.road, (road, c) => {
+    if (!road) return null;
+    const arrivals = [...new Set(net.inList.subarray(net.inStart[c], net.inStart[c + 1]))];
+    if (!arrivals.length || spawn.has(c) || !net.entries.length) arrivals.push(-1);
+    return arrivals.map((prev) => ({ prev, cells: turnOptions(net, c, prev, rules).cells }));
+  });
+};
+
+/** Construct a rank per safe cell. Ranks strictly decrease along one
+ * witnessed move for every arrival, starting with actual map exits. */
+export const safeCellRanks = (table) => {
+  const ranks = Array(table.length).fill(null);
   for (let changed = true; changed;) {
     changed = false;
-    for (const [c, sets] of optionSets)
-      if (!safe[c] && sets.every((cells) => cells.some((x) => x === EXIT || safe[x]))) { safe[c] = 1; changed = true; }
+    for (const [c, arrivals] of table.entries()) {
+      if (!arrivals || ranks[c] !== null) continue;
+      const witness = arrivals.map(({ cells }) => cells.find((q) => q === EXIT || ranks[q] != null));
+      if (witness.includes(undefined)) continue;
+      ranks[c] = witness.reduce((r, q) => (q === EXIT ? r : Math.max(r, ranks[q] + 1)), 0);
+      changed = true;
+    }
   }
-  return { safe, count: safe.reduce((a, b) => a + b, 0), roadCells: net.roadCells };
+  return ranks;
+};
+
+/** Verify the least-fixed-point certificate against the supplied network.
+ * A rank needs a strict descent witness for every arrival. An unranked road
+ * needs one arrival with neither an exit nor any ranked destination. */
+export const checkSafeCellRanks = (table, ranks) => {
+  if (!Array.isArray(ranks) || ranks.length !== table.length) return false;
+  return table.every((arrivals, c) => {
+    const rank = ranks[c];
+    if (!arrivals) return rank === null;
+    if (!arrivals.length) return false;
+    if (rank === null)
+      return arrivals.some(({ cells }) => cells.every((q) => q !== EXIT && ranks[q] === null));
+    return Number.isSafeInteger(rank) && rank >= 0 &&
+      arrivals.every(({ cells }) => cells.some((q) => q === EXIT || (ranks[q] != null && ranks[q] < rank)));
+  });
+};
+
+export const verifySafeCellCertificate = (net, opts, ranks) => checkSafeCellRanks(safeCellTurnTable(net, opts), ranks);
+
+/** Least safe set under no-box re-routing. An all-ranked map rules out
+ * structural traps for a fleet with the certified arrival menus. */
+export const safeCells = (net, opts) => {
+  const ranks = safeCellRanks(safeCellTurnTable(net, opts));
+  const safe = Uint8Array.from(ranks, (rank) => Number(rank !== null));
+  return { safe, ranks, count: safe.reduce((a, b) => a + b, 0), roadCells: net.roadCells };
 };
 
 /** R1. Fewest vehicles in a gridlock around a committed loop of physical length L (m), with jam
