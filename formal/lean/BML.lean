@@ -23,6 +23,7 @@ import BML.GridlockThresholds
 import BML.Capture
 import BML.LaneDeadlockExamples
 import BML.RouteService
+import BML.RouteAmortized
 import BML.Formation
 import BML.Absorption
 import BML.Delay
