@@ -3,11 +3,16 @@ import Lean.Util.CollectAxioms
 import NetExport
 import BML.NetGridlock
 import BML.NetFree
+import BML.NetCount
+import BML.NetMixed
+import BML.NetPlacement
+import BML.NetRoundabout
 
 open Lean Elab Command
 
 /-- Audit the traffic-net layer: the generic gridlock theorems, the BML and
-mixed-grid instances, the least gridlock of the mixed torus, the free-flow layer, and the
+mixed-grid instances, the least gridlock of the mixed torus, the free-flow layer,
+conservation, the placement extremes, the roundabout capacity, and the
 separately linked replay. -/
 elab "audit_net" : command => do
   let env ← getEnv
@@ -19,6 +24,12 @@ elab "audit_net" : command => do
     ``BML.Net.stuck_carCount_ge_street, ``BML.Net.rowStreet_length, ``BML.Net.colStreet_length,
     ``BML.Net.row_gridlock, ``BML.Net.col_gridlock, ``BML.Net.step_undelayed,
     ``BML.Net.free_run_iff, ``BML.Net.Free.sub, ``BML.Net.Free.run_sub, ``BML.Net.free_iff_pairs,
+    ``BML.Net.free_of_recurrence, ``BML.Net.mixed_periodic, ``BML.Net.count_step,
+    ``BML.Net.count_run, ``BML.Net.mixed_routeClosed, ``BML.Net.mixed_count_run,
+    ``BML.Net.gridCells_length, ``BML.Net.stuck_carCount_le_cells, ``BML.Net.stuck_extendable,
+    ``BML.Net.gridlock_count_iff, ``BML.Net.best_bound, ``BML.Net.worst_bound,
+    ``BML.Net.worst_attained, ``BML.Net.best_attained, ``BML.Net.undelayed_carCount_le,
+    ``BML.Net.free_carCount_le, ``BML.Net.capacity_attained,
     ``BML.NetExport.emit, ``main]
   for name in required do
     if (env.find? name).isNone then

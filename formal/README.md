@@ -90,9 +90,15 @@ mixed torus: a stuck state with a car has at least as many cars as some straight
 cells (`stuck_carCount_ge_street`), and filling one street is a stuck state with exactly that
 many (`row_gridlock`, `col_gridlock`). `BML/NetFree.lean` proves for every net that a free
 state runs on its cars' solo timetables (`free_run_iff`), that freeness is hereditary
-(`Free.sub`) and that it is a pairwise property (`free_iff_pairs`). Gridlocks at every larger
-count, the placement extremes, and the compatibility conditions and capacities of particular
-grids remain prose. See the
+(`Free.sub`) and that it is a pairwise property (`free_iff_pairs`), and that an undelayed run
+which recurs with a gate-aligned period is free (`free_of_recurrence`); the Python `is_free`
+checks test exactly this certificate. `BML/NetCount.lean` proves conservation of each class on
+route-closed nets. `BML/NetMixed.lean` proves MX-G exactly (`gridlock_count_iff`: an n-car
+gridlock exists iff some street has at most n cells and the grid has at least n).
+`BML/NetPlacement.lean` proves MX-E, both extremes with their constructions, and
+`BML/NetRoundabout.lean` proves RB-C (the roundabout torus has free-flow capacity exactly
+w·h). The roundabout pair condition RB-R, the two-species frontier RB-F, the junction budget
+MX-F and the random-placement law MX-P remain prose. See the
 [traffic-net note](../docs/research/2026-11-24-traffic-nets.md).
 
 ```sh

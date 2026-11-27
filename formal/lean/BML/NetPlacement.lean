@@ -437,6 +437,230 @@ theorem worst_attained (pw : 0 < w) (ph : 0 < h) (link : Bool) {k : Nat} (hk : k
     · rw [gridCells_length, roundabouts_colFill pw ph hk]
       cases link <;> simp [colBase] <;> omega
 
+/-! ## Attaining the best case -/
+
+private theorem mod_lt_two {x m : Nat} (_hm : 0 < m) (hx : x < 2 * m) :
+    x % m = if x < m then x else x - m := by
+  split
+  · exact Nat.mod_eq_of_lt ‹_›
+  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+
+section Balanced
+
+variable (w h k : Nat)
+
+/-- Roundabouts in row `y`: `⌊k/h⌋`, plus one for the first `k mod h` rows. -/
+def bRow (y : Nat) : Nat := k / h + (if y < k % h then 1 else 0)
+
+/-- Where row `y` starts in the cyclic order of columns. -/
+def bStart (y : Nat) : Nat := k / h * y + min y (k % h)
+
+/-- Row `y` holds the `bRow y` columns starting at `bStart y`, cyclically. -/
+def balanced (p : Position w h) : Bool :=
+  decide ((p.1.val + w - bStart h k p.2.val % w) % w < bRow h k p.2.val)
+
+/-- The row whose run of columns contains position `j` of the cyclic order. -/
+def bRowOf (j : Nat) : Nat :=
+  if j < (k / h + 1) * (k % h) then j / (k / h + 1)
+  else k % h + (j - (k / h + 1) * (k % h)) / (k / h)
+
+end Balanced
+
+variable {k : Nat}
+
+theorem bRow_le (_pw : 0 < w) (ph : 0 < h) (hk : k ≤ w * h) (y : Nat) : bRow h k y ≤ w := by
+  unfold bRow
+  have hq : k / h ≤ w := (Nat.div_le_iff_le_mul_add_pred ph).mpr (by
+    have := Nat.mul_comm w h; omega)
+  split
+  · rename_i hy
+    rcases Nat.lt_or_ge (k / h) w with hlt | hge
+    · omega
+    · -- k / h = w forces k = w*h, so k % h = 0
+      have heq : k / h = w := by omega
+      have hdm := Nat.div_add_mod k h
+      rw [heq, Nat.mul_comm h w] at hdm
+      omega
+  · omega
+
+theorem bRowOf_spec (ph : 0 < h) {j : Nat} (hj : j < k) :
+    bRowOf h k j < h ∧ bStart h k (bRowOf h k j) ≤ j ∧
+      j < bStart h k (bRowOf h k j) + bRow h k (bRowOf h k j) := by
+  unfold bRowOf bStart bRow
+  have hdm := Nat.div_add_mod k h
+  have hmod := Nat.mod_lt k ph
+  generalize k / h = Q at *
+  generalize k % h = R at *
+  have hQR : (Q + 1) * R = Q * R + R := Nat.succ_mul Q R
+  split
+  · rename_i hlt
+    have hq1 : 0 < Q + 1 := by omega
+    have hd := Nat.div_add_mod j (Q + 1)
+    have hm := Nat.mod_lt j hq1
+    generalize j / (Q + 1) = y at *
+    generalize j % (Q + 1) = m at *
+    have hs : (Q + 1) * y = Q * y + y := Nat.succ_mul Q y
+    have hyR : y < R := Nat.lt_of_mul_lt_mul_left (a := Q + 1) (by omega)
+    simp only [Nat.min_eq_left (Nat.le_of_lt hyR), hyR, ↓reduceIte]
+    omega
+  · rename_i hge
+    rcases Nat.eq_zero_or_pos Q with rfl | hq
+    · simp at hdm hge hQR
+      omega
+    have hd := Nat.div_add_mod (j - (Q + 1) * R) Q
+    have hm := Nat.mod_lt (j - (Q + 1) * R) hq
+    generalize he : j - (Q + 1) * R = e at *
+    generalize e / Q = z at *
+    generalize e % Q = m at *
+    have hsub := Nat.mul_sub Q h R
+    have hcomm := Nat.mul_comm h Q
+    have hle : Q * R ≤ Q * h := Nat.mul_le_mul_left Q (by omega)
+    have hz : z < h - R := Nat.lt_of_mul_lt_mul_left (a := Q) (by omega)
+    have hnot : ¬ (R + z < R) := by omega
+    have hadd := Nat.mul_add Q R z
+    simp only [Nat.min_eq_right (Nat.le_add_right R z), hnot, ↓reduceIte, Nat.add_zero]
+    omega
+
+/-- The position at offset `d < w` from a row's start is in the right column. -/
+theorem balanced_offset (pw : 0 < w) {st d : Nat} (hd : d < w) :
+    (((st + d) % w) + w - st % w) % w = d := by
+  have ha := Nat.mod_lt st pw
+  have h1 : (st + d) % w = (st % w + d) % w := by rw [Nat.add_mod, Nat.mod_eq_of_lt hd]
+  rw [h1]
+  generalize st % w = a at *
+  rw [mod_lt_two pw (by omega : a + d < 2 * w)]
+  split
+  · rw [show a + d + w - a = d + w by omega, Nat.add_mod_right, Nat.mod_eq_of_lt hd]
+  · rw [show a + d - w + w - a = d by omega, Nat.mod_eq_of_lt hd]
+
+/-- Row `y` of the balanced placement holds exactly `bRow y` roundabouts. -/
+theorem rowCount_balanced (pw : 0 < w) (ph : 0 < h) (hk : k ≤ w * h) (y : Fin h) :
+    rowCount (balanced w h k) y = bRow h k y.val := by
+  have hr := bRow_le pw ph hk y.val
+  have ha := Nat.mod_lt (bStart h k y.val) pw
+  apply Nat.le_antisymm
+  · have := length_le_of_injOn ((List.finRange w).filter fun x => balanced w h k (x, y))
+      (List.range (bRow h k y.val)) ((List.nodup_finRange w).sublist List.filter_sublist)
+      (fun x : Fin w => (x.val + w - (bStart h k y.val) % w) % w)
+      (fun a _ b _ hab => by
+        have hxa := a.isLt
+        have hxb := b.isLt
+        rw [mod_lt_two pw (show a.val + w - bStart h k y.val % w < 2 * w by omega),
+          mod_lt_two pw (show b.val + w - bStart h k y.val % w < 2 * w by omega)] at hab
+        exact Fin.ext (by split at hab <;> split at hab <;> omega))
+      (fun x hx => List.mem_range.mpr (of_decide_eq_true (List.mem_filter.mp hx).2))
+    simpa [rowCount] using this
+  · let fwd : Nat → Fin w := fun d => ⟨((bStart h k y.val) + d) % w, Nat.mod_lt _ pw⟩
+    have := length_le_of_injOn (List.range (bRow h k y.val))
+      ((List.finRange w).filter fun x => balanced w h k (x, y)) List.nodup_range fwd
+      (fun a ha b hb hab => by
+        have ha' := List.mem_range.mp ha
+        have hb' := List.mem_range.mp hb
+        have h1 := balanced_offset pw (st := bStart h k y.val) (d := a) (by omega)
+        have h2 := balanced_offset pw (st := bStart h k y.val) (d := b) (by omega)
+        have : ((bStart h k y.val) + a) % w = ((bStart h k y.val) + b) % w := congrArg Fin.val hab
+        rw [this] at h1
+        omega)
+      (fun d hd => by
+        have hd' := List.mem_range.mp hd
+        refine List.mem_filter.mpr ⟨List.mem_finRange _, decide_eq_true ?_⟩
+        show ((((bStart h k y.val) + d) % w) + w - (bStart h k y.val) % w) % w < bRow h k y.val
+        rw [balanced_offset pw (by omega)]
+        exact hd')
+    simpa [rowCount] using this
+
+private theorem mul_lt_mul_cancel {a b w : Nat} (h : a * w < b * w + w) (h' : b * w < a * w + w) :
+    a = b := by
+  rcases Nat.lt_trichotomy a b with hab | rfl | hab
+  · have := Nat.mul_le_mul_right w (Nat.succ_le_of_lt hab)
+    rw [Nat.succ_mul] at this
+    omega
+  · rfl
+  · have := Nat.mul_le_mul_right w (Nat.succ_le_of_lt hab)
+    rw [Nat.succ_mul] at this
+    omega
+
+/-- Every column of the balanced placement holds at least `⌊k/w⌋` roundabouts. -/
+theorem colCount_balanced (pw : 0 < w) (ph : 0 < h) (hk : k ≤ w * h) (x : Fin w) :
+    k / w ≤ colCount (balanced w h k) x := by
+  -- the column positions x, x + w, x + 2w, … below k lie in distinct rows
+  let row : Nat → Fin h := fun i =>
+    if hr : bRowOf h k (x.val + i * w) < h then ⟨_, hr⟩ else ⟨0, ph⟩
+  have hjk : ∀ i, i < k / w → x.val + i * w < k := by
+    intro i hi
+    have := Nat.mul_le_mul_right w (Nat.succ_le_of_lt hi)
+    rw [Nat.succ_mul] at this
+    have := Nat.div_mul_le_self k w
+    have := x.isLt
+    omega
+  have hrow : ∀ i, i < k / w → (row i).val = bRowOf h k (x.val + i * w) := by
+    intro i hi
+    simp [row, (bRowOf_spec ph (hjk i hi)).1]
+  have := length_le_of_injOn (List.range (k / w))
+    ((List.finRange h).filter fun y => balanced w h k (x, y)) List.nodup_range row
+    (fun a ha b hb hab => by
+      have ha' := List.mem_range.mp ha
+      have hb' := List.mem_range.mp hb
+      have hy := congrArg Fin.val hab
+      rw [hrow a ha', hrow b hb'] at hy
+      obtain ⟨_, hsa, hea⟩ := bRowOf_spec ph (hjk a ha')
+      obtain ⟨_, hsb, heb⟩ := bRowOf_spec ph (hjk b hb')
+      rw [hy] at hsa hea
+      have hr := bRow_le pw ph hk (bRowOf h k (x.val + b * w))
+      exact mul_lt_mul_cancel (w := w) (by omega) (by omega))
+    (fun i hi => by
+      have hi' := List.mem_range.mp hi
+      refine List.mem_filter.mpr ⟨List.mem_finRange _, ?_⟩
+      simp only [balanced, decide_eq_true_eq]
+      rw [hrow i hi']
+      obtain ⟨_, hs, he⟩ := bRowOf_spec ph (hjk i hi')
+      generalize bRowOf h k (x.val + i * w) = y at hs he ⊢
+      have hr := bRow_le pw ph hk y
+      have hx : x.val = (bStart h k y + (x.val + i * w - bStart h k y)) % w := by
+        rw [Nat.add_sub_cancel' hs, Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt x.isLt]
+      rw [hx, balanced_offset pw (by omega)]
+      omega)
+  simpa [colCount] using this
+
+private theorem sum_add_indicator {α : Type} (l : List α) (q : Nat) (P : α → Bool) :
+    (l.map fun a => q + (if P a then 1 else 0)).sum = l.length * q + (l.filter P).length := by
+  induction l with
+  | nil => simp
+  | cons a l ih =>
+    simp only [List.map_cons, List.sum_cons, ih, List.length_cons, Nat.succ_mul, List.filter_cons]
+    cases P a <;> simp <;> omega
+
+/-- The balanced placement has exactly `k` roundabouts. -/
+theorem roundabouts_balanced (pw : 0 < w) (ph : 0 < h) (hk : k ≤ w * h) :
+    roundabouts (balanced w h k) = k := by
+  rw [roundabouts_rows]
+  have : (List.finRange h).map (rowCount (balanced w h k)) =
+      (List.finRange h).map fun y => k / h + (if decide (y.val < k % h) then 1 else 0) := by
+    apply List.map_congr_left
+    intro y _
+    rw [rowCount_balanced pw ph hk]
+    simp [bRow]
+  rw [this, sum_add_indicator, List.length_finRange, fin_count_lt ph,
+    Nat.min_eq_right (Nat.le_of_lt (Nat.mod_lt k ph))]
+  exact Nat.div_add_mod k h
+
+/-- **MX-E, best case attained.** For every `k ≤ w·h`, some placement of `k`
+roundabouts has every gridlock with at least `min(w' + ⌊k/h⌋, h' + ⌊k/w⌋)`
+cars; with `best_bound`, this is the largest least gridlock over placements. -/
+theorem best_attained (pw : 0 < w) (ph : 0 < h) (link : Bool) (hk : k ≤ w * h) :
+    roundabouts (balanced w h k) = k ∧
+      ∀ s : Config (Grid w h) Species, Stuck (mixed (torus pw ph (balanced w h k) link)) s →
+        (∃ c, (s c).isSome = true) →
+        min (rowBase w link + k / h) (colBase h link + k / w) ≤ carCount s := by
+  refine ⟨roundabouts_balanced pw ph hk, fun s hs hne => ?_⟩
+  rcases stuck_carCount_ge_street hs hne with ⟨y, hy⟩ | ⟨x, hx⟩
+  · rw [rowStreet_length', rowCount_balanced pw ph hk] at hy
+    have : k / h ≤ bRow h k y.val := by unfold bRow; omega
+    omega
+  · rw [colStreet_length'] at hx
+    have := colCount_balanced pw ph hk x
+    omega
+
 end Attain
 
 end BML.Net

@@ -28,9 +28,9 @@ The gridlock theorem carries over with W and H doubled. Capacity and the jamming
 at every share, and the dip at intermediate shares remains.
 
 MX-0, MX-G, MX-E, MX-P and MX-F have complete prose proofs. Checked in Lean, for both variants,
-as an instance of the [traffic net](2026-11-24-traffic-nets.md): MX-0, and the least gridlock
-of MX-G with its attainment. The Python kernel is replayed against the Lean step. Gridlocks at
-every larger count, MX-E, MX-P and MX-F are not formalized. The capacity census is
+as an instance of the [traffic net](2026-11-24-traffic-nets.md): MX-0, MX-G in full and MX-E
+with both constructions. The Python kernel is replayed against the Lean step, and its freeness
+check tests the Lean recurrence certificate. MX-P and MX-F are not formalized. The capacity census is
 finite data and the sweep is simulation. No novelty is claimed.
 
 Code: [`bml/mixed.py`](../../bml/mixed.py). Tests: [`tests/test_mixed.py`](../../tests/test_mixed.py).

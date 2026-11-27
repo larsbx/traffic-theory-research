@@ -118,8 +118,12 @@ connections to tiling and dynamical-systems theory.
   count. The BML instance is proved equal to the existing kernel, the mixed-grid gridlock lemma
   follows for every roundabout set, and the Python kernel is replayed against the Lean step.
   The least gridlock of the mixed torus, min((1+ℓ)W + min r_y, (1+ℓ)H + min c_x), is proved
-  in Lean with its attainment. Free flow is formalized for every net: a free state runs on
-  solo timetables, freeness is hereditary, and it is a pairwise property of the cars.
+  in Lean with its attainment, and so is MX-G in full: gridlocks exist at exactly the counts from
+  the cheapest street to all (1+2ℓ)WH + 2|R| cells. Free flow is formalized for every net: a
+  free state runs on solo timetables, freeness is hereditary and pairwise, and a finite
+  recurrence certifies it, which is what the Python checks now test. Also in Lean: car
+  conservation, both placement extremes of MX-E with their constructions, and the roundabout
+  capacity RB-C (exactly WH).
 - [A grid with a variable share of roundabouts](docs/research/2026-11-24-mixed-roundabout-grid.md)
   (2026-11-24): any set R of intersections are roundabouts and the rest keep the BML signal.
   An n-car gridlock exists iff min(W + min_y r_y, H + min_x c_x) ≤ n ≤ WH + 2|R|, with r_y and
