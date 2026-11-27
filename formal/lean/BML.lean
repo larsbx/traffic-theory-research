@@ -43,3 +43,5 @@ import BML.NetGridlock
 import BML.NetFree
 import BML.NetCount
 import BML.NetMixed
+import BML.NetPlacement
+import BML.NetRoundabout
