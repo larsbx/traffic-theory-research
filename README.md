@@ -169,7 +169,8 @@ connections to tiling and dynamical-systems theory.
   marginal-law bounds on eventual gridlock.
 - `bml/analysis.py` — tables for all tori with WH ≤ 16, written to `data/exhaustive.json` (~6 min).
 - `bml/nonmonotone.py` — un-jamming pairs with car identities tracked.
-- `bml/thin.py` — thin-torus (2×W) jam structure and exact bounds on q; certificates that q is
+- `bml/thin.py` — thin-torus (2×W) jam structure (structure lemmas kernel-checked in
+  `formal/lean/BML/ThinRigidity.lean`) and exact bounds on q; certificates that q is
   not monotone for every W ≥ 24 (`scripts/thin_certificates.py`, `data/thin-nonmonotone.json`).
 - `bml/montecarlo.py` — empirical jam curves (not a proof).
 

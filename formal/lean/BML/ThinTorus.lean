@@ -1,114 +1,26 @@
-import BML.FiniteCycle
-import BML.Fixation
+import BML.ThinRigidity
 
 /-!
 On a one-row or one-column CLASSIC torus, a car on the singleton axis
-never moves. It is an obstacle on the only cyclic lane of the other species.
-A jammed orbit with an initial hole must have such an obstacle.
+never moves. It is a full lane, hence an obstacle on the only cyclic lane of
+the other species (`ThinRigidity`). A jammed orbit with an initial hole must
+have such an obstacle.
 -/
 namespace BML
-
-private theorem stopped_by_coordinate_obstacle {α : Type}
-    (east north : Direction α) (sp : Species) (s : Config α) (p : α)
-    (hp : s p = sp.cell) {n : Nat} (hn : 0 < n) (coordinate : α → Fin n)
-    (obstacle : Fin n)
-    (advance : ∀ u q, RoundCanMove east north sp u q →
-      coordinate (roundTransport east north sp u q) = cyclicNext n hn (coordinate q))
-    (blocked : ∀ t, coordinate (carTrace east north sp s t p) = obstacle →
-      ¬ RoundCanMove east north sp (iterate (step east north) t s)
-        (carTrace east north sp s t p)) :
-    TagEventuallyStopped east north sp s p := by
-  let trace := fun t => carTrace east north sp s t p
-  let orbit := fun t => iterate (step east north) t s
-  let rank := fun t => cyclicDistance n (coordinate (trace t)) obstacle
-  let moving := fun t => RoundCanMove east north sp (orbit t) (trace t)
-  have balance (t : Nat) : rank (t+1) + (if moving t then 1 else 0) = rank t := by
-    by_cases hm : moving t
-    · have hnext : coordinate (trace (t+1)) = cyclicNext n hn (coordinate (trace t)) :=
-        advance (orbit t) (trace t) hm
-      have hne : coordinate (trace t) ≠ obstacle := fun h => blocked t h hm
-      simpa only [rank, hnext, hm, ↓reduceIte] using
-        cyclicDistance_next n hn (coordinate (trace t)) obstacle hne
-    · have hstay : trace (t+1) = trace t :=
-        roundTransport_eq_of_no_round_move east north sp (orbit t) (trace t) hm
-      simp [rank, hstay, hm]
-  obtain ⟨start, hstop⟩ := eventually_zero_cost rank (fun t => if moving t then 1 else 0) balance
-  refine (tagEventuallyStopped_iff_finitely_many_moves east north sp s p hp).mpr ⟨start, ?_⟩
-  intro t hm
-  have hc : moving (start+t) := hm
-  simpa [hc] using hstop t
-
-private theorem cyclicNext_one (hn : 0 < 1) (p : Fin 1) : cyclicNext 1 hn p = p :=
-  Subsingleton.elim _ _
-
-private theorem blocked_by_self {α : Type} (d : Direction α) (sp : Species)
-    (s : Config α) (p : α) (h : d.next p = p) : ¬ CanMove d sp s p := by
-  intro hm
-  exact sp.cell_ne_empty (hm.1.symm.trans (h ▸ hm.2))
 
 theorem eventual_jam_of_north_on_single_row (w : Nat) (hw : 0 < w)
     (s : Config (Position w 1)) (q : Position w 1) (hq : s q = .north) :
     EventuallyJammed (eastDirection w 1 hw) (northDirection w 1 (by decide)) s := by
-  let e := eastDirection w 1 hw
-  let n := northDirection w 1 (by decide)
-  have hfull : FullNorthColumn s q.1 := fun _ => by
-    simpa only [Subsingleton.elim _ q.2] using hq
-  apply eventuallyJammed_of_all_cars_stopped e n s _ ⟨q, by simp [hq]⟩
-  intro sp p hp
-  cases sp with
-  | east =>
-    apply stopped_by_coordinate_obstacle e n .east s p hp hw Prod.fst q.1
-    · intro u r hm
-      change CanMove e .east u r at hm
-      simp only [roundTransport, transport, hm, ↓reduceIte]
-      rfl
-    · intro t hpos hm
-      let r := carTrace e n .east s t p
-      have hwall := fullNorthColumn_persists hw (by decide) s q.1 hfull t r.2
-      have he : iterate (step e n) t s r = .east :=
-        carTrace_preserves_car e n .east s p hp t
-      have hpos' : r.1 = q.1 := hpos
-      have hr : (q.1, r.2) = r := Prod.ext hpos'.symm rfl
-      change iterate (step e n) t s (q.1, r.2) = .north at hwall
-      rw [hr, he] at hwall
-      cases hwall
-  | north =>
-    refine (tagEventuallyStopped_iff_finitely_many_moves e n .north s p hp).mpr ⟨0, ?_⟩
-    intro t
-    apply blocked_by_self
-    exact Prod.ext rfl (cyclicNext_one _ _)
+  have hfull : ∀ p : Position w 1, s p = .north → FullNorthColumn s p.1 := fun p hp _ => by
+    simpa only [Subsingleton.elim _ p.2] using hp
+  exact eventuallyJammed_of_north_in_full_columns hw (by decide) s q.1 (hfull q hq) hfull
 
 theorem eventual_jam_of_east_on_single_column (h : Nat) (hh : 0 < h)
     (s : Config (Position 1 h)) (q : Position 1 h) (hq : s q = .east) :
     EventuallyJammed (eastDirection 1 h (by decide)) (northDirection 1 h hh) s := by
-  let e := eastDirection 1 h (by decide)
-  let n := northDirection 1 h hh
-  have hfull : FullEastRow s q.2 := fun _ => by
-    simpa only [Subsingleton.elim _ q.1] using hq
-  apply eventuallyJammed_of_all_cars_stopped e n s _ ⟨q, by simp [hq]⟩
-  intro sp p hp
-  cases sp with
-  | east =>
-    refine (tagEventuallyStopped_iff_finitely_many_moves e n .east s p hp).mpr ⟨0, ?_⟩
-    intro t
-    apply blocked_by_self
-    exact Prod.ext (cyclicNext_one _ _) rfl
-  | north =>
-    apply stopped_by_coordinate_obstacle e n .north s p hp hh Prod.snd q.2
-    · intro u r hm
-      change CanMove n .north (halfStep e .east u) r at hm
-      simp only [roundTransport, transport, hm, ↓reduceIte]
-      rfl
-    · intro t hpos hm
-      let r := carTrace e n .north s t p
-      have hwall := fullEastRow_persists (by decide) hh s q.2 hfull t r.1
-      have hn' : iterate (step e n) t s r = .north :=
-        carTrace_preserves_car e n .north s p hp t
-      have hpos' : r.2 = q.2 := hpos
-      have hr : (r.1, q.2) = r := Prod.ext rfl hpos'.symm
-      change iterate (step e n) t s (r.1, q.2) = .east at hwall
-      rw [hr, hn'] at hwall
-      cases hwall
+  have hfull : ∀ p : Position 1 h, s p = .east → FullEastRow s p.2 := fun p hp _ => by
+    simpa only [Subsingleton.elim _ p.1] using hp
+  exact eventuallyJammed_of_east_in_full_rows (by decide) hh s q.2 (hfull q hq) hfull
 
 private theorem north_of_jamming_row_with_hole (w : Nat) (hw : 0 < w)
     (s : Config (Position w 1)) (hole : Position w 1) (hz : s hole = .empty)
