@@ -194,7 +194,6 @@ const movers = (s, want, rule) => {
   return out;
 };
 
-/** One half-step in phase t mod 2. Returns the new state; `moved`/`exited` describe it. */
 /** Re-routing (opts.reroute): before a half-step, every roaming car whose committed next cell is
  * occupied may switch to a free legal option from its current lane (a free cell, or EXIT),
  * chosen with the usual routing weights. This drops assumption (C) as human drivers do; cars
@@ -214,9 +213,7 @@ const reroute = (net, s0, rng, o) => {
   return s;
 };
 
-export const halfStep = (net, sIn, opts = DEFAULTS) => {
-  const o = { ...DEFAULTS, ...opts };
-  const rng = makeRng(sIn.seed);
+const movementDecisions = (net, sIn, rng, o) => {
   const s0 = o.reroute ? reroute(net, sIn, rng, o) : sIn;
   const phase = s0.t & 1;
   const red = greenAxis(s0.t, o.green) !== phase;
@@ -227,8 +224,21 @@ export const halfStep = (net, sIn, opts = DEFAULTS) => {
         !(o.box && s0.next[k] >= 0 && !boxClear(net, s0, k)) &&
         !(o.slow > 0 && s0.species[k] === 0 && rng.float() < o.slow))
       want[k] = s0.next[k];
-  const go = movers(s0, want, o.rule);
+  return { s0, want, go: movers(s0, want, o.rule) };
+};
 
+/** Resolve requests and grants from the same seed and gates as halfStep. */
+export const previewMoves = (net, s, opts = DEFAULTS) => {
+  const { want, go } = movementDecisions(net, s, makeRng(s.seed), { ...DEFAULTS, ...opts });
+  return { want, go };
+};
+
+/** One half-step in phase t mod 2. Returns actual hop and exit counts. */
+export const halfStep = (net, sIn, opts = DEFAULTS) => {
+  const o = { ...DEFAULTS, ...opts };
+  const rng = makeRng(sIn.seed);
+  const { s0, want, go } = movementDecisions(net, sIn, rng, o);
+  const N = s0.pos.length;
   const s = clone(s0);
   let moved = 0, exited = 0;
   for (let k = 0; k < N; k++) if (go[k]) s.occ[s0.pos[k]] = -1;

@@ -126,6 +126,33 @@ finite controls. The formal gate includes the progress axiom audit and replay.
 node app/scripts/r2-progress.mjs "$PWD/formal/lean/.lake/build/bin/r2_check"
 ```
 
+### R2 signal and merge service
+
+[`BML.RouteService`](BML/RouteService.lean) identifies two service
+conditions for Gridlock City.
+
+| Lean endpoint | Conclusion |
+|---|---|
+| `clock_service_window` | Every `2G` half-step window contains a permitted slot for each axis at a signal with green duration `G > 0`. |
+| `free_route_of_empty_trap`, `Arbitration.some_move_of_held_route` | A trap-free occupied snapshot has a clear option. With a retained clear route and a ready contender, the clock and merge rules force a hop or exit within one cycle. |
+| `move_with_admission_budget` | If each silent cycle admits a pending vehicle, there is activity within one more cycle than the number of pending tags. |
+| `chooseWinner_spec` | Priority at a vacant target is maximum wait age, with ties to the lower tag. |
+| `Arbitration.move_of_old_age` | When the tag's age is at least the window length, it moves if it gets `N` genuine attempts in the window, where `N` includes all tags. |
+| `Arbitration.move_of_bounded_attempt_gaps` | With a genuine attempt in each block of `L` half-steps while the tag waits, the deadline is `N L (L + 1)`. The proof allows differently routed competitors at successive attempts. |
+| `moves_before_rank_deadline` | A bounded clearance-to-attempt delay and a vacant checkpoint after departure give a rank-dependent next-move deadline by iterating the merge bound. |
+
+The [service note](../../docs/research/2026-11-27-r2-signal-merge-service.md)
+connects the premises to the simulator and gives the conditional
+partial re-routing extension. The formal gate checks the actual
+JavaScript request and grant decisions against the Lean clock and
+priority evaluators. The executable replay checks finite traces.
+
+```sh
+(cd formal/lean && lake build r2_check && lake env lean R2Audit.lean)
+mkdir -p formal/artifacts
+node app/scripts/r2-service.mjs "$PWD/formal/lean/.lake/build/bin/r2_check" formal/artifacts
+```
+
 ## Kernel-checked coverage
 
 | Module | Results |

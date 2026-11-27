@@ -23,6 +23,7 @@ R2_APP_SOURCES = {
     "app/data/presets.json",
     "app/scripts/r2-certificates.mjs",
     "app/scripts/r2-progress.mjs",
+    "app/scripts/r2-service.mjs",
     "app/src/presets.js",
     "app/src/raster.js",
     "app/src/realflow.js",
@@ -243,18 +244,26 @@ def main() -> int:
             "axiom_audit": r2_audit,
             "map_certificates_sha256": sha256((artifacts / "r2-map-certificates.json").read_bytes()),
             "lean_cases_sha256": sha256((artifacts / "r2-lean-cases.json").read_bytes()),
-            "scope": "structural CLASSIC lane-graph contract and finite simulator correspondence",
+            "scope": "CLASSIC structural traps, conditional progress, and finite simulator correspondence",
         }
         progress = run("r2-progress", [
             "node", "app/scripts/r2-progress.mjs", str(LEAN / ".lake/build/bin/r2_check"),
         ], ROOT)
         report["r2"]["progress"] = json.loads(progress)
+        service = run("r2-service", [
+            "node", "app/scripts/r2-service.mjs", str(LEAN / ".lake/build/bin/r2_check"), str(artifacts),
+        ], ROOT)
+        report["r2"]["service"] = {
+            **json.loads(service),
+            "cases_sha256": sha256((artifacts / "r2-service-cases.json").read_bytes()),
+        }
         require(source_manifest() == before_sources, "sources changed during acceptance")
         report["status"] = "passed"
         report["not_claimed"] = COVERAGE["not_claimed"]
         print(
             f"PASS: Lean build/audit, Quint checks, and {COVERAGE['finite_comparison']['phase_cases']} "
-            "exhaustive cross-language phase cases. R2 rank, trap, and progress checks passed.", flush=True,
+            "exhaustive cross-language phase cases. R2 rank, trap, progress, and service checks passed.",
+            flush=True,
         )
     except Exception as error:
         report["status"] = "failed"
