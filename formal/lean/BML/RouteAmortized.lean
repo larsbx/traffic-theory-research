@@ -157,7 +157,11 @@ private theorem least_height {Cell : Type} (height : Cell → Nat)
   | cons c xs ih =>
     by_cases empty : xs = []
     · subst xs
-      exact ⟨c, by simp, by intro q h; simpa using h⟩
+      refine ⟨c, by simp, ?_⟩
+      intro q h
+      have eq : q = c := by simpa using h
+      subst q
+      exact Nat.le_refl _
     obtain ⟨d, hd, minimum⟩ := ih empty
     by_cases le : height c ≤ height d
     · refine ⟨c, by simp, ?_⟩
