@@ -2,6 +2,7 @@ __pycache__/
 .hypothesis/
 .pytest_cache/
 formal/lean/.lake/
+formal/prob/.lake/
 formal/quint/node_modules/
 formal/quint/_apalache-out/
 formal/artifacts/
