@@ -40,3 +40,4 @@ import BML.TheoremU
 import BML.Net
 import BML.NetInstances
 import BML.NetGridlock
+import BML.NetFree

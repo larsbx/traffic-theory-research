@@ -6,12 +6,13 @@ kernels with three copies of the same gridlock argument. This note defines one o
 of which they are parameter choices, proves the gridlock argument once, and ties the Python
 kernel to the Lean definition by replay.
 
-**Status.** Everything in §§1–4 is checked by Lean with no `sorry` and only the standard axioms
-(`NetAudit.lean`). §5 is a finite replay. §6 lists what is still prose.
+**Status.** Everything in §§1–5 is checked by Lean with no `sorry` and only the standard axioms
+(`NetAudit.lean`). §6 is a finite replay. §7 lists what is still prose.
 
 Lean: [`BML/Net.lean`](../../formal/lean/BML/Net.lean),
 [`BML/NetInstances.lean`](../../formal/lean/BML/NetInstances.lean),
 [`BML/NetGridlock.lean`](../../formal/lean/BML/NetGridlock.lean),
+[`BML/NetFree.lean`](../../formal/lean/BML/NetFree.lean),
 [`NetExport.lean`](../../formal/lean/NetExport.lean). Replay:
 [`scripts/check_net.py`](../../scripts/check_net.py).
 
@@ -82,7 +83,29 @@ ties the winding numbers to the species met on the cycle.
 With `mixed_stuck_iff`, "stuck" here is the dynamical notion: the state is unchanged by two
 consecutive ticks.
 
-## 5. Replay against the Python kernel
+## 5. Free flow, for every net
+
+A state is **free** if no car is ever delayed by another car: in every tick, every car whose
+gate is open moves. A car may still wait for a closed gate. The **solo timetable** of a car is
+the path it would follow alone on the net, which depends only on its route and its gates.
+
+| Lean name | statement |
+|---|---|
+| `step_undelayed` | a tick in which nobody is delayed moves every car by its own solo advance |
+| `free_run_iff` | in a free state, the car in a cell at tick t is the one whose solo timetable puts it there |
+| `Free.sub` | **heredity**: removing cars from a free state leaves it free |
+| `Free.run_sub` | and the run of the smaller state is the corresponding part of the larger run |
+| `free_iff_pairs` | **pairwise**: a state is free iff each of its two-car sub-states is free |
+
+So the free states of any net are exactly the sets of cars that are pairwise compatible, where
+two cars are compatible if the state holding just those two is free. Capacity is the largest
+such set. This is what the static criterion RB-R says for the roundabout grid, and it is what
+makes the capacity searches in `bml/roundabout.py` and `bml/mixed.py` complete: they grow free
+states one car at a time, which reaches every free state by `Free.sub`.
+
+These theorems need no assumption on the net: no fairness, no completeness, no finiteness.
+
+## 6. Replay against the Python kernel
 
 `net_export` runs the generic `step` on the mixed instance and prints each tick;
 `scripts/check_net.py` recomputes it with `bml.mixed.step`. The two agree on 26,650 ticks:
@@ -91,14 +114,16 @@ and without links, on both tick parities, and pseudo-random runs of eight ticks 
 boards up to 5×4. This is finite evidence that the Python kernel implements the Lean
 definition, not a refinement proof.
 
-## 6. What is not yet formal
+## 7. What is not yet formal
 
 | result | status |
 |---|---|
 | a gridlock at every count between the least and all cells (rest of MX-G) | prose, with finite checks |
 | extremes over placements and the random-placement law (MX-E, MX-P) | prose; they are arithmetic consequences of the formula in §4 |
 | conservation of cars per class | not stated for nets |
-| free-flow layer (RB-R, RB-F, MX-F) | prose; the planned form is a conflict graph on (cell, phase) slots |
+| which pairs of cars are compatible on a given grid (RB-R), and the resulting capacities (RB-F, RB-C, RB-P) | prose, with finite checks; §5 reduces them to a statement about pairs |
+| the junction time budget (MX-F) | prose |
+| that a bounded number of ticks decides freeness (used by the Python `is_free`) | prose; Lean's `Free` quantifies over all ticks |
 | capacity census, jamming sweep | finite data and simulation |
 
 Limits of the object itself: routes of one class may not merge, a car advances at most one cell

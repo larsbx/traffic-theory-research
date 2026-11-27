@@ -88,8 +88,11 @@ cells. `NetAudit.lean` checks these declarations and their axioms. The `net_expo
 finite replay, not a refinement proof. `BML/NetGridlock.lean` proves the least gridlock of the
 mixed torus: a stuck state with a car has at least as many cars as some straight street has
 cells (`stuck_carCount_ge_street`), and filling one street is a stuck state with exactly that
-many (`row_gridlock`, `col_gridlock`). Gridlocks at every larger count, the placement extremes
-and the free-flow results for these grids remain prose. See the
+many (`row_gridlock`, `col_gridlock`). `BML/NetFree.lean` proves for every net that a free
+state runs on its cars' solo timetables (`free_run_iff`), that freeness is hereditary
+(`Free.sub`) and that it is a pairwise property (`free_iff_pairs`). Gridlocks at every larger
+count, the placement extremes, and the compatibility conditions and capacities of particular
+grids remain prose. See the
 [traffic-net note](../docs/research/2026-11-24-traffic-nets.md).
 
 ```sh

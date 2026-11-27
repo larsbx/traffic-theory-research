@@ -17,7 +17,9 @@ classes in whole units of m cars. BML's capacity, by Theorem F of [theorems.md](
 is (WH/g)·⌊2g/3⌋ for g ≥ 2, and mixing needs g ≥ 3.
 
 Everything here is a direct derivation with a complete prose proof, and it carries no claim of
-novelty. Nothing in this note is formalized in Lean. The finite checks in §6 decide freeness
+novelty. Of this note, Lean checks RB-0 and the least gridlock of RB-G (as the all-roundabout
+case of the [traffic net](2026-11-24-traffic-nets.md)), and that freeness is hereditary and
+pairwise on any net; RB-R, RB-F and their corollaries are not formalized. The finite checks in §6 decide freeness
 and gridlock from the dynamics, not from the formulas they test.
 
 Code: [`bml/roundabout.py`](../../bml/roundabout.py). Tests:
