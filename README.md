@@ -21,6 +21,11 @@ connections to tiling and dynamical-systems theory.
   prove a queue-delay mechanism, a logarithmic settling-time obstruction,
   failed vacancy/defect shortcuts, and a conditional late-defect criterion.
   The fixed-positive-density transition remains open.
+- [BML and finite swarm dynamics: what transfers](docs/research/2026-11-27-swarm-dynamics-links.md)
+  (2026-11-27): a Mathlib-backed probability package on the swarm repository's pin, with the
+  kernel-checked lower bound `L_W ≤ q_W` at every height; the obstruction theorems restated as
+  coverage of lane cycles; and an exact enumeration showing that the cut-rank argument does
+  not apply to the finite Kuramoto model.
 - [Open questions and proof roadmap](docs/research/2026-11-18-open-questions-and-proof-roadmap.md)
   (2026-11-18): the post-TRAIN review, including an explicit periodic N-car
   family, the equality/gcd/time-bound extensions, CLASSIC rigidity and packing,
@@ -170,7 +175,8 @@ connections to tiling and dynamical-systems theory.
 - `bml/analysis.py` — tables for all tori with WH ≤ 16, written to `data/exhaustive.json` (~6 min).
 - `bml/nonmonotone.py` — un-jamming pairs with car identities tracked.
 - `bml/thin.py` — thin-torus (2×W) jam structure (structure lemmas kernel-checked in
-  `formal/lean/BML/ThinRigidity.lean`) and exact bounds on q; certificates that q is
+  `formal/lean/BML/ThinRigidity.lean`; lower bound on q in the Mathlib package `formal/prob`)
+  and exact bounds on q; certificates that q is
   not monotone for every W ≥ 24 (`scripts/thin_certificates.py`, `data/thin-nonmonotone.json`).
 - `bml/montecarlo.py` — empirical jam curves (not a proof).
 

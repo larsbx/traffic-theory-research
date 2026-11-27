@@ -1,0 +1,1170 @@
+{
+ "schema": "swarm.cut-rank.v1",
+ "swarm_repository": "larsbx/finite-swarm-dynamics",
+ "swarm_commit": "a81e00e5b567ee7b56b1fe0ac9a4011deb892136",
+ "model": "finite_kuramoto_step, all-to-all unit weights, identity natural rotors, no lag",
+ "cases": [
+  {
+   "p": 7,
+   "oscillators": 2,
+   "unit_group_order": 8,
+   "by_coupling": [
+    {
+     "kappa": 1,
+     "states": 64,
+     "step_holds": {
+      "1": 16,
+      "-1": 16
+     },
+     "step_and_release_hold": {
+      "1": 16,
+      "-1": 16
+     },
+     "moving_states": 48,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 64,
+     "sparse_states_locking": 16,
+     "states_locking": 16
+    },
+    {
+     "kappa": 2,
+     "states": 64,
+     "step_holds": {
+      "1": 16,
+      "-1": 16
+     },
+     "step_and_release_hold": {
+      "1": 16,
+      "-1": 16
+     },
+     "moving_states": 48,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 64,
+     "sparse_states_locking": 32,
+     "states_locking": 32
+    },
+    {
+     "kappa": 3,
+     "states": 64,
+     "step_holds": {
+      "1": 16,
+      "-1": 16
+     },
+     "step_and_release_hold": {
+      "1": 16,
+      "-1": 16
+     },
+     "moving_states": 48,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 64,
+     "sparse_states_locking": 32,
+     "states_locking": 32
+    },
+    {
+     "kappa": 4,
+     "states": 64,
+     "step_holds": {
+      "1": 16,
+      "-1": 16
+     },
+     "step_and_release_hold": {
+      "1": 16,
+      "-1": 16
+     },
+     "moving_states": 48,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 64,
+     "sparse_states_locking": 32,
+     "states_locking": 32
+    },
+    {
+     "kappa": 5,
+     "states": 64,
+     "step_holds": {
+      "1": 16,
+      "-1": 16
+     },
+     "step_and_release_hold": {
+      "1": 16,
+      "-1": 16
+     },
+     "moving_states": 48,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 64,
+     "sparse_states_locking": 32,
+     "states_locking": 32
+    },
+    {
+     "kappa": 6,
+     "states": 64,
+     "step_holds": {
+      "1": 16,
+      "-1": 16
+     },
+     "step_and_release_hold": {
+      "1": 16,
+      "-1": 16
+     },
+     "moving_states": 48,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 64,
+     "sparse_states_locking": 16,
+     "states_locking": 16
+    }
+   ]
+  },
+  {
+   "p": 7,
+   "oscillators": 3,
+   "unit_group_order": 8,
+   "by_coupling": [
+    {
+     "kappa": 1,
+     "states": 512,
+     "step_holds": {
+      "1": 32,
+      "-1": 32
+     },
+     "step_and_release_hold": {
+      "1": 32,
+      "-1": 32
+     },
+     "moving_states": 480,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 512,
+     "sparse_states_locking": 272,
+     "states_locking": 272
+    },
+    {
+     "kappa": 2,
+     "states": 512,
+     "step_holds": {
+      "1": 32,
+      "-1": 32
+     },
+     "step_and_release_hold": {
+      "1": 32,
+      "-1": 32
+     },
+     "moving_states": 480,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 512,
+     "sparse_states_locking": 80,
+     "states_locking": 80
+    },
+    {
+     "kappa": 3,
+     "states": 512,
+     "step_holds": {
+      "1": 32,
+      "-1": 32
+     },
+     "step_and_release_hold": {
+      "1": 32,
+      "-1": 32
+     },
+     "moving_states": 480,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 512,
+     "sparse_states_locking": 320,
+     "states_locking": 320
+    },
+    {
+     "kappa": 4,
+     "states": 512,
+     "step_holds": {
+      "1": 32,
+      "-1": 32
+     },
+     "step_and_release_hold": {
+      "1": 32,
+      "-1": 32
+     },
+     "moving_states": 480,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 512,
+     "sparse_states_locking": 320,
+     "states_locking": 320
+    },
+    {
+     "kappa": 5,
+     "states": 512,
+     "step_holds": {
+      "1": 32,
+      "-1": 32
+     },
+     "step_and_release_hold": {
+      "1": 32,
+      "-1": 32
+     },
+     "moving_states": 480,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 512,
+     "sparse_states_locking": 224,
+     "states_locking": 224
+    },
+    {
+     "kappa": 6,
+     "states": 512,
+     "step_holds": {
+      "1": 32,
+      "-1": 32
+     },
+     "step_and_release_hold": {
+      "1": 32,
+      "-1": 32
+     },
+     "moving_states": 480,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 512,
+     "sparse_states_locking": 128,
+     "states_locking": 128
+    }
+   ]
+  },
+  {
+   "p": 11,
+   "oscillators": 2,
+   "unit_group_order": 12,
+   "by_coupling": [
+    {
+     "kappa": 1,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 72,
+     "states_locking": 72
+    },
+    {
+     "kappa": 2,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 48,
+     "states_locking": 48
+    },
+    {
+     "kappa": 3,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 48,
+     "states_locking": 48
+    },
+    {
+     "kappa": 4,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 24,
+     "states_locking": 24
+    },
+    {
+     "kappa": 5,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 72,
+     "states_locking": 72
+    },
+    {
+     "kappa": 6,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 72,
+     "states_locking": 72
+    },
+    {
+     "kappa": 7,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 24,
+     "states_locking": 24
+    },
+    {
+     "kappa": 8,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 48,
+     "states_locking": 48
+    },
+    {
+     "kappa": 9,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 48,
+     "states_locking": 48
+    },
+    {
+     "kappa": 10,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 72,
+     "states_locking": 72
+    }
+   ]
+  },
+  {
+   "p": 11,
+   "oscillators": 3,
+   "unit_group_order": 12,
+   "by_coupling": [
+    {
+     "kappa": 1,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 288,
+     "states_locking": 288
+    },
+    {
+     "kappa": 2,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 1152,
+     "states_locking": 1152
+    },
+    {
+     "kappa": 3,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 288,
+     "states_locking": 288
+    },
+    {
+     "kappa": 4,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 1728,
+     "states_locking": 1728
+    },
+    {
+     "kappa": 5,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 1152,
+     "states_locking": 1152
+    },
+    {
+     "kappa": 6,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 1008,
+     "states_locking": 1008
+    },
+    {
+     "kappa": 7,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 1728,
+     "states_locking": 1728
+    },
+    {
+     "kappa": 8,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 72,
+     "states_locking": 72
+    },
+    {
+     "kappa": 9,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 864,
+     "states_locking": 864
+    },
+    {
+     "kappa": 10,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 1368,
+     "states_locking": 1368
+    }
+   ]
+  },
+  {
+   "p": 13,
+   "oscillators": 2,
+   "unit_group_order": 12,
+   "by_coupling": [
+    {
+     "kappa": 1,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 72,
+     "states_locking": 72
+    },
+    {
+     "kappa": 2,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 48,
+     "states_locking": 48
+    },
+    {
+     "kappa": 3,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 72,
+     "states_locking": 72
+    },
+    {
+     "kappa": 4,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 24,
+     "states_locking": 24
+    },
+    {
+     "kappa": 5,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 48,
+     "states_locking": 48
+    },
+    {
+     "kappa": 6,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 24,
+     "states_locking": 24
+    },
+    {
+     "kappa": 7,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 24,
+     "states_locking": 24
+    },
+    {
+     "kappa": 8,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 48,
+     "states_locking": 48
+    },
+    {
+     "kappa": 9,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 24,
+     "states_locking": 24
+    },
+    {
+     "kappa": 10,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 72,
+     "states_locking": 72
+    },
+    {
+     "kappa": 11,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 48,
+     "states_locking": 48
+    },
+    {
+     "kappa": 12,
+     "states": 144,
+     "step_holds": {
+      "1": 24,
+      "-1": 24
+     },
+     "step_and_release_hold": {
+      "1": 24,
+      "-1": 24
+     },
+     "moving_states": 120,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 144,
+     "sparse_states_locking": 72,
+     "states_locking": 72
+    }
+   ]
+  },
+  {
+   "p": 13,
+   "oscillators": 3,
+   "unit_group_order": 12,
+   "by_coupling": [
+    {
+     "kappa": 1,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 144,
+     "states_locking": 144
+    },
+    {
+     "kappa": 2,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 1512,
+     "states_locking": 1512
+    },
+    {
+     "kappa": 3,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 1440,
+     "states_locking": 1440
+    },
+    {
+     "kappa": 4,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 576,
+     "states_locking": 576
+    },
+    {
+     "kappa": 5,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 288,
+     "states_locking": 288
+    },
+    {
+     "kappa": 6,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 1440,
+     "states_locking": 1440
+    },
+    {
+     "kappa": 7,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 1152,
+     "states_locking": 1152
+    },
+    {
+     "kappa": 8,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 144,
+     "states_locking": 144
+    },
+    {
+     "kappa": 9,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 576,
+     "states_locking": 576
+    },
+    {
+     "kappa": 10,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 1584,
+     "states_locking": 1584
+    },
+    {
+     "kappa": 11,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 1080,
+     "states_locking": 1080
+    },
+    {
+     "kappa": 12,
+     "states": 1728,
+     "step_holds": {
+      "1": 72,
+      "-1": 72
+     },
+     "step_and_release_hold": {
+      "1": 72,
+      "-1": 72
+     },
+     "moving_states": 1656,
+     "moving_states_with_step": {
+      "1": 0,
+      "-1": 0
+     },
+     "sparse_states": 1728,
+     "sparse_states_locking": 936,
+     "states_locking": 936
+    }
+   ]
+  }
+ ]
+}

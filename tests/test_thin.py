@@ -253,3 +253,28 @@ def test_gap_east_count_any_height(shape):
                     assert d <= east, (s, gap, c)
                     checked += 1
     assert checked
+
+
+@pytest.mark.parametrize("shape", [(2, 3), (2, 4), (3, 2), (3, 3)])
+def test_iid_bounds_any_height(shape):
+    """`formal/prob/BMLProb/Thin.lean`, by exact enumeration at rational densities:
+    `prob_plug_no_lone`, `jamProb_lower_bound`, `prob_exists_fullNorthColumn` and
+    `jamProb_upper_bound`."""
+    from bml.model import NORTH
+    states = all_states(*shape)
+    H, W = shape
+    j = np.asarray(jams(states), bool)
+    north_col = (states == NORTH).all(axis=1)
+    plug = north_col.any(axis=1)
+    confined = ((states != NORTH) | north_col[:, None, :]).all(axis=(1, 2))
+    many_east = (states == EAST).sum(axis=(1, 2)) >= W
+    cars = (states != 0).sum(axis=(1, 2))
+    for p in (Fraction(1, 5), Fraction(1, 2), Fraction(9, 10), Fraction(1)):
+        weight = [(p / 2) ** int(n) * (1 - p) ** int(states[0].size - n) for n in cars]
+        prob = lambda event: sum((x for x, e in zip(weight, event) if e), Fraction(0))
+        a, c = (p / 2) ** H, (1 - p / 2) ** H
+        lower = (a + c) ** W - c ** W
+        assert prob(np.ones(len(states), bool)) == 1
+        assert prob(plug & confined) == lower
+        assert prob(plug) == 1 - (1 - a) ** W
+        assert lower <= prob(j) <= prob(many_east) + 1 - (1 - a) ** W

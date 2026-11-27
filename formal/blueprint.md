@@ -1,7 +1,7 @@
 # Blueprint: proof status and open formal obligations
 
-This hand-off document records the completed B0–B9 proofs, B10 (structure lemmas B10.1–B10.4 complete, probability
-parts open), and the remaining
+This hand-off document records the completed B0–B9 proofs, B10 (structure lemmas B10.1–B10.4 and the first identity of B10.5 complete, the rest of the
+probability parts open), and the remaining
 obligations of [the coverage register](README.md), with proofs decomposed into
 lemmas small enough to formalise one at a time.
 
@@ -37,7 +37,7 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B7–B7.6 | CLASSIC eventual speed one for 2m≤gcd(W,H) | kernel-checked alternating equality regime, full movement from round lcm(W,H)·m(g−2) onward, and at most m(g−2) blocked rounds per prefix | B2 geometry, B3 finite free window, CLASSIC transport and car count |
 | B8 | Theorem U: genuine un-jamming exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4 | kernel-checked dimension classification, including both exclusions | Kernel, Transport, Lanes, Enumeration, Fixation |
 | B9 | Maximal-core cardinality, stopped original cars, and finite initial-weight gridlock reduction | kernel-checked tag/site count equality, eventual stopped-count identification, jam/full-lane count sandwich, and exact cleared-denominator initial-weight comparison | PathCore, Fixation, Capture, Counting, Absorption, FiniteSums |
-| B10 | Thin-torus rigidity: jam structure on 2×W and W×2, and the bounds L_W ≤ q ≤ U_W behind Theorem M | B10.1–B10.4 kernel-checked at every height in `ThinRigidity.lean`; B10.5–B10.7 prose proof and exact certificates, open for Lean | Kernel, Transport, Lanes, Fixation (G0), Counting |
+| B10 | Thin-torus rigidity: jam structure on 2×W and W×2, and the bounds L_W ≤ q ≤ U_W behind Theorem M | B10.1–B10.4 kernel-checked at every height in `ThinRigidity.lean`; the first identity of B10.5 and the bound `L_W ≤ q_W` kernel-checked in the Mathlib package `formal/prob`; the gap-condition weight, B10.6 and B10.7 prose proof and exact certificates, open for Lean | Kernel, Transport, Lanes, Fixation (G0), Counting |
 
 ---
 
@@ -795,8 +795,24 @@ a plug, and needs no bound on the number of east cars. The mirrored statements (
 counts) are proved for B10.2, B10.4 and the first half of B10.3; the mirrored gap count is not.
 The single-row theorems of `ThinTorus.lean` are now corollaries of B10.4.
 
-Still open: B10.5 needs the gap event as a decidable predicate on initial states and its iid
-weight; B10.6 and B10.7 are as in the table above.
+### B10.5, first identity: completed in `formal/prob`
+
+The Mathlib-backed package [`formal/prob`](prob/README.md) defines the exact rational iid
+weight `prob p A` and proves, for every positive `w × h` torus and `0 ≤ p ≤ 1`, with
+`a = (p/2)^h` and `c = (1 − p/2)^h`:
+
+- `prob_plug_no_lone`: the weight of "some full north column, and every north car in one" is
+  `(a + c)^w − c^w`;
+- `jamProb_lower_bound` and `thin_lower_bound`: `(a + c)^w − c^w ≤ q`, which for `h = 2` is
+  `L_W(p) ≤ q_W(p)` of Theorem A;
+- `jamProb_upper_bound`: `q ≤ P(#east ≥ w) + 1 − (1 − a)^w`, coarser than Theorem A's `U_W`.
+
+Rational weights are used directly; denominators are not cleared. The kernel package does not
+depend on Mathlib.
+
+Still open: the second identity of B10.5 (the weight of the gap condition as the cyclic
+renewal sum) needs the gap event as a predicate on initial states; B10.6 and B10.7 are as in
+the table above.
 
 ---
 
