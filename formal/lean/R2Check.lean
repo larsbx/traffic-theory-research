@@ -1,4 +1,4 @@
-import BML.RouteTrap
+import BML.RouteProgress
 import Lean.Data.Json
 
 /-! Execute the proved R2 kernels on finite tables exported by the simulator. -/
@@ -87,6 +87,15 @@ end R2Check
 def main (args : List String) : IO UInt32 := do
   match args with
   | [path] => R2Check.run path
+  | ["--wait-bounds", cap, maxRank] =>
+    match cap.toNat?, maxRank.toNat? with
+    | some k, some n =>
+      let bounds := (List.range (n + 1)).map fun r => toString (BML.RouteProgress.waitBound k r)
+      IO.println (Lean.toJson bounds).compress
+      return 0
+    | _, _ =>
+      IO.eprintln "expected a natural service cap and maximum rank"
+      return 2
   | _ =>
-    IO.eprintln "usage: r2_check CASES.json"
+    IO.eprintln "usage: r2_check CASES.json | r2_check --wait-bounds CAP MAX_RANK"
     return 2

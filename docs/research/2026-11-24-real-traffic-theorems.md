@@ -131,8 +131,9 @@ This gives 360 matched cases and 720 executions.
 
 The proof excludes self-supported blocking sets under the stated menus. Long
 waits from signals, contention, route choice and temporary breakdowns remain
-possible. Waiting-time guarantees would need a progress assumption and
-discharge evidence.
+possible. A [follow-up](2026-11-25-r2-progress-service.md) proves that even full
+rank coverage gives no unconditional waiting-time bound. It derives next-move
+bounds with vacancy after departures and explicit service.
 
 *Data to test it:* use vehicle trajectories during gridlock events [BG] to
 check supported arrivals, legal alternatives, actual commitments, exit
@@ -199,8 +200,10 @@ and trip lengths from GPS traces or loop detectors [UTD19].
 
 What is open:
 - the real-data tests listed under each result;
-- a version of R2 that allows *partial* re-routing, where drivers revise with some probability;
-- whether S\* = ∅ bounds how long transient jams last, which needs dynamics, not structure.
+- deriving a joint movement probability from the simulator's or a real
+  network's partial re-routing, signal and arbitration rules. The
+  [follow-up](2026-11-25-r2-progress-service.md) gives a conditional
+  probability bound and identifies same-step refill as a separate premise.
 
 ## References
 
