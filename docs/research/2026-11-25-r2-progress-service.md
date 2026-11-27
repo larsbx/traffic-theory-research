@@ -97,11 +97,12 @@ rank deadline \(B(r)\) that fits in that horizon. On an infinite trace,
 countably many starting checkpoints and tags, together with the same
 conditional tail, give opportunity fairness almost surely.
 
-This probabilistic corollary is a prose argument. Deriving its group
-service premise from a particular partial-re-routing policy, signal plan,
-arbitration rule and vacancy process remains a separate obligation.
-A probability of deciding to re-route gives no lower bound on movement
-while signals or occupied cells can veto that decision.
+This probabilistic corollary is a prose argument. The
+[signal and merge follow-up](2026-11-27-r2-signal-merge-service.md) derives
+deterministic service from bounded gaps between genuine attempts. It
+also derives a conditional waiting tail from a joint probability of
+getting an attempt. Deciding to re-route still gives no lower bound on
+movement while signals or occupied cells can veto that decision.
 
 ## Executable controls
 
