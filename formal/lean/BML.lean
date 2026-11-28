@@ -39,3 +39,4 @@ import BML.Gated
 import BML.GatedTranspose
 import BML.TheoremU
 import BML.ThinRigidity
+import BML.GapIndependence
