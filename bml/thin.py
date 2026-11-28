@@ -125,7 +125,7 @@ def _gap_ok_scaled(K: int, p):
 
 
 def gap_ok(K: int, p) -> list:
-    """G[g] = P(g iid non-plug columns satisfy the gap condition), g = 0 … K−1.
+    """G[g] = unnormalized iid mass of g columns that are non-plug and satisfy the gap condition, g = 0 … K−1.
 
     Independent of the torus length. DP state: (long-axis cars so far, farthest lone car)."""
     p = _num(p)

@@ -103,8 +103,8 @@ probability c = (1 − p/2)². By Lemma 4, q is at least the probability that ev
 plug or N-free, minus the probability that all are N-free, which is (a + c)^W − c^W. By Lemma 3,
 q ≤ P(#east cars ≥ W) + μ_p(gap condition). The east-car count is Bin(2W, p/2). ∎
 
-**Computing Γ.** Gap contents are iid columns conditioned to be non-plug, so Γ is a renewal sum:
-- **Gap probabilities.** G(g) is the probability that g iid non-plug columns satisfy
+**Computing Γ.** Gap contents use the unnormalized iid mass restricted to non-plug columns, so Γ is a renewal sum:
+- **Gap probabilities.** G(g) is the unnormalized probability that g iid columns are non-plug and satisfy
   E ≥ d_max. A dynamic programme over (E so far, d_max so far) computes it. G does not depend on
   W.
 - **Blocks.** With blocks b_l = a·G(l−1) (a plug and its gap), the linear sequences satisfy
