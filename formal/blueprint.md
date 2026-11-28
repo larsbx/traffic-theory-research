@@ -772,6 +772,7 @@ column.
 | B10.5 | Initial-law identities: `P(plug ∧ no lone) = (a+c)^w − c^w`, and `P(gap condition)` equals the cyclic renewal sum of `bml.thin.gap_event`. | Finite sums over iid columns (`FiniteSums`, `Counting`). With cleared denominators, as in B9.5. |
 | B10.6 | (Optional) the certificates: for each `24 ≤ w ≤ 79` the stored rationals satisfy `lower w p₁ > upper w p₂`, and the asymptotic inequality at `w = 80`. | Exact rational evaluation; heavy for `decide`. Python checks them exactly (`scripts/thin_certificates.py`), so the Lean value is in B10.1–B10.5. |
 | B10.7 | Theorem P: for `0 ≤ p < 1`, `q_w(p) → 0`. | B10.3, B10.5, then analysis: a Chernoff bound for `Bin(2w, p/2) ≥ w`, and the renewal bound `Γ_w ≤ w z^{-w}/(1-β(z))` with `β(1) < 1` and radius `> 1`. Real-analysis layer; can be stated for each rational `p` with the certified `(θ, z)` instead. |
+| B10.8 | Gap independence: on `h = 2`, if columns `x₁ < x₂` are plugs, then the restriction of `f^t s` to the columns strictly between them depends only on the restriction of `s` there, and evolves by the walled gap rule of `bml/native/gap_jam.c`. Hence a configuration with a plug jams iff every gap jams. | B10.1 (plug cells fixed, no car crosses a plug column); the update reads only a cell's forward neighbour. Basis of the exact counts in `bml/thin_exact.py`. |
 
 `tests/test_thin.py` checks B10.3 and B10.4 on every state of 2×3 to 2×5 and their transposes, and
 B10.5 by enumeration.

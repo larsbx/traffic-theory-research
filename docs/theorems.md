@@ -973,7 +973,21 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
    is prior art in [KTY] (m ≤ gcd/2). The search for the complete rectangular capacity formula
    (§5) found no earlier statement. The scope of [HBK] is recorded in §0: an asserted
    square-lattice FFP characterization and L²/3 capacity, with numerical relaxation results.
-   Still open: an exhaustive bibliographic check.
+   A **systematic web and arXiv search on 2026-11-28** covered:
+   - thin (2×n) and narrow tori;
+   - monotonicity of the jam probability in density;
+   - rectangular and gcd-dependent free-flow capacity;
+   - rigorous low-density results.
+
+   It found no earlier statement of Theorem F's rectangular formula, Theorem M, Theorem P, or any
+   result specific to two-row tori.
+   - **Rigorous work found:** [AHM] (jamming near p = 1), [AB] (fewer than L/2 cars),
+     [BGI] (a single-junction variant, with a phase transition) and [KTY]/[YT].
+   - **Numerical and physical studies:** [BML], [DS], [LD] (periodic intermediate states on
+     coprime rectangles) and [OM] (honeycomb lattice), which prove none of these statements.
+
+   This is a search outcome, not a novelty claim. Still open: a library-database
+   (MathSciNet/zbMATH) check.
 4. ~~Why is un-jamming trivial on small tori?~~ Resolved by Theorem U (§4): genuine un-jamming
    exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4. Lean formalisation: blueprint B8.
 5. ~~Extend the exhaustive tables to 4×5.~~ Done for every shape with W·H ≤ 22, including 4×5
@@ -997,6 +1011,15 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
   arXiv:math/0607759v3 (2006). Read the movement rules together with Propositions 1 and 6.
 - [DS] R. M. D'Souza, *Coexisting phases and lattice dependence of a cellular automaton
   model for traffic flow*, Physical Review E 71 (2005), 066112. DOI: 10.1103/PhysRevE.71.066112.
+- [BGI] I. Benjamini, O. Gurel-Gurevich, R. Izkovsky, *The Biham–Middleton–Levine traffic
+  model for a single junction*, arXiv:math/0703201 (2007). A single row and column with one
+  shared cell; self-organization and a phase transition in that variant. Found 2026-11-28.
+- [LD] N. J. Linesch, R. M. D'Souza, *Periodic states, local effects and coexistence in the BML
+  traffic jam model*, Physica A 387 (2008), 6170–6176; arXiv:0709.3604. Exactly periodic intermediate states on coprime
+  (Fibonacci) rectangles; numerical. Found 2026-11-28.
+- [OM] L. E. Olmos, J. D. Muñoz, *Traffic gridlock on a honeycomb city*, arXiv:1610.07438
+  (2016). BML on a honeycomb network; numerical, with a single percolation-like transition.
+  Found 2026-11-28.
 - [YT] M. V. Yashina, A. G. Tatashev, *Necessary condition for self-organization in the
   BML model with stochastic direction choice*, arXiv:2311.17120 (2023), Theorem 1 for q=0.
 - [HBK] G. Hertzberg Rabinovich, O. Biham, E. Katzav, *Structure and dynamics in the
@@ -1013,3 +1036,6 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
 [HBK]: https://arxiv.org/abs/2601.01180
 [KTY]: https://arxiv.org/abs/2310.02291
 [YT24]: https://doi.org/10.1002/mma.10276
+[BGI]: https://arxiv.org/abs/math/0703201
+[LD]: https://arxiv.org/abs/0709.3604
+[OM]: https://arxiv.org/abs/1610.07438
