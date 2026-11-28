@@ -11,6 +11,9 @@ and products over ℚ. The kernel package does not depend on it.
 - `BMLProb/Thin.lean`: independence of columns, the weight of "a full north column and every
   north car in one", the lower bound `jamProb_lower_bound` (the thin-torus bound `L_W ≤ q_W`
   is `thin_lower_bound`), and the coarse upper bound `jamProb_upper_bound`.
+- `BMLProb/Chernoff.lean`: the exact Chernoff bound `prob_eastCount_ge` on the east-car count,
+  `(1 - p/2 + pθ/2)^n / θ^k` for `θ ≥ 1`; on two rows `θ = (2-p)/p` gives `(p(2-p))^W`, and
+  `thin_upper_bound_chernoff` is `q_W ≤ (p(2-p))^W + 1 - (1 - (p/2)²)^W` (B10.7, first step).
 - `ProbAudit.lean`: checks that the listed theorems exist and use only `propext`,
   `Quot.sound` and `Classical.choice`.
 
