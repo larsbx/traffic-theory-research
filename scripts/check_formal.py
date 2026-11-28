@@ -24,11 +24,24 @@ R2_APP_SOURCES = {
     "app/scripts/r2-certificates.mjs",
     "app/scripts/r2-progress.mjs",
     "app/scripts/r2-service.mjs",
+    "app/scripts/r2-amortized-reference.mjs",
+    "app/scripts/traffic-events-correspondence.mjs",
+    "app/scripts/traffic-work-correspondence.mjs",
+    "app/scripts/traffic-obstruction-correspondence.mjs",
     "app/src/presets.js",
     "app/src/raster.js",
     "app/src/realflow.js",
     "app/src/rng.js",
     "app/src/sim.js",
+}
+FIELD_SOURCES = {
+    "data/lankershim-field-replay/observation_events.py",
+    "data/lankershim-field-replay/test_observation_events.py",
+    "data/lankershim-field-replay/replay.py",
+    "data/lankershim-field-replay/test_replay.py",
+    "data/lankershim-field-replay/fetch.sh",
+    "data/lankershim-field-replay/result.json",
+    "data/lankershim-field-replay/README.md",
 }
 
 
@@ -51,7 +64,7 @@ def source_manifest() -> dict[str, str]:
         ):
             continue
         if (relative.parts[0] in {"formal", "scripts", ".github"}
-                or relative.as_posix() in R2_APP_SOURCES
+                or relative.as_posix() in R2_APP_SOURCES | FIELD_SOURCES
                 or relative == Path("README.md")):
             paths.append(path)
     return {str(p.relative_to(ROOT)): sha256(p.read_bytes()) for p in sorted(paths)}
@@ -184,7 +197,9 @@ def main() -> int:
         require(f"version {COVERAGE['lean_version']}," in lean_version, f"wrong Lean version: {lean_version}")
         require(quint_version == COVERAGE["quint_version"], f"wrong Quint version: {quint_version}")
         report["versions"] = {"lean": lean_version, "quint": quint_version, "node": node_version}
-        run("lean-build", [lake, "build", "Traffic", "traffic_export", "r2_check"], LEAN)
+        run("lean-build", [lake, "build", "Traffic", "traffic_export", "r2_check",
+                           "traffic_evidence_check", "+BML.TrafficObstruction",
+                           "+BML.TrafficHistory", "+BML.TrafficServiceBridge"], LEAN)
         audit = run("lean-axiom-audit", [lake, "env", "lean", "TrafficAudit.lean"], LEAN)
         audited = {}
         summary = None
@@ -257,12 +272,48 @@ def main() -> int:
             **json.loads(service),
             "cases_sha256": sha256((artifacts / "r2-service-cases.json").read_bytes()),
         }
+        evidence_audit = run("traffic-evidence-axiom-audit",
+                             [lake, "env", "lean", "TrafficEvidenceAudit.lean"], LEAN)
+        evidence_summary = next((line.split("\t")[1:] for line in evidence_audit.splitlines()
+                                 if line.startswith("EVIDENCE_SUMMARY\t")), None)
+        require(evidence_summary is not None, "missing traffic evidence axiom audit summary")
+        checker = str(LEAN / ".lake/build/bin/traffic_evidence_check")
+        event_output = run("traffic-event-correspondence", ["node",
+            "app/scripts/traffic-events-correspondence.mjs", checker, str(artifacts)], ROOT)
+        work_output = run("traffic-work-correspondence", ["node",
+            "app/scripts/traffic-work-correspondence.mjs", checker, str(artifacts)], ROOT)
+        obstruction_output = run("traffic-obstruction-correspondence", ["node",
+            "app/scripts/traffic-obstruction-correspondence.mjs", checker, str(artifacts)], ROOT)
+        field_dir = artifacts / "field-observations"
+        run("field-observation-controls", [sys.executable, "scripts/check_field_observations.py",
+            "--lean-executable", checker, "--artifacts", str(field_dir)], ROOT)
+        field_receipt = json.loads((field_dir / "receipt.json").read_text())
+        require(field_receipt["status"] == "passed" and
+                field_receipt["observed"]["status"] == "not_run",
+                "offline field gate must pass without claiming unrequested real-data execution")
+        report["traffic_evidence"] = {
+            "audit": {"declarations": int(evidence_summary[0]),
+                      "theorems": int(evidence_summary[1]),
+                      "required_theorems": int(evidence_summary[2])},
+            "executable_sha256": sha256(Path(checker).read_bytes()),
+            "events": {**json.loads(event_output), "cases_sha256":
+                       sha256((artifacts / "traffic-events-cases.json").read_bytes())},
+            "work": {**json.loads(work_output), "cases_sha256":
+                     sha256((artifacts / "traffic-work-cases.json").read_bytes())},
+            "obstruction": {**json.loads(obstruction_output), "cases_sha256":
+                            sha256((artifacts / "traffic-obstruction-cases.json").read_bytes())},
+            "field_controls": {"status": field_receipt["status"],
+                "synthetic": field_receipt["synthetic"], "observed": field_receipt["observed"],
+                "receipt_sha256": sha256((field_dir / "receipt.json").read_bytes())},
+            "scope": "kernel proofs with explicit premises; finite implementation and synthetic "
+                     "observation controls; full pinned field data has a separate opt-in receipt",
+        }
         require(source_manifest() == before_sources, "sources changed during acceptance")
         report["status"] = "passed"
         report["not_claimed"] = COVERAGE["not_claimed"]
         print(
             f"PASS: Lean build/audit, Quint checks, and {COVERAGE['finite_comparison']['phase_cases']} "
-            "exhaustive cross-language phase cases. R2 rank, trap, progress, and service checks passed.",
+            "exhaustive cross-language phase cases. R2 and typed event/work/observation checks passed.",
             flush=True,
         )
     except Exception as error:

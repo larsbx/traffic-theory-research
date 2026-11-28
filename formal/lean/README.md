@@ -153,6 +153,39 @@ mkdir -p formal/artifacts
 node app/scripts/r2-service.mjs "$PWD/formal/lean/.lake/build/bin/r2_check" formal/artifacts
 ```
 
+### R2 event, controller, work, and observation correspondence
+
+The [event and observation note](../../docs/research/2026-11-28-r2-events-observations-and-work.md)
+connects the formal objects to named simulator events and pinned field samples.
+
+| Module | Kernel-checked result |
+| --- | --- |
+| [`TrafficEvents`](BML/TrafficEvents.lean) | Checked finite event batches, computed states/arrival contexts, source vacancy, exact replay/accepted-history equivalence and the bridge to `RouteProgress.Trace`. A hop and exit/readmission can share endpoints while injecting different work. |
+| [`TrafficHistory`](BML/TrafficHistory.lean) | Every accepted finite history embeds in a run that stays after its endpoint; certified finite frames and local policy checks transfer to `ProtectedPrefix` without a future-controller assumption. |
+| [`TrafficServiceBridge`](BML/TrafficServiceBridge.lean) | The protected DAG/quota theorem supplies PR #44's actual `LeavesVacancy` and `BoundedService` premises, then instantiates its existing rank recurrence. |
+| [`TrafficObstruction`](BML/TrafficObstruction.lean) | An accepted all-time ranked, trap-free run with a vacancy every two checkpoints, no joint eligible vacancy, and no finite focal service bound. |
+| [`TrafficWork`](BML/TrafficWork.lean) | Actual event-to-work accounting, telescoping, retained focal credit, finite block contradiction, admission-token accounting, quota deadline and closed-DAG evacuation. |
+| [`TrafficPolicy`](BML/TrafficPolicy.lean) | Full stopped aging, oldest claimant ownership, signal permission and local service checks imply `Q=L+2G` block progress; direct work-bound corollaries discharge that premise. |
+| [`FieldObservation`](BML/FieldObservation.lean) | Source-scoped identity, unit-typed exact values, adjacency and crossing windows, gap rejection, uncertainty/registration guards, and why unknown occupancy cannot certify vacancy. |
+
+`TrafficEvidenceAudit.lean` audits these modules and their strict wire decoders.
+The native `traffic_evidence_check` has separate `--events`, `--work`, and
+`--field` contracts. `scripts/check_formal.py` includes simulator/reference
+correspondence and offline synthetic observation controls. Full pinned field
+execution is a separate opt-in gate; its receipt distinguishes observed data
+from synthetic controls and binds all source, executable and input hashes.
+
+```sh
+(cd formal/lean && lake build BML traffic_evidence_check && lake env lean TrafficEvidenceAudit.lean)
+python3 scripts/check_formal.py --artifacts .artifacts/formal
+python3 scripts/check_field_observations.py --lean-executable formal/lean/.lake/build/bin/traffic_evidence_check --artifacts .artifacts/field --parts /tmp/part0.csv /tmp/part1.csv /tmp/part2.csv
+```
+
+The work bound requires a productive all-hop DAG and an independently enforced
+admission budget. The field samples do not supply those controller premises,
+complete occupancy, a physical stop line, or aligned signal phases. Finite
+production checks do not prove a general JavaScript refinement theorem.
+
 ## Kernel-checked coverage
 
 | Module | Results |

@@ -8,6 +8,14 @@ the empty fixed state is classified as free flow.
 The formal kernel, finite correspondence checks, and prose mathematics have
 different scopes. This register records those distinctions explicitly.
 
+The lane-graph R2 extension now has a separate
+[event, observation, and work layer](../docs/research/2026-11-28-r2-events-observations-and-work.md):
+an all-time joint-vacancy obstruction, checked traffic events, local controller
+rules implying bounded progress, and shared-work/admission-quota theorems.
+It also defines exact predicates on the pinned Lankershim records. Its native
+implementation controls and measured-data receipt remain separate from the
+universal Lean results. See the [R2 coverage register](lean/README.md#r2-event-controller-work-and-observation-correspondence).
+
 The dated [open questions and proof roadmap](../docs/research/2026-11-18-open-questions-and-proof-roadmap.md)
 records the post-TRAIN review, proposed extensions, probability and spatial-order
 questions, and proof work awaiting integration from open PRs. The register below

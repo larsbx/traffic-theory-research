@@ -1,6 +1,6 @@
 # Lankershim Boulevard: first field replay baseline
 
-This packet measures vehicle crossings at a **virtual screenline**, not an independently surveyed stop line or a calibrated simulation. It makes no change to the R2 proof bank.
+This packet measures vehicle crossings at a **virtual screenline**, not an independently surveyed stop line or a calibrated simulation. The original baseline is preserved; the observation adapter below connects its recorded objects and predicates to the R2 proof bank without treating samples as model movements.
 
 - Source: [U.S. DOT NGSIM trajectory archive](https://data.transportation.gov/Automobiles/Next-Generation-Simulation-NGSIM-Vehicle-Trajector/8ect-6jqj). The Lankershim metadata PDF attached there identifies northbound as direction 2, through as movement 1, and local longitudinal front-center position in feet. Its cited longitudinal accuracy is about four feet.
 - Site: Lankershim Boulevard / Universal Hollywood Drive, NGSIM intersection 2, with approach records from section 2. See the [FHWA site study](https://highways.dot.gov/media/264146).
@@ -25,6 +25,43 @@ The data downloads are split into three nonoverlapping windows and pinned by SHA
 
 ## Next comparison
 
+The checked observation layer below establishes exact recorded-data predicates.
+These physical registrations remain necessary before model or phase scoring:
+
 1. Register a physical stop line and lane-to-cell mapping from the intersection geometry or video. Compare against the three cuts, and document lane changes and data gaps instead of silently counting inferred crossings.
 2. Retrieve the cycle-by-cycle controller record **RSM088-061605** named in FHWA's metadata, then independently align it with video markings. The primary replay reports the intersection 2 controller clock about **28 seconds ahead** of video/trajectory time. Treat that as a candidate offset, not a verified correction. Do not infer a phase from the discharge observations used to score the model. The controller record was not present among the trajectory table's listed attachments.
 3. Feed the aligned effective green to a finite phase-aware model. Compare cumulative crossings, per-cycle discharge and queue recovery on held-out cycles; sweep the allowable clock offsets. Mark out-of-view demand and downstream occupancy unknown rather than empty. Keep modeled R2 guarantees (structural traps under the stated legal-move semantics) separate from measured discharge and from throughput or permanent-gridlock claims.
+
+## Exact observation correspondence
+
+`observation_events.py` parses the exact byte buffer whose SHA-256 matches the
+pinned manifest. It retains source-scoped vehicle identities, frame/time clocks,
+exact decimal coordinates and speeds, lane-code changes, and source-row references.
+Its evidence records describe observation starts/ends, adjacent sample pairs,
+gaps, and nominal crossing windows. Missing rows produce no exits or vacancies.
+
+The matching Lean predicates are in `formal/lean/BML/FieldObservation.lean`.
+The native checker reconstructs the complete consecutive pair inventory and
+compares every pair/cut classification using exact integer arithmetic. It
+reproduces all three baseline crossing counts on 100,337 pairs, including 14
+uncertain pairs and 18 lane-code changes. First-crossing counts, time bins and
+downstream-lane assignments remain the baseline conventions.
+
+From the repository root, after building the pinned Lean executable:
+
+```sh
+python3 scripts/check_field_observations.py --lean-executable formal/lean/.lake/build/bin/traffic_evidence_check --artifacts .artifacts/field --parts /tmp/part0.csv /tmp/part1.csv /tmp/part2.csv
+```
+
+Use the actual paths to the three CSV files. The gate downloads nothing.
+Without `--parts`, it runs synthetic controls and records field execution as
+`not_run`. Receipts bind source/executable/input/output hashes, require unchanged
+sources during execution, and include rejection controls for corrupted values,
+classification/count mismatches, duplicate/omitted pairs and unordered timestamps.
+
+Exact recorded decimals do not remove measurement error, verify tracking
+identities, register a physical stop line, or cover unobserved road users. The
+field result makes zero physical phase or model-transition claims. See the
+[event, work and observation note](../../docs/research/2026-11-28-r2-events-observations-and-work.md)
+for the formal definitions, actual row examples, controller theorem, and remaining
+obligations before applying a waiting bound to physical traffic.
