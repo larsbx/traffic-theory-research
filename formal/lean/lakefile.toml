@@ -56,6 +56,14 @@ root = "Traffic.Export"
 name = "r2_check"
 root = "R2Check"
 
+[[lean_exe]]
+name = "traffic_evidence_check"
+root = "TrafficEvidenceCheck"
+
+[[lean_lib]]
+name = "TrafficEvidence"
+roots = ["FieldEvidenceCheck", "TrafficEventsCheck", "TrafficWorkCheck"]
+
 [[lean_lib]]
 name = "Train"
 
