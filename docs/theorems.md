@@ -913,7 +913,7 @@ Bernstein-coefficient certificate. Each difference b_{n+1} − b_n equals (jam-c
 jam-destroying single-car additions)/(number of pairs), so configurationwise non-monotonicity
 is outweighed level by level. See the
 [finite iid monotonicity note](research/2026-11-18-finite-iid-monotonicity.md). Exhaustively for W·H ≤ 22, every 24-cell shape and 5×5, q(p) is strictly increasing. The fixed-count
-fraction is *not* monotone in general: exactly, b₇ < b₆ on 2×11, 2×12 and 2×14. On 2×11 and 2×12, q itself is still strictly
+fraction is *not* monotone in general: exactly, b₇ < b₆ on 2×11, 2×12 and 2×14. On 2×11 to 2×14, q itself is still strictly
 increasing (exact certificate). This settles nothing asymptotically.
 
 **Theorem M (thin-torus non-monotonicity).** For every W ≥ 24, q(p) is *not* monotone on the
@@ -925,9 +925,23 @@ increasing (exact certificate). This settles nothing asymptotically.
   for 24 ≤ W ≤ 79, and a renewal bound covers all W ≥ 80.
 
 See the [thin-torus note](research/2026-11-21-thin-torus-nonmonotonicity.md),
-`bml.thin`, `data/thin-nonmonotone.json` and `scripts/thin_certificates.py`. Monte Carlo with
-exact classification suggests that 2×15 (30 cells) is already non-monotone and 2×14 is not.
-The smallest non-monotone torus is unknown; it has between 23 and 48 cells.
+`bml.thin`, `data/thin-nonmonotone.json` and `scripts/thin_certificates.py`.
+
+**Theorem S (smallest non-monotone thin torus).** On 2×W, q is strictly increasing for every
+W ≤ 14 and not monotone on 2×15: q(1/5) > q(13/40). So the smallest non-monotone torus of any
+shape has between 23 and 30 cells.
+- **Gap independence.** With a plug present, the gaps evolve independently. So the jam counts with
+  a plug are an exact renewal sum over plug/gap blocks.
+- **Enumeration.** The gap jam counts are enumerated exactly for gaps of up to 14 columns. The
+  plug-free class needs at least W east cars, and it is classified exactly for W ≤ 14.
+- **Certificates.** The exact counts reproduce every exhaustive 2×W table. Bernstein
+  certificates show that q is increasing on 2×13 and 2×14. On 2×15, the plug part alone
+  separates q(1/5) from an upper bound on q(13/40).
+
+See §4.1 of the [thin-torus note](research/2026-11-21-thin-torus-nonmonotonicity.md),
+`bml.thin_exact` and `scripts/thin_exact.py`. The reduction is kernel-checked: gap independence
+in `BML/GapIndependence.lean`, and the renewal identity and the sandwich in `formal/prob`
+(`BMLProb/ThinExact.lean`). The gap counts and the certificates are computed.
 
 **Theorem P (no jammed phase on thin tori).** For every fixed p < 1, q_{2×W}(p) ≤ C·W·ρ^W with
 ρ < 1, so the jam probability tends to 0 and the thin-torus critical density is p_c = 1.
@@ -973,7 +987,21 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
    is prior art in [KTY] (m ≤ gcd/2). The search for the complete rectangular capacity formula
    (§5) found no earlier statement. The scope of [HBK] is recorded in §0: an asserted
    square-lattice FFP characterization and L²/3 capacity, with numerical relaxation results.
-   Still open: an exhaustive bibliographic check.
+   A **systematic web and arXiv search on 2026-11-28** covered:
+   - thin (2×n) and narrow tori;
+   - monotonicity of the jam probability in density;
+   - rectangular and gcd-dependent free-flow capacity;
+   - rigorous low-density results.
+
+   It found no earlier statement of Theorem F's rectangular formula, Theorem M, Theorem P, or any
+   result specific to two-row tori.
+   - **Rigorous work found:** [AHM] (jamming near p = 1), [AB] (fewer than L/2 cars),
+     [BGI] (a single-junction variant, with a phase transition) and [KTY]/[YT].
+   - **Numerical and physical studies:** [BML], [DS], [LD] (periodic intermediate states on
+     coprime rectangles) and [OM] (honeycomb lattice), which prove none of these statements.
+
+   This is a search outcome, not a novelty claim. Still open: a library-database
+   (MathSciNet/zbMATH) check.
 4. ~~Why is un-jamming trivial on small tori?~~ Resolved by Theorem U (§4): genuine un-jamming
    exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4. Lean formalisation: blueprint B8.
 5. ~~Extend the exhaustive tables to 4×5.~~ Done for every shape with W·H ≤ 22, including 4×5
@@ -997,6 +1025,15 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
   arXiv:math/0607759v3 (2006). Read the movement rules together with Propositions 1 and 6.
 - [DS] R. M. D'Souza, *Coexisting phases and lattice dependence of a cellular automaton
   model for traffic flow*, Physical Review E 71 (2005), 066112. DOI: 10.1103/PhysRevE.71.066112.
+- [BGI] I. Benjamini, O. Gurel-Gurevich, R. Izkovsky, *The Biham–Middleton–Levine traffic
+  model for a single junction*, arXiv:math/0703201 (2007). A single row and column with one
+  shared cell; self-organization and a phase transition in that variant. Found 2026-11-28.
+- [LD] N. J. Linesch, R. M. D'Souza, *Periodic states, local effects and coexistence in the BML
+  traffic jam model*, Physica A 387 (2008), 6170–6176; arXiv:0709.3604. Exactly periodic intermediate states on coprime
+  (Fibonacci) rectangles; numerical. Found 2026-11-28.
+- [OM] L. E. Olmos, J. D. Muñoz, *Traffic gridlock on a honeycomb city*, arXiv:1610.07438
+  (2016). BML on a honeycomb network; numerical, with a single percolation-like transition.
+  Found 2026-11-28.
 - [YT] M. V. Yashina, A. G. Tatashev, *Necessary condition for self-organization in the
   BML model with stochastic direction choice*, arXiv:2311.17120 (2023), Theorem 1 for q=0.
 - [HBK] G. Hertzberg Rabinovich, O. Biham, E. Katzav, *Structure and dynamics in the
@@ -1013,3 +1050,6 @@ iid attraction theorem. The coverage below describes this branch's compiled resu
 [HBK]: https://arxiv.org/abs/2601.01180
 [KTY]: https://arxiv.org/abs/2310.02291
 [YT24]: https://doi.org/10.1002/mma.10276
+[BGI]: https://arxiv.org/abs/math/0703201
+[LD]: https://arxiv.org/abs/0709.3604
+[OM]: https://arxiv.org/abs/1610.07438

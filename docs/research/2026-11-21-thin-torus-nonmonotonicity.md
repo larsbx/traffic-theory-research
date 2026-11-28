@@ -1,6 +1,6 @@
 # Thin tori: the jam probability is not monotone, and there is no jammed phase
 
-**Research note — 21 November 2026, extended 22 November (§5). Theorems with exact certificates; no novelty claim.**
+**Research note — 21 November 2026, extended 22 November (§5) and 28 November (§4.1). Theorems with exact certificates; no novelty claim.**
 
 The [finite iid monotonicity note](2026-11-18-finite-iid-monotonicity.md) proves that the iid
 jam probability q(p) = P_p(J) is strictly increasing in p on every torus with W·H ≤ 22, on every
@@ -205,9 +205,59 @@ The grid is p = 0.05, 0.075, …, 0.6; σ is the combined standard error of the 
 - **2×15:** a 6σ decrease, between p = 0.225 and 0.35.
 - **2×16 to 2×23:** an unmistakable decrease.
 
-So the smallest non-monotone 2×W torus is very likely 2×15 (30 cells). That is evidence, not a
-proof: 3³⁰ states is beyond exhaustive classification, and the bounds of §2 are too loose there.
-The data are `data/thin-monte-carlo.json` (`scripts/thin_sweep.py`, fixed seeds).
+The Monte Carlo data are `data/thin-monte-carlo.json` (`scripts/thin_sweep.py`, fixed seeds).
+They are evidence only; §4.1 settles the question exactly.
+
+### 4.1 Exact: the smallest non-monotone 2×W torus is 2×15
+
+> **Theorem S.** On 2×W, q is strictly increasing on (0, 1] for every W ≤ 14, and not monotone
+> on 2×15: q(1/5) > q(13/40). So 2×15 (30 cells) is the smallest non-monotone 2×W torus, and the
+> smallest non-monotone torus of any shape has between 23 and 30 cells.
+
+3³⁰ states is beyond exhaustive classification, but the plug decomposes the problem.
+
+**Gap independence (blueprint B10.8).** Once a configuration has a plug, its gaps evolve
+independently: plug cells never change and no car crosses a plug column (Lemma 1), and a gap's
+next state reads only its own cells. So a configuration with a plug jams iff every gap jams as
+a walled two-row segment. Let J_g(k) count the jamming states of a g-column gap with k cars.
+With the block generating polynomial b_l(t) = t²·J_{l−1}(t) (a plug and the gap to its east),
+the jamming configurations with a plug are counted by the cyclic renewal sum
+
+\[
+\operatorname{Plug}_W(t)=\sum_{l=1}^{W} l\,b_l(t)\,c_{W-l}(t),\qquad
+c_0=1,\ c_m=\sum_{l=1}^{m} b_l\,c_{m-l},
+\]
+
+where the factor l places column 0 inside the first block. Without a plug, a jam needs a winding
+cycle and so at least W east cars (Lemma 2).
+
+**Computation.**
+- `bml/native/gap_jam.c` computes J_g exactly for g ≤ 14 (8^g states per g, ≈ 4.4·10¹² at
+  g = 14). It counts the C(2g, k) lone-free states in closed form (Lemma 4), cuts branches that
+  violate the gap condition (Lemma 3), and uses the row-swap symmetry. Each remaining state is
+  decided by simulation to a fixed point or a cycle. Two consecutive rounds without an east move
+  freeze every east car, so the state jams iff it is then fixed. A brute-force cross-check
+  against Floyd cycle detection covers g ≤ 6.
+- `bml/native/noplug_jam.c` classifies the plug-free configurations with at least W east cars
+  exactly, one translation class at a time (FKM necklaces weighted by orbit size), for W ≤ 14.
+- `bml.thin_exact` assembles exact counts per car number. They reproduce every exhaustive 2×W
+  table (W ≤ 12) level by level. The plug part also matches brute force for W ≤ 5.
+
+**Certificates** (exact rationals, `scripts/thin_exact.py`):
+- **2×13 and 2×14:** q is strictly increasing on (0, 1], by the Bernstein certificate of the iid
+  note (8 and 174 degree elevations). The fixed-count fraction still dips: b_{n+1} < b_n at
+  n = 6, 8 on 2×13, and at n = 4, 6, 8, 10 on 2×14.
+- **2×15:** the plug part alone bounds q from below, and the plug part plus the whole plug-free
+  heavy class bounds it from above:
+
+  q(1/5) ≥ Plug₁₅(1/5) ≈ 0.013729 > 0.013295 ≈ Plug₁₅(13/40) + P(no plug, #E ≥ 15) ≥ q(13/40).
+
+  The heavy class contributes only 1.7·10⁻⁵ at p = 13/40, so no plug-free classification is
+  needed at W = 15.
+
+**Smallest torus overall.** Every torus with W·H ≤ 22, every 24-cell shape and 5×5 is monotone
+(iid note), and so are 2×13 and 2×14. The shapes with 23 to 29 cells that remain unchecked are
+3×9, 4×7, their transposes, and the single-line tori 1×n and n×1 for 23 ≤ n ≤ 29.
 
 The mechanism is visible at fixed car count too. Exactly,
 b_n ≥ Σ_k C(W,k)·C(2W−2k, n−2k)/(C(2W,n)·2ⁿ), the fraction of n-car configurations whose N cars
@@ -265,15 +315,25 @@ on?" for this geometry, and only for it.
 ## 6. What this does and does not show
 
 - **Monotonicity fails for some finite tori.** Exact monotonicity of q holds on every torus
-  checked, up to 25 cells,
-  and fails on 2×W from 48 cells on. The smallest counterexample is not known; §4 suggests it is
-  2×15.
+  checked: up to 25 cells, and on 2×13 and 2×14. It fails on 2×15 (§4.1) and on every 2×W with
+  W ≥ 24 (Theorem M). Between those, 2×16 to 2×23 are non-monotone by Monte Carlo only. The
+  smallest counterexample of any shape has between 23 and 30 cells.
 - **The failure is thin-torus rigidity, not a density threshold.** On 2×W at every fixed p < 1,
   q_W(p) → 0 exponentially as W grows (Theorem P). Low-density jams there are single
   initial coincidences. Nothing here bears on squares, where blocking cycles can form
   dynamically, or on p₋ > 0 there. Theorem P does not say what replaces jamming on thin tori
   (free flow or intermediate motion).
-- **Lemmas 1–4 are kernel-checked; the bounds are proved in prose.** `BML/ThinRigidity.lean`
-  proves Lemmas 1–4 at every height (blueprint B10.1–B10.4, added 27 November). Theorem A's
-  probability identities, the certificates (exact computer arithmetic) and Theorem P are not in
-  Lean: blueprint B10.5–B10.7.
+- **What is kernel-checked.**
+  - `BML/ThinRigidity.lean` proves Lemmas 1–4 at every height (blueprint B10.1–B10.4).
+  - `BML/GapIndependence.lean` proves gap independence (B10.8).
+  - The Mathlib layer `formal/prob` proves the following:
+    - Theorem A's lower bound.
+    - The renewal identity for P(plug ∧ jam), the reduction behind Theorem S (§4.1).
+    - The sandwich of §4.1.
+    - The Chernoff bound P(#E ≥ W) ≤ (p(2−p))^W.
+- **What is not kernel-checked.**
+  - The computed data are not checked in Lean: the gap jam counts J_g and the plug-free
+    classification.
+  - The rational certificates are exact Python arithmetic, not Lean: those of Theorem M and
+    those of §4.1.
+  - The limit in Theorem P is not in Lean (B10.6, B10.7).

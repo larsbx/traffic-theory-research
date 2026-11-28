@@ -1,7 +1,7 @@
 # Blueprint: proof status and open formal obligations
 
-This hand-off document records the completed B0–B9 proofs, B10 (structure lemmas B10.1–B10.4 and the first identity of B10.5 complete, the rest of the
-probability parts open), and the remaining
+This hand-off document records the completed B0–B9 proofs, B10 (structure lemmas B10.1–B10.4, both identities of B10.5, gap independence B10.8 and the
+Chernoff step of B10.7 complete; the certificates B10.6 and the limit in B10.7 open), and the remaining
 obligations of [the coverage register](README.md), with proofs decomposed into
 lemmas small enough to formalise one at a time.
 
@@ -37,7 +37,7 @@ Conventions: `E = eastDirection w h hw` and `N = northDirection w h hh`.
 | B7–B7.6 | CLASSIC eventual speed one for 2m≤gcd(W,H) | kernel-checked alternating equality regime, full movement from round lcm(W,H)·m(g−2) onward, and at most m(g−2) blocked rounds per prefix | B2 geometry, B3 finite free window, CLASSIC transport and car count |
 | B8 | Theorem U: genuine un-jamming exists iff min(W,H) ≥ 2 and max(W,H) ≥ 4 | kernel-checked dimension classification, including both exclusions | Kernel, Transport, Lanes, Enumeration, Fixation |
 | B9 | Maximal-core cardinality, stopped original cars, and finite initial-weight gridlock reduction | kernel-checked tag/site count equality, eventual stopped-count identification, jam/full-lane count sandwich, and exact cleared-denominator initial-weight comparison | PathCore, Fixation, Capture, Counting, Absorption, FiniteSums |
-| B10 | Thin-torus rigidity: jam structure on 2×W and W×2, and the bounds L_W ≤ q ≤ U_W behind Theorem M | B10.1–B10.4 kernel-checked at every height in `ThinRigidity.lean`; the first identity of B10.5 and the bound `L_W ≤ q_W` kernel-checked in the Mathlib package `formal/prob`; the gap-condition weight, B10.6 and B10.7 prose proof and exact certificates, open for Lean | Kernel, Transport, Lanes, Fixation (G0), Counting |
+| B10 | Thin-torus rigidity: jam structure on 2×W and W×2, and the bounds L_W ≤ q ≤ U_W behind Theorem M | B10.1–B10.4 and B10.8 kernel-checked at every height (`ThinRigidity.lean`, `GapIndependence.lean`); B10.5, the bound `L_W ≤ q_W`, the exact renewal sum for `P(plug ∧ jam)` and the Chernoff bound of B10.7 kernel-checked in the Mathlib package `formal/prob`; B10.6 and the limit of B10.7 prose proof and exact certificates, open for Lean | Kernel, Transport, Lanes, Fixation (G0), Counting |
 
 ---
 
@@ -755,7 +755,7 @@ records the complete interfaces and independent controls. In particular,
 the needed large-size decay of the limiting normalized core mass remains
 open; B9 supplies the reduction, not that estimate.
 
-## B10. Thin-torus rigidity and the non-monotonicity of q: structure complete, probability open
+## B10. Thin-torus rigidity and the non-monotonicity of q: structure, renewal and gap independence complete; certificates and the limit open
 
 Prose proofs are in the [thin-torus note](../docs/research/2026-11-21-thin-torus-nonmonotonicity.md)
 §§1–2. Statements are for `h = 2` (2 rows, `W = w` columns); the `w = 2` case is the same
@@ -772,6 +772,7 @@ column.
 | B10.5 | Initial-law identities: `P(plug ∧ no lone) = (a+c)^w − c^w`, and `P(gap condition)` equals the cyclic renewal sum of `bml.thin.gap_event`. | Finite sums over iid columns (`FiniteSums`, `Counting`). With cleared denominators, as in B9.5. |
 | B10.6 | (Optional) the certificates: for each `24 ≤ w ≤ 79` the stored rationals satisfy `lower w p₁ > upper w p₂`, and the asymptotic inequality at `w = 80`. | Exact rational evaluation; heavy for `decide`. Python checks them exactly (`scripts/thin_certificates.py`), so the Lean value is in B10.1–B10.5. |
 | B10.7 | Theorem P: for `0 ≤ p < 1`, `q_w(p) → 0`. | B10.3, B10.5, then analysis: a Chernoff bound for `Bin(2w, p/2) ≥ w`, and the renewal bound `Γ_w ≤ w z^{-w}/(1-β(z))` with `β(1) < 1` and radius `> 1`. Real-analysis layer; can be stated for each rational `p` with the certified `(θ, z)` instead. |
+| B10.8 | Gap independence: on `h = 2`, if columns `x₁ < x₂` are plugs, then the restriction of `f^t s` to the columns strictly between them depends only on the restriction of `s` there, and evolves by the walled gap rule of `bml/native/gap_jam.c`. Hence a configuration with a plug jams iff every gap jams. | B10.1 (plug cells fixed, no car crosses a plug column); the update reads only a cell's forward neighbour. Basis of the exact counts in `bml/thin_exact.py`. |
 
 `tests/test_thin.py` checks B10.3 and B10.4 on every state of 2×3 to 2×5 and their transposes, and
 B10.5 by enumeration.
@@ -810,9 +811,52 @@ weight `prob p A` and proves, for every positive `w × h` torus and `0 ≤ p ≤
 Rational weights are used directly; denominators are not cleared. The kernel package does not
 depend on Mathlib.
 
-Still open: the second identity of B10.5 (the weight of the gap condition as the cyclic
-renewal sum) needs the gap event as a predicate on initial states; B10.6 and B10.7 are as in
-the table above.
+### B10.5, second identity, B10.8 and the first step of B10.7: completed
+
+**B10.8, in the kernel (`BML/GapIndependence.lean`, every height).**
+
+| Lean theorem | Statement |
+|---|---|
+| `step_agreeAt` | The next state of a column reads only that column and its two neighbours, on tori of any widths. |
+| `iterate_isolate_agree` | On a column set walled by full north columns, the orbit of `s` agrees with that of `isolate G s`, in which every other column is full north. |
+| `eventuallyJammed_iff_cover` | With a full north column, `s` eventually jams iff every isolated member of a walled cover of its other columns does. |
+| `eventuallyJammed_iff_of_simulation`, `isolate_gap_iff_gapJams` | The isolated gap after `x` jams iff the walled gap `gapConfig g word`, on the torus of width `g + 1`, does. |
+| `exists_gap`, `eventuallyJammed_iff_gaps` | Every column that is not full north lies in a gap. So, with a full north column, `s` jams iff every gap after a full north column jams as a walled gap. |
+
+**B10.5, second identity, in the Mathlib layer.**
+
+- **Abstract renewal (`BMLProb/Renewal.lean`).** It holds for any column alphabet, any plug
+  predicate and any gap predicate `Good`. `sum_cyc_renewal`: the weight of the cyclic words of
+  length `n + 1` with a plug and every gap good is `∑_{l=1}^{n+1} l · (A · G_{l-1}) · C_{n+1-l}`.
+  Here `A` is the plug weight, `G_j` is the weight of the good gap words of length `j`, and
+  `C_0 = 1`, `C_m = ∑_{l=1}^{m} A G_{l-1} C_{m-l}`.
+  - The cyclic sum is reduced to a linear one by rotating the last plug to the front
+    (`sum_isLast`, `isLast_shift`, `cyc_shift`). That rotation weights each word by the length
+    of its first block.
+  - `cyc_iff_linE` reads a cyclic word with a plug at 0 as a linear word.
+  - `wsum_split` splits a linear word at its first plug, which gives `Φ_rec`, `D_rec` and the
+    closed form `plugWeight_mul_D`.
+- **The BML instance (`BMLProb/ThinExact.lean`).**
+  - `plug_and_jam_iff_cyc` (from B10.8): with plugs as full north columns and `Good` as "the
+    walled gap jams", "full north column ∧ eventually jams" is the cyclic event.
+  - `prob_plug_and_jam`: `P(plug ∧ jam)` is the renewal sum, with `J_g = gapJamProb g` and
+    `C = thinC` (`thinC_succ`). This is `plug_jam_counts` of `bml/thin_exact.py`.
+  - `thin_exact_sandwich`: `P(plug ∧ jam) ≤ q ≤ P(plug ∧ jam) + P(no plug ∧ #E ≥ w)`. This is the
+    reduction behind Theorem S. Taking `Good` to be Lemma 3's gap condition gives the original
+    second identity.
+
+**B10.7, first step (`BMLProb/Chernoff.lean`).**
+- `prob_eastCount_ge` is the exact exponential-moment bound on the east-car count.
+- `prob_speciesCount_east_ge_thin` gives `P(#E ≥ W) ≤ (p(2−p))^W` on two rows.
+- `thin_upper_bound_chernoff` gives `q_W ≤ (p(2−p))^W + 1 − (1 − (p/2)²)^W`.
+
+**Still open in Lean.**
+- **The data of Theorem S.** The gap jam weights `J_g` for `g ≤ 14` and the plug-free
+  classification are computed by `bml/native/*.c` (about 4·10¹² gap states), not by the kernel.
+  The rational certificates on 2×13, 2×14 and 2×15 are exact Python arithmetic.
+- **B10.6.** The certificates of Theorem M.
+- **B10.7, beyond the Chernoff step.** The renewal tail bound `Γ_W ≤ W z^{-W}/(1 − β(z))` and the
+  limit `q_W → 0`.
 
 ---
 

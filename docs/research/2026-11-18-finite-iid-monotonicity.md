@@ -158,8 +158,9 @@ on 4 cores. The new tables are in `data/exhaustive-17-22.json`.
 ## 5. What this does and does not show
 
 - It answers the roadmap's monotonicity question for W·H ≤ 16 and 2×9 only; §4 extends this to
-  25 cells. Beyond that, q fails to be monotone on every 2×W with W ≥ 24, and very likely from
-  2×15 on ([thin-torus note](2026-11-21-thin-torus-nonmonotonicity.md)). The stronger
+  25 cells, and the thin-torus note to 2×13 and 2×14. Beyond that, q fails to be monotone on
+  2×15 and on every 2×W with W ≥ 24
+  ([thin-torus note](2026-11-21-thin-torus-nonmonotonicity.md), §4.1 and Theorem M). The stronger
   fixed-count monotonicity fails on 2×11 (§4), so no proof can establish it in general. Nothing here
   implies monotonicity of q_L for large L, or the existence of a threshold.
 - Configurationwise non-monotonicity (§4 of theorems.md, and the 13→14-car square

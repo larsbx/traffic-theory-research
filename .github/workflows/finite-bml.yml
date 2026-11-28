@@ -56,6 +56,8 @@ jobs:
         run: python scripts/check_fixation.py --report .artifacts/fixation-replay.json | tee .artifacts/fixation-replay.log
       - name: Verify exact thin-torus non-monotonicity certificates (2xW, every W >= 24)
         run: python scripts/thin_certificates.py | tee .artifacts/thin-certificates.log
+      - name: Verify exact 2xW jam counts, monotonicity through 2x14 and non-monotonicity of 2x15
+        run: python scripts/thin_exact.py | tee .artifacts/thin-exact.log
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()
         with:
