@@ -913,7 +913,7 @@ Bernstein-coefficient certificate. Each difference b_{n+1} − b_n equals (jam-c
 jam-destroying single-car additions)/(number of pairs), so configurationwise non-monotonicity
 is outweighed level by level. See the
 [finite iid monotonicity note](research/2026-11-18-finite-iid-monotonicity.md). Exhaustively for W·H ≤ 22, every 24-cell shape and 5×5, q(p) is strictly increasing. The fixed-count
-fraction is *not* monotone in general: exactly, b₇ < b₆ on 2×11, 2×12 and 2×14. On 2×11 and 2×12, q itself is still strictly
+fraction is *not* monotone in general: exactly, b₇ < b₆ on 2×11, 2×12 and 2×14. On 2×11 to 2×14, q itself is still strictly
 increasing (exact certificate). This settles nothing asymptotically.
 
 **Theorem M (thin-torus non-monotonicity).** For every W ≥ 24, q(p) is *not* monotone on the
@@ -925,9 +925,21 @@ increasing (exact certificate). This settles nothing asymptotically.
   for 24 ≤ W ≤ 79, and a renewal bound covers all W ≥ 80.
 
 See the [thin-torus note](research/2026-11-21-thin-torus-nonmonotonicity.md),
-`bml.thin`, `data/thin-nonmonotone.json` and `scripts/thin_certificates.py`. Monte Carlo with
-exact classification suggests that 2×15 (30 cells) is already non-monotone and 2×14 is not.
-The smallest non-monotone torus is unknown; it has between 23 and 48 cells.
+`bml.thin`, `data/thin-nonmonotone.json` and `scripts/thin_certificates.py`.
+
+**Theorem S (smallest non-monotone thin torus).** On 2×W, q is strictly increasing for every
+W ≤ 14 and not monotone on 2×15: q(1/5) > q(13/40). So the smallest non-monotone torus of any
+shape has between 23 and 30 cells.
+- **Gap independence.** With a plug present, the gaps evolve independently. So the jam counts with
+  a plug are an exact renewal sum over plug/gap blocks.
+- **Enumeration.** The gap jam counts are enumerated exactly for gaps of up to 14 columns. The
+  plug-free class needs at least W east cars, and it is classified exactly for W ≤ 14.
+- **Certificates.** The exact counts reproduce every exhaustive 2×W table. Bernstein
+  certificates show that q is increasing on 2×13 and 2×14. On 2×15, the plug part alone
+  separates q(1/5) from an upper bound on q(13/40).
+
+See §4.1 of the [thin-torus note](research/2026-11-21-thin-torus-nonmonotonicity.md),
+`bml.thin_exact` and `scripts/thin_exact.py`.
 
 **Theorem P (no jammed phase on thin tori).** For every fixed p < 1, q_{2×W}(p) ≤ C·W·ρ^W with
 ρ < 1, so the jam probability tends to 0 and the thin-torus critical density is p_c = 1.
