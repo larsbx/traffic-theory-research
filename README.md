@@ -175,7 +175,8 @@ connections to tiling and dynamical-systems theory.
 - `bml/analysis.py` — tables for all tori with WH ≤ 16, written to `data/exhaustive.json` (~6 min).
 - `bml/nonmonotone.py` — un-jamming pairs with car identities tracked.
 - `bml/thin.py` — thin-torus (2×W) jam structure (structure lemmas kernel-checked in
-  `formal/lean/BML/ThinRigidity.lean`; lower bound on q in the Mathlib package `formal/prob`)
+  `formal/lean/BML/ThinRigidity.lean`, gap independence in `GapIndependence.lean`; lower bound
+  on q, the exact renewal identity and a Chernoff bound in the Mathlib package `formal/prob`)
   and exact bounds on q; certificates that q is
   not monotone for every W ≥ 24 (`scripts/thin_certificates.py`, `data/thin-nonmonotone.json`).
 - `bml/thin_exact.py` — exact 2×W jam counts by gap independence, from the native enumerators

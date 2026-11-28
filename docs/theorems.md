@@ -939,7 +939,9 @@ shape has between 23 and 30 cells.
   separates q(1/5) from an upper bound on q(13/40).
 
 See §4.1 of the [thin-torus note](research/2026-11-21-thin-torus-nonmonotonicity.md),
-`bml.thin_exact` and `scripts/thin_exact.py`.
+`bml.thin_exact` and `scripts/thin_exact.py`. The reduction is kernel-checked: gap independence
+in `BML/GapIndependence.lean`, and the renewal identity and the sandwich in `formal/prob`
+(`BMLProb/ThinExact.lean`). The gap counts and the certificates are computed.
 
 **Theorem P (no jammed phase on thin tori).** For every fixed p < 1, q_{2×W}(p) ≤ C·W·ρ^W with
 ρ < 1, so the jam probability tends to 0 and the thin-torus critical density is p_c = 1.

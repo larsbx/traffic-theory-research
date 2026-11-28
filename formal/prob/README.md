@@ -14,6 +14,15 @@ and products over ℚ. The kernel package does not depend on it.
 - `BMLProb/Chernoff.lean`: the exact Chernoff bound `prob_eastCount_ge` on the east-car count,
   `(1 - p/2 + pθ/2)^n / θ^k` for `θ ≥ 1`; on two rows `θ = (2-p)/p` gives `(p(2-p))^W`, and
   `thin_upper_bound_chernoff` is `q_W ≤ (p(2-p))^W + 1 - (1 - (p/2)²)^W` (B10.7, first step).
+- `BMLProb/Renewal.lean`: renewal sums over words. For any predicate on gap words, the
+  weight of the cyclic words with a plug and every gap good is
+  `∑_{l=1}^{n+1} l · b_l · C_{n+1-l}` (`sum_cyc_renewal`). The proof splits linear words at the
+  first plug (`wsum_split`) and rotates a cyclic word's last plug to the front (`sum_cyc`).
+- `BMLProb/ThinExact.lean`: the instance for BML columns. Plugs are full north columns, and a
+  gap is good when its walled gap jams (B10.8). `prob_plug_and_jam` gives `P(plug ∧ jam)` as the
+  renewal sum of `plug_jam_counts` in `bml/thin_exact.py`, with `J_g = gapJamProb g` and the
+  sequence `thinC`. `thin_exact_sandwich` bounds `q` between the plug part and the plug part
+  plus `P(no plug ∧ #E ≥ w)`.
 - `ProbAudit.lean`: checks that the listed theorems exist and use only `propext`,
   `Quot.sound` and `Classical.choice`.
 
@@ -27,4 +36,5 @@ lake env lean ProbAudit.lean
 Scope: exact rational weights on a fixed finite torus. There are no limits, no real numbers
 and no measure theory. The statements and what they leave open are in the
 [swarm-links note](../../docs/research/2026-11-27-swarm-dynamics-links.md#1-a-shared-mathlib-pin-and-the-first-iid-bounds-in-lean)
-and blueprint B10.5.
+and blueprint B10.5–B10.8. The gap jam weights `J_g` themselves are computed by
+`bml/native/gap_jam.c`, not in Lean.

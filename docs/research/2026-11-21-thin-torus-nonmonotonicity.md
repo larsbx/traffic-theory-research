@@ -323,7 +323,17 @@ on?" for this geometry, and only for it.
   initial coincidences. Nothing here bears on squares, where blocking cycles can form
   dynamically, or on p₋ > 0 there. Theorem P does not say what replaces jamming on thin tori
   (free flow or intermediate motion).
-- **Lemmas 1–4 are kernel-checked; the bounds are proved in prose.** `BML/ThinRigidity.lean`
-  proves Lemmas 1–4 at every height (blueprint B10.1–B10.4, added 27 November). Theorem A's
-  probability identities, the certificates (exact computer arithmetic), Theorem P and gap
-  independence are not in Lean: blueprint B10.5–B10.8.
+- **What is kernel-checked.**
+  - `BML/ThinRigidity.lean` proves Lemmas 1–4 at every height (blueprint B10.1–B10.4).
+  - `BML/GapIndependence.lean` proves gap independence (B10.8).
+  - The Mathlib layer `formal/prob` proves the following:
+    - Theorem A's lower bound.
+    - The renewal identity for P(plug ∧ jam), the reduction behind Theorem S (§4.1).
+    - The sandwich of §4.1.
+    - The Chernoff bound P(#E ≥ W) ≤ (p(2−p))^W.
+- **What is not kernel-checked.**
+  - The computed data are not checked in Lean: the gap jam counts J_g and the plug-free
+    classification.
+  - The rational certificates are exact Python arithmetic, not Lean: those of Theorem M and
+    those of §4.1.
+  - The limit in Theorem P is not in Lean (B10.6, B10.7).
